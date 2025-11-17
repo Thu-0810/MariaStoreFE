@@ -1,13 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomaPage/HomePage";
-
-// import Header from "./components/Header/Header";
-// import CaseStudy from "./components/Home/CaseStudy";
-// import News1 from "./Page/PageNews/News1/News1";
-// import Footer from "./components/Footer/Footer";
-// import Industries from "./Page/Industries/Industries";
-
-// import ApplicationServicePage from "./Page/ApplicationServicePage/ApplicationServicePage";
+import HomePage from "./pages/HomePage/HomePage";
+import LoginPage from "./pages/LoginPage/LoginPage";
+import RegisterPage from "./pages/LoginPage/RegisterPage";
 function App() {
   return (
     <>
@@ -15,10 +9,30 @@ function App() {
         <div>
           <Routes>
             <Route
-              path="/"
+              path="/login"
               element={
                 <>
-                  <HomePage/>
+                  <LoginPage />
+                </>
+              }
+            />
+          </Routes>
+          <Routes>
+            <Route
+              path="/register"
+              element={
+                <>
+                  <RegisterPage />
+                </>
+              }
+            />
+          </Routes>
+          <Routes>
+            <Route
+              path="/dashboard"
+              element={
+                <>
+                  <HomePage />
                 </>
               }
             />
