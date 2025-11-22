@@ -23,7 +23,7 @@ function LoginPage() {
       console.log("Current user:", user);
 
       message.success("Đăng nhập thành công!");
-      navigate("/dashboard"); // 👈 sau khi login thì chuyển hướng
+      navigate("/dashboard");
     } else {
       message.error("Email hoặc mật khẩu không đúng!");
     }

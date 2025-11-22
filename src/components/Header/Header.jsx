@@ -6,7 +6,7 @@ import {
   GlobalOutlined,
   DownOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Header() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -123,31 +123,65 @@ function Header() {
       <nav className="bg-white border-t border-[#d1d1d1]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center py-3">
-            <a
-              href="#"
-              className="text-[#133e87] font-medium px-4 border-l border-[#d1d1d1]">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `px-4 border-l border-[#d1d1d1] font-medium ${
+                  isActive
+                    ? "text-[#133e87]"
+                    : "text-[#7a7a7a] hover:text-[#133e87]"
+                }`
+              }>
               Trang Chủ
-            </a>
-            <a
-              href="#"
-              className="text-[#7a7a7a] hover:text-[#133e87] px-4 border-l border-[#d1d1d1]">
+            </NavLink>
+
+            <NavLink
+              to="/order"
+              className={({ isActive }) =>
+                `px-4 border-l border-[#d1d1d1] font-medium ${
+                  isActive
+                    ? "text-[#133e87]"
+                    : "text-[#7a7a7a] hover:text-[#133e87]"
+                }`
+              }>
               Đặt Tranh
-            </a>
-            <a
-              href="#"
-              className="text-[#7a7a7a] hover:text-[#133e87] px-4 border-l border-[#d1d1d1]">
+            </NavLink>
+
+            <NavLink
+              to="/store"
+              className={({ isActive }) =>
+                `px-4 border-l border-[#d1d1d1] font-medium ${
+                  isActive
+                    ? "text-[#133e87]"
+                    : "text-[#7a7a7a] hover:text-[#133e87]"
+                }`
+              }>
               Cửa Hàng
-            </a>
-            <a
-              href="#"
-              className="text-[#7a7a7a] hover:text-[#133e87] px-4 border-l border-[#d1d1d1]">
+            </NavLink>
+
+            <NavLink
+              to="/community"
+              className={({ isActive }) =>
+                `px-4 border-l border-[#d1d1d1] font-medium ${
+                  isActive
+                    ? "text-[#133e87]"
+                    : "text-[#7a7a7a] hover:text-[#133e87]"
+                }`
+              }>
               Cộng Đồng
-            </a>
-            <a
-              href="#"
-              className="text-[#7a7a7a] hover:text-[#133e87] px-4 border-l border-r border-[#d1d1d1]">
+            </NavLink>
+
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                `px-4 border-l border-r border-[#d1d1d1] font-medium ${
+                  isActive
+                    ? "text-[#133e87]"
+                    : "text-[#7a7a7a] hover:text-[#133e87]"
+                }`
+              }>
               Liên Hệ
-            </a>
+            </NavLink>
           </div>
         </div>
       </nav>
