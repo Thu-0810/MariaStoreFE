@@ -3,7 +3,7 @@ import { MailOutlined, PhoneOutlined } from "@ant-design/icons";
 
 function ContactContainer() {
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen mt-20">
       {/* Ảnh nền */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

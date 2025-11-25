@@ -90,7 +90,7 @@ function StoreContainer() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f6f6f6]">
+    <div className="min-h-screen bg-[#f6f6f6] mt-20">
       {/* Hero Section */}
       <section className="relative h-150 bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden">
         <div className="absolute inset-0">

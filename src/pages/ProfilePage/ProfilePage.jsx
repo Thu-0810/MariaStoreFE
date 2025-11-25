@@ -1,17 +1,17 @@
-import CommunityContainer from "../../components/Container/CommunityContainer";
+import HomeContainer from "../../components/Container/HomeContainer";
+import ProfileContainer from "../../components/Container/ProfileContainer";
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
 import Navigation from "../../components/Navigation/Navigation";
 
-function CommunityPage() {
+function ProfilePage() {
   return (
     <div>
       <Header />
-      <Navigation />
-      <CommunityContainer />
+      <ProfileContainer />
       <Footer />
     </div>
   );
 }
 
-export default CommunityPage;
+export default ProfilePage;

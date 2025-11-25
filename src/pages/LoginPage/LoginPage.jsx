@@ -20,7 +20,6 @@ function LoginPage() {
 
     if (user) {
       localStorage.setItem("currentUser", JSON.stringify(user));
-      console.log("Current user:", user);
 
       message.success("Đăng nhập thành công!");
       navigate("/dashboard");

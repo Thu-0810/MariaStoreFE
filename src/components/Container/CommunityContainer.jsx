@@ -4,7 +4,7 @@ import { Card } from "antd";
 function CommunityContainer() {
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center"
+      className="relative min-h-screen bg-cover bg-center mt-20"
       style={{
         backgroundImage: "url('src/assets/img/Illustration311.jpg')",
       }}>

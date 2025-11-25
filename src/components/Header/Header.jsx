@@ -6,7 +6,7 @@ import {
   GlobalOutlined,
   DownOutlined,
 } from "@ant-design/icons";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -32,7 +32,9 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate("/dashboard")}>
             <div className="w-10 h-10 bg-[#eae8df] rounded"></div>
             <span className="text-[#133e87] font-bold text-xl">MariaStore</span>
           </div>
@@ -75,7 +77,12 @@ function Header() {
                 {openDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl overflow-hidden z-50">
                     <ul className="text-[#133e87] font-medium">
-                      <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                      <li
+                        className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                        onClick={() => {
+                          navigate("/my-profile");
+                          setOpenDropdown(false);
+                        }}>
                         Tài khoản
                       </li>
                       <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
@@ -118,73 +125,6 @@ function Header() {
           </div>
         </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="bg-white border-t border-[#d1d1d1]">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center py-3">
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `px-4 border-l border-[#d1d1d1] font-medium ${
-                  isActive
-                    ? "text-[#133e87]"
-                    : "text-[#7a7a7a] hover:text-[#133e87]"
-                }`
-              }>
-              Trang Chủ
-            </NavLink>
-
-            <NavLink
-              to="/order"
-              className={({ isActive }) =>
-                `px-4 border-l border-[#d1d1d1] font-medium ${
-                  isActive
-                    ? "text-[#133e87]"
-                    : "text-[#7a7a7a] hover:text-[#133e87]"
-                }`
-              }>
-              Đặt Tranh
-            </NavLink>
-
-            <NavLink
-              to="/store"
-              className={({ isActive }) =>
-                `px-4 border-l border-[#d1d1d1] font-medium ${
-                  isActive
-                    ? "text-[#133e87]"
-                    : "text-[#7a7a7a] hover:text-[#133e87]"
-                }`
-              }>
-              Cửa Hàng
-            </NavLink>
-
-            <NavLink
-              to="/community"
-              className={({ isActive }) =>
-                `px-4 border-l border-[#d1d1d1] font-medium ${
-                  isActive
-                    ? "text-[#133e87]"
-                    : "text-[#7a7a7a] hover:text-[#133e87]"
-                }`
-              }>
-              Cộng Đồng
-            </NavLink>
-
-            <NavLink
-              to="/contact"
-              className={({ isActive }) =>
-                `px-4 border-l border-r border-[#d1d1d1] font-medium ${
-                  isActive
-                    ? "text-[#133e87]"
-                    : "text-[#7a7a7a] hover:text-[#133e87]"
-                }`
-              }>
-              Liên Hệ
-            </NavLink>
-          </div>
-        </div>
-      </nav>
     </header>
   );
 }
