@@ -1,5 +1,5 @@
-import React from "react";
 import { Card } from "antd";
+import { motion } from "framer-motion";
 
 function CommunityContainer() {
   return (
@@ -16,21 +16,58 @@ function CommunityContainer() {
         {/* Khung trắng mờ */}
         <Card className="bg-gray-300/70 backdrop-blur-md border-none rounded-3xl p-4 sm:p-6 lg:p-10 shadow-lg">
           {/* ===== HERO ===== */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-[#133e87] text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
+          <motion.div
+            className="text-center mb-8 sm:mb-12"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}>
+            <motion.h1
+              className="text-[#133e87] text-2xl sm:text-3xl lg:text-4xl font-bold mb-3"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}>
               Cộng Đồng
-            </h1>
-            <p className="text-[#608bc1] text-base sm:text-lg">
+            </motion.h1>
+            <motion.p
+              className="text-[#608bc1] text-base sm:text-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}>
               Các chia sẻ về tranh vẽ được viết bởi những người yêu vẽ tranh
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* ===== BÀI VIẾT NỔI BẬT ===== */}
-          <section className="mb-8 sm:mb-12">
-            <h2 className="text-[#133e87] text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+          <motion.section
+            className="mb-8 sm:mb-12"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}>
+            <motion.h2
+              className="text-[#133e87] text-xl sm:text-2xl font-bold mb-4 sm:mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}>
               Bài Viết Nổi Bật
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            </motion.h2>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.2,
+                  },
+                },
+              }}>
               {[
                 {
                   src: "src/assets/img/Illustration153.jpg",
@@ -47,8 +84,8 @@ function CommunityContainer() {
               ].map((item, idx) => (
                 <CardItem key={idx} item={item} />
               ))}
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
           {/* ===== TẤT CẢ BÀI VIẾT ===== */}
           <ArticleSection
@@ -101,10 +138,21 @@ function CommunityContainer() {
 
 function CardItem({ item }) {
   return (
-    <div className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300">
+    <motion.div
+      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
+      variants={{
+        hidden: { opacity: 0, y: 50, scale: 0.9 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: { duration: 0.6, ease: "easeOut" },
+        },
+      }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}>
       <div className="relative">
         <img
-          src={item.src}
+          src={item.src || "/placeholder.svg"}
           alt={item.title}
           className="w-full h-48 sm:h-56 lg:h-60 object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -115,27 +163,58 @@ function CardItem({ item }) {
           {item.title}
         </h3>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function ArticleSection({ title, items }) {
   return (
-    <section className="mb-8 sm:mb-12">
-      <h2 className="text-[#133e87] text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+    <motion.section
+      className="mb-8 sm:mb-12"
+      initial={{ opacity: 0, x: 50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      viewport={{ once: true }}>
+      <motion.h2
+        className="text-[#133e87] text-xl sm:text-2xl font-bold mb-4 sm:mb-6"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        viewport={{ once: true }}>
         {title}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      </motion.h2>
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={{
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.15,
+            },
+          },
+        }}>
         {items.map((item, idx) => (
           <CardItem key={idx} item={item} />
         ))}
-      </div>
-      <div className="text-center mt-6 sm:mt-8">
-        <button className="border border-[#CCCCCC] text-[#133e87] bg-white hover:bg-[#133e87] hover:text-white px-4 sm:px-6 py-2 text-sm sm:text-base">
+      </motion.div>
+      <motion.div
+        className="text-center mt-6 sm:mt-8"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        viewport={{ once: true }}>
+        <motion.button
+          className="border border-[#CCCCCC] text-[#133e87] bg-white hover:bg-[#133e87] hover:text-white px-4 sm:px-6 py-2 text-sm sm:text-base"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.2 }}>
           XEM THÊM →
-        </button>
-      </div>
-    </section>
+        </motion.button>
+      </motion.div>
+    </motion.section>
   );
 }
 

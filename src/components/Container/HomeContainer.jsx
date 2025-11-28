@@ -1,12 +1,53 @@
-import {
-  SearchOutlined,
-  ShoppingCartOutlined,
-  UserOutlined,
-  HeartOutlined,
-} from "@ant-design/icons";
-import { Button } from "antd";
+import { motion } from "framer-motion";
 
 function HomeContainer() {
+  const slideInFromLeft = {
+    hidden: { opacity: 0, x: -100 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
+
+  const slideInFromRight = {
+    hidden: { opacity: 0, x: 100 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
+
+  const slideInFromBottom = {
+    hidden: { opacity: 0, y: 100 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-[#f6f6f6] mt-20">
       {/* Hero Section */}
@@ -20,7 +61,12 @@ function HomeContainer() {
         <div className="relative z-10 max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Left */}
-            <div className="space-y-6 text-center lg:text-left">
+            <motion.div
+              className="space-y-6 text-center lg:text-left"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={slideInFromLeft}>
               <div className="inline-block border-b-4 border-[#163c87] pb-2 mb-4">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900">
                   "Trời Sao"
@@ -45,10 +91,15 @@ function HomeContainer() {
               <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-medium rounded-lg transition-colors">
                 XEM THÊM →
               </button>
-            </div>
+            </motion.div>
 
             {/* Right */}
-            <div className="flex justify-center lg:justify-end">
+            <motion.div
+              className="flex justify-center lg:justify-end"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={slideInFromRight}>
               <div className="w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/30">
                 <img
                   src="src/assets/img/Illustration309.jpg"
@@ -56,7 +107,7 @@ function HomeContainer() {
                   className="w-full h-full object-cover object-center"
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -70,16 +121,26 @@ function HomeContainer() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50/95 via-purple-50/80 to-pink-50/70" />
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="flex items-center justify-center mb-10 sm:mb-12">
+          <motion.div
+            className="flex items-center justify-center mb-10 sm:mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={slideInFromBottom}>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-blue-900"></div>
             <h2 className="text-2xl sm:text-3xl font-bold text-blue-900 mx-6 text-center">
               Cửa Hàng
             </h2>
             <div className="flex-1 h-px bg-gradient-to-l from-transparent to-blue-900"></div>
-          </div>
+          </motion.div>
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}>
             {[
               { src: "src/assets/img/Illustration128.jpg", title: "Nhãn Dán" },
               { src: "src/assets/img/Illustration156.jpg", title: "Chibi" },
@@ -97,12 +158,13 @@ function HomeContainer() {
               },
               { src: "src/assets/img/Kigoro.2.jpg", title: "2D Avatar" },
             ].map((item, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="group relative h-48 sm:h-56 lg:h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300">
+                className="group relative h-48 sm:h-56 lg:h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
+                variants={staggerItem}>
                 {/* Ảnh */}
                 <img
-                  src={item.src}
+                  src={item.src || "/placeholder.svg"}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   alt={item.title}
                 />
@@ -116,15 +178,20 @@ function HomeContainer() {
                     {item.title}
                   </h3>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          <div className="text-center">
+          <motion.div
+            className="text-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={slideInFromBottom}>
             <button className="border border-[#CCCCCC] bg-[#ffffff] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base">
               XEM THÊM →
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -139,16 +206,26 @@ function HomeContainer() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8 lg:gap-20">
             {/* Image */}
-            <div className="w-full md:w-1/2 lg:w-80 flex-shrink-0">
+            <motion.div
+              className="w-full md:w-1/2 lg:w-80 flex-shrink-0"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={slideInFromLeft}>
               <img
                 src="src/assets/img/Illustration287.jpg"
                 alt="Kỉ Niệm Ngày Sinh Nhật"
                 className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-lg"
               />
-            </div>
+            </motion.div>
 
             {/* Content */}
-            <div className="flex-1 text-center md:text-left">
+            <motion.div
+              className="flex-1 text-center md:text-left"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={slideInFromRight}>
               <div className="inline-block border-b-4 border-[#163c87] pb-2 mb-4">
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-blue-900">
                   Kỉ Niệm Ngày Sinh Nhật
@@ -180,7 +257,7 @@ function HomeContainer() {
               <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-medium rounded-lg transition-colors">
                 XEM THÊM →
               </button>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -188,11 +265,21 @@ function HomeContainer() {
       {/* Commission Section */}
       <section className="py-12 sm:py-16 bg-[#f6f6f6]">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#133e87] text-center mb-10 sm:mb-12">
+          <motion.h2
+            className="text-xl sm:text-2xl font-bold text-[#133e87] text-center mb-10 sm:mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={slideInFromBottom}>
             Đặt Tranh
-          </h2>
+          </motion.h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerContainer}>
             {[
               {
                 src: "src/assets/img/Illustration248.0.jpg",
@@ -210,10 +297,13 @@ function HomeContainer() {
                 description: "29.08.2024",
               },
             ].map((item, idx) => (
-              <div key={idx} className="text-center">
+              <motion.div
+                key={idx}
+                className="text-center"
+                variants={staggerItem}>
                 <div className="relative mb-4">
                   <img
-                    src={item.src}
+                    src={item.src || "/placeholder.svg"}
                     alt={item.title}
                     className="w-full h-48 sm:h-72 lg:h-80 object-cover rounded-lg"
                   />
@@ -224,15 +314,20 @@ function HomeContainer() {
                 <h3 className="text-[#133e87] font-medium text-sm sm:text-base">
                   {item.title}
                 </h3>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          <div className="text-center mt-8">
+          <motion.div
+            className="text-center mt-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={slideInFromBottom}>
             <button className="border border-[#CCCCCC] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base">
               ĐẾN ĐẶT TRANH →
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

@@ -1,11 +1,11 @@
 import {
-  HeartOutlined,
   StarFilled,
   StarOutlined,
   DownOutlined,
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Dropdown } from "antd";
+import { motion } from "framer-motion";
 
 const products = [
   {
@@ -81,6 +81,7 @@ const products = [
     image: "src/assets/img/Illustration200.jpg",
   },
 ];
+
 function StoreContainer() {
   const sortMenuItems = [
     { key: "newest", label: "Mới nhất" },
@@ -89,10 +90,46 @@ function StoreContainer() {
     { key: "z-a", label: "Z-A" },
   ];
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -60 },
+    visible: { opacity: 1, x: 0 },
+  };
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 60 },
+    visible: { opacity: 1, x: 0 },
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const staggerItem = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="min-h-screen bg-[#f6f6f6] mt-20">
       {/* Hero Section */}
-      <section className="relative h-150 bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden">
+      <motion.section
+        className="relative h-150 bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        transition={{ duration: 0.8 }}>
         <div className="absolute inset-0">
           <img
             src="src\assets\img\Illustration251.jpg"
@@ -103,7 +140,12 @@ function StoreContainer() {
 
         {/* Category overlay */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full px-2">
-          <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
+          <motion.div
+            className="flex gap-4 overflow-x-auto overflow-y-hidden no-scrollbar justify-center"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}>
             {[
               { src: "src/assets/img/Illustration128.jpg", title: "Nhãn Dán" },
               { src: "src/assets/img/Illustration156.jpg", title: "Chibi" },
@@ -121,12 +163,15 @@ function StoreContainer() {
               },
               { src: "src/assets/img/Kigoro.2.jpg", title: "2D Avatar" },
             ].map((item, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex-shrink-0">
+                className="group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex-shrink-0"
+                variants={staggerItem}
+                transition={{ duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}>
                 {/* Ảnh */}
                 <img
-                  src={item.src}
+                  src={item.src || "/placeholder.svg"}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
@@ -140,15 +185,21 @@ function StoreContainer() {
                     {item.title}
                   </h3>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Main Content */}
       <div className="container mx-auto px-36 py-6">
-        <div className="flex justify-end mb-6">
+        <motion.div
+          className="flex justify-end mb-6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInRight}
+          transition={{ duration: 0.6 }}>
           <span className="text-[#133e87] font-semibold">
             Sắp xếp theo:&nbsp;
           </span>
@@ -161,25 +212,34 @@ function StoreContainer() {
               <DownOutlined className="text-[#608bc1]" />
             </span>
           </Dropdown>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <motion.div
+          className="grid grid-cols-4 gap-4"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}>
           {products.map((product) => (
-            <Card
+            <motion.div
               key={product.id}
-              className="bg-white border border-[#d9d9d9] hover:shadow-md transition-shadow"
-              bodyStyle={{ padding: "8px" }}
-              cover={
-                <div className="relative">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-70 object-cover"
-                  />
-                  {/* Icon giỏ hàng tròn, nền đen mờ */}
-                  <button
-                    // onClick={() => addToCart(product)}
-                    className="
+              variants={staggerItem}
+              transition={{ duration: 0.5 }}
+              whileHover={{ y: -5 }}>
+              <Card
+                className="bg-white border border-[#d9d9d9] hover:shadow-md transition-shadow"
+                bodyStyle={{ padding: "8px" }}
+                cover={
+                  <div className="relative">
+                    <img
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      className="w-full h-70 object-cover"
+                    />
+                    {/* Icon giỏ hàng tròn, nền đen mờ */}
+                    <button
+                      // onClick={() => addToCart(product)}
+                      className="
               absolute bottom-2 right-2
               flex items-center justify-center
               w-10 h-10
@@ -187,31 +247,38 @@ function StoreContainer() {
               bg-gray-300 hover:bg-gray-400
               transition
             ">
-                    <ShoppingCartOutlined className="text-white text-lg" />
-                  </button>
+                      <ShoppingCartOutlined className="text-white text-lg" />
+                    </button>
+                  </div>
+                }>
+                <h4 className="text-sm font-medium text-[#133e87] mb-1 line-clamp-2">
+                  {product.name}
+                </h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-[#133e87]">
+                    {product.price}
+                  </span>
+                  <div className="flex items-center gap-0.5 text-xs">
+                    <StarFilled className="text-yellow-400" />
+                    <StarFilled className="text-yellow-400" />
+                    <StarFilled className="text-yellow-400" />
+                    <StarFilled className="text-yellow-400" />
+                    <StarOutlined className="text-[#d1d1d1]" />
+                  </div>
                 </div>
-              }>
-              <h4 className="text-sm font-medium text-[#133e87] mb-1 line-clamp-2">
-                {product.name}
-              </h4>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-[#133e87]">
-                  {product.price}
-                </span>
-                <div className="flex items-center gap-0.5 text-xs">
-                  <StarFilled className="text-yellow-400" />
-                  <StarFilled className="text-yellow-400" />
-                  <StarFilled className="text-yellow-400" />
-                  <StarFilled className="text-yellow-400" />
-                  <StarOutlined className="text-[#d1d1d1]" />
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Pagination */}
-        <div className="flex justify-center items-center gap-2 mt-8">
+        <motion.div
+          className="flex justify-center items-center gap-2 mt-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          transition={{ duration: 0.6, delay: 0.2 }}>
           <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
             1
           </Button>
@@ -234,7 +301,7 @@ function StoreContainer() {
           <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
             →
           </Button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
