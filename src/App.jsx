@@ -6,6 +6,7 @@ import StorePage from "./pages/StorePage/StorePage";
 import CommunityPage from "./pages/CommunityPage/CommunityPage";
 import ContactPage from "./pages/ContactPage/ContactPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import OrderPage from "./pages/OrderPage/OrderPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/dashboard" element={<HomePage />} />
 
         {/* MainPage */}
+        <Route path="/order" element={<OrderPage />} />
         <Route path="/store" element={<StorePage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/contact" element={<ContactPage />} />
