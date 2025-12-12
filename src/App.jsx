@@ -7,6 +7,7 @@ import CommunityPage from "./pages/CommunityPage/CommunityPage";
 import ContactPage from "./pages/ContactPage/ContactPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import OrderPage from "./pages/OrderPage/OrderPage";
+import DetailPage from "./pages/DetailPage/DetailPage";
 
 function App() {
   return (
@@ -28,6 +29,9 @@ function App() {
 
         {/* ProfilePage */}
         <Route path="/my-profile" element={<ProfilePage />} />
+
+        {/* DetailPage */}
+        <Route path="/detail" element={<DetailPage />} />
       </Routes>
     </div>
   );

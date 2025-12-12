@@ -6,6 +6,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Dropdown } from "antd";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const products = [
   {
@@ -83,6 +84,7 @@ const products = [
 ];
 
 function StoreContainer() {
+  const navigate = useNavigate();
   const sortMenuItems = [
     { key: "newest", label: "Mới nhất" },
     { key: "oldest", label: "Cũ nhất" },
@@ -250,7 +252,8 @@ function StoreContainer() {
                       <ShoppingCartOutlined className="text-white text-lg" />
                     </button>
                   </div>
-                }>
+                }
+                onClick={() => navigate(`/detail`)}>
                 <h4 className="text-sm font-medium text-[#133e87] mb-1 line-clamp-2">
                   {product.name}
                 </h4>
