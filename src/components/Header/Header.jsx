@@ -35,7 +35,11 @@ function Header() {
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => navigate("/dashboard")}>
-            <div className="w-10 h-10 bg-[#eae8df] rounded"></div>
+            <img
+              src="src/assets/img/logo.png"
+              alt="MariaStore Logo"
+              className="w-15 h-15 object-cover rounded-full"
+            />
             <span className="text-[#133e87] font-bold text-xl">MariaStore</span>
           </div>
 

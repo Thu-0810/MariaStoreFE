@@ -74,7 +74,6 @@ function DetailContainer() {
               Giá tiền: 2,614,500đ
             </h3>
             {/* Số lượng */}
-            {/* Số lượng */}
             <div className="flex items-center space-x-4 mb-6">
               <span className="font-semibold text-[#133e87]">Số lượng</span>
               <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-36">

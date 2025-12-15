@@ -1,7 +1,9 @@
 import { Card } from "antd";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 function CommunityContainer() {
+  const navigate = useNavigate();
   return (
     <div
       className="relative min-h-screen bg-cover bg-center mt-20"
@@ -19,7 +21,7 @@ function CommunityContainer() {
           <motion.div
             className="text-center mb-8 sm:mb-12"
             initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}>
             <motion.h1
@@ -82,7 +84,11 @@ function CommunityContainer() {
                   title: "Biểu Tượng Cảm Xúc",
                 },
               ].map((item, idx) => (
-                <CardItem key={idx} item={item} />
+                <CardItem
+                  key={idx}
+                  item={item}
+                  onClick={() => navigate(`/detail-community`)}
+                />
               ))}
             </motion.div>
           </motion.section>
@@ -136,9 +142,10 @@ function CommunityContainer() {
   );
 }
 
-function CardItem({ item }) {
+function CardItem({ item, onClick }) {
   return (
     <motion.div
+      onClick={onClick}
       className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
       variants={{
         hidden: { opacity: 0, y: 50, scale: 0.9 },

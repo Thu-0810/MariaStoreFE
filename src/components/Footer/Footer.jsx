@@ -7,12 +7,19 @@ function Footer() {
         <div className="grid grid-cols-3 gap-8">
           {/* Logo Section */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#eae8df] rounded"></div>
+            <div
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => navigate("/dashboard")}>
+              <img
+                src="src/assets/img/logo.png"
+                alt="MariaStore Logo"
+                className="w-15 h-15 object-cover rounded-full"
+              />
               <span className="text-[#133e87] font-bold text-xl">
                 MariaStore
               </span>
             </div>
+
             <p className="text-[#7a7a7a] text-sm mb-2">
               <MailOutlined /> mariastore@gmail.com
             </p>

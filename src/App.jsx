@@ -8,6 +8,7 @@ import ContactPage from "./pages/ContactPage/ContactPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import OrderPage from "./pages/OrderPage/OrderPage";
 import DetailPage from "./pages/DetailPage/DetailPage";
+import DeatailCommunityPage from "./pages/CommunityPage/DetailCommunityPage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
 
         {/* DetailPage */}
         <Route path="/detail" element={<DetailPage />} />
+        <Route path="/detail-community" element={<DeatailCommunityPage />} />
       </Routes>
     </div>
   );
