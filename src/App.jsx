@@ -1,19 +1,23 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "./pages/HomePage/HomePage";
-import LoginPage from "./pages/LoginPage/LoginPage";
-import RegisterPage from "./pages/LoginPage/RegisterPage";
-import StorePage from "./pages/StorePage/StorePage";
-import CommunityPage from "./pages/CommunityPage/CommunityPage";
-import ContactPage from "./pages/ContactPage/ContactPage";
-import ProfilePage from "./pages/ProfilePage/ProfilePage";
-import OrderPage from "./pages/OrderPage/OrderPage";
-import DetailPage from "./pages/DetailPage/DetailPage";
-import DeatailCommunityPage from "./pages/CommunityPage/DetailCommunityPage";
+import HomePage from "./pages/UserPage/HomePage/HomePage";
+import LoginPage from "./pages/UserPage/LoginPage/LoginPage";
+import RegisterPage from "./pages/UserPage/LoginPage/RegisterPage";
+import StorePage from "./pages/UserPage/StorePage/StorePage";
+import CommunityPage from "./pages/UserPage/CommunityPage/CommunityPage";
+import ContactPage from "./pages/UserPage/ContactPage/ContactPage";
+import ProfilePage from "./pages/UserPage/ProfilePage/ProfilePage";
+import OrderPage from "./pages/UserPage/OrderPage/OrderPage";
+import DetailPage from "./pages/UserPage/DetailPage/DetailPage";
+import DeatailCommunityPage from "./pages/UserPage/CommunityPage/DetailCommunityPage";
+import AdminHomePage from "./pages/AdminPage/AdminHomePage";
+import PrivateRoute from "./components/route/PrivateRoute";
+import AdminProductPage from "./pages/AdminPage/AdminProductPage";
 
 function App() {
   return (
     <div className="app">
       <Routes>
+        {/* User */}
         {/* Dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<HomePage />} />
@@ -34,6 +38,25 @@ function App() {
         {/* DetailPage */}
         <Route path="/detail" element={<DetailPage />} />
         <Route path="/detail-community" element={<DeatailCommunityPage />} />
+
+        {/* Admin */}
+        {/* Dashboard */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminHomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-product"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminProductPage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </div>
   );

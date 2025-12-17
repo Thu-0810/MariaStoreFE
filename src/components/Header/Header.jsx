@@ -24,7 +24,7 @@ function Header() {
     localStorage.removeItem("currentUser");
     setCurrentUser(null);
     setOpenDropdown(false);
-    navigate("/login"); // quay về login sau khi logout
+    navigate("/dashboard");
   };
 
   return (
@@ -73,7 +73,11 @@ function Header() {
                   onClick={() => setOpenDropdown(!openDropdown)}>
                   <UserOutlined />
                   <span className="uppercase font-semibold">
-                    {currentUser.firstName + " " + currentUser.lastName}
+                    {currentUser.name ||
+                      `${currentUser.firstName || ""} ${
+                        currentUser.lastName || ""
+                      }`.trim() ||
+                      currentUser.email}
                   </span>
                   <DownOutlined />
                 </button>
@@ -81,32 +85,44 @@ function Header() {
                 {openDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl overflow-hidden z-50">
                     <ul className="text-[#133e87] font-medium">
-                      <li
-                        className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
-                        onClick={() => {
-                          navigate("/my-profile");
-                          setOpenDropdown(false);
-                        }}>
-                        Tài khoản
-                      </li>
-                      <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                        Yêu cầu
-                      </li>
-                      <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                        Đơn hàng
-                      </li>
-                      <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                        Sản phẩm đã lưu
-                      </li>
-                      <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                        Sản phẩm đã lưu
-                      </li>
-                      <hr />
-                      <li
-                        className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
-                        onClick={handleLogout}>
-                        Đăng xuất
-                      </li>
+                      {currentUser.role === "ADMIN" ? (
+                        <>
+                          <li
+                            className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
+                            onClick={handleLogout}>
+                            Đăng xuất
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li
+                            className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                            onClick={() => {
+                              navigate("/my-profile");
+                              setOpenDropdown(false);
+                            }}>
+                            Tài khoản
+                          </li>
+                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                            Yêu cầu
+                          </li>
+                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                            Đơn hàng
+                          </li>
+                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                            Sản phẩm đã lưu
+                          </li>
+                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                            Bài viết
+                          </li>
+                          <hr />
+                          <li
+                            className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
+                            onClick={handleLogout}>
+                            Đăng xuất
+                          </li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 )}
