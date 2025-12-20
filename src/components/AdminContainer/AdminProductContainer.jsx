@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Input,
@@ -315,14 +314,12 @@ function AdminProductContainer() {
     "Chibi",
     "Ảnh Động",
     "Biểu Tượng Cảm Xúc",
-    "Tranh Chấn Động",
+    "Tranh Chân Dung",
     "Avatar 2D",
   ];
 
-  // ✅ Gộp toàn bộ danh mục để hiển thị mặc định
   const allProducts = Object.values(categoryData).flat();
 
-  // ✅ Lọc theo danh mục (nếu có chọn)
   const filteredProducts = selectedCategory
     ? categoryData[selectedCategory] || []
     : allProducts;

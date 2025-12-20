@@ -12,6 +12,7 @@ import DeatailCommunityPage from "./pages/UserPage/CommunityPage/DetailCommunity
 import AdminHomePage from "./pages/AdminPage/AdminHomePage";
 import PrivateRoute from "./components/route/PrivateRoute";
 import AdminProductPage from "./pages/AdminPage/AdminProductPage";
+import AdminCustomerPage from "./pages/AdminPage/AdminCustomerPage";
 
 function App() {
   return (
@@ -54,6 +55,14 @@ function App() {
           element={
             <PrivateRoute requiredRole="ADMIN">
               <AdminProductPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-customer"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminCustomerPage />
             </PrivateRoute>
           }
         />

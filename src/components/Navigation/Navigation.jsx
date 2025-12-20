@@ -32,7 +32,7 @@ function Navigation() {
               </NavLink>
 
               <NavLink
-                to="/admin-customers"
+                to="/admin-customer"
                 className={({ isActive }) =>
                   `${linkBase} ${isActive ? active : inactive}`
                 }>

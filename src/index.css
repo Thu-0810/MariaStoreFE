@@ -12,23 +12,26 @@
   }
 /* Màu tiêu đề */
 .custom-table .ant-table-thead > tr > th {
-  background-color: #133e87; /* Xanh đậm */
+  background-color: #133e87;
   color: white;
   font-weight: 600;
 }
 
-/* Màu hàng lẻ / chẵn */
 .custom-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #d9eafc; /* Màu xám rất nhạt */
+  background-color: #d9eafc;
 }
 
 .custom-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* Trắng */
+  background-color: #ffffff; 
 }
 
 /* Màu khi hover */
 .custom-table .ant-table-tbody > tr:hover > td {
-  background-color: #cccccc; /* Xanh nhạt khi hover */
+  background-color: #cccccc;
+}
+
+.custom-colored-modal .ant-modal-content {
+  background-color: #daeafa;
 }
 
   
