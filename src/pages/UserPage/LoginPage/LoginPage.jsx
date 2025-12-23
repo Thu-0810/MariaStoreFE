@@ -10,6 +10,7 @@ function LoginPage() {
   useEffect(() => {
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const hasAdmin = users.some((u) => u.role === "ADMIN");
+    const hasSeller = users.some((u) => u.role === "SELLER");
 
     if (!hasAdmin) {
       const defaultAdmin = {
@@ -19,11 +20,22 @@ function LoginPage() {
         role: "ADMIN",
         name: "Administrator",
       };
-
       users.push(defaultAdmin);
-      localStorage.setItem("users", JSON.stringify(users));
-      console.log("Default admin created:", defaultAdmin.email);
     }
+
+    if (!hasSeller) {
+      const defaultSeller = {
+        id: "seller-1",
+        email: "seller@gmail.com",
+        password: "Seller@123",
+        role: "SELLER",
+        name: "Default Seller",
+      };
+      users.push(defaultSeller);
+    }
+
+    localStorage.setItem("users", JSON.stringify(users));
+    console.log("Default users created:", users);
   }, []);
 
   const handleChange = (e) => {
@@ -49,6 +61,8 @@ function LoginPage() {
       // Điều hướng theo quyền
       if (user.role === "ADMIN") {
         navigate("/admin-dashboard");
+      } else if (user.role === "SELLER") {
+        navigate("/seller-dashboard");
       } else {
         navigate("/dashboard");
       }

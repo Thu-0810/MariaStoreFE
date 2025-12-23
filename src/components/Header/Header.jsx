@@ -34,7 +34,23 @@ function Header() {
           {/* Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate("/dashboard")}>
+            onClick={() => {
+              if (!currentUser) {
+                navigate("/dashboard");
+              } else {
+                switch (currentUser.role) {
+                  case "ADMIN":
+                    navigate("/admin-dashboard");
+                    break;
+                  case "SELLER":
+                    navigate("/seller-dashboard");
+                    break;
+                  default:
+                    navigate("/dashboard");
+                    break;
+                }
+              }
+            }}>
             <img
               src="src/assets/img/logo.png"
               alt="MariaStore Logo"
@@ -48,7 +64,7 @@ function Header() {
             <div className="relative flex items-center">
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm"
                 className="flex-1 pl-4 pr-12 py-2 bg-white border border-[#d1d1d1] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#133e87] focus:border-transparent"
               />
               <SearchOutlined className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#888888]" />
@@ -57,10 +73,14 @@ function Header() {
 
           {/* User Actions */}
           <div className="flex items-center gap-4 text-sm text-[#193a80] font-medium relative">
-            <div className="flex items-center gap-1">
-              <ShoppingCartOutlined />
-              <span>Giỏ Hàng</span>
-            </div>
+            {currentUser?.role === "USER" && (
+              <div
+                className="flex items-center gap-1 cursor-pointer"
+                onClick={() => navigate("/cart")}>
+                <ShoppingCartOutlined />
+                <span>Giỏ Hàng</span>
+              </div>
+            )}
             <div className="flex items-center gap-1">
               <GlobalOutlined />
               <span>Tiếng Việt</span>

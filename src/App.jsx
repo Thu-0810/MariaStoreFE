@@ -13,6 +13,12 @@ import AdminHomePage from "./pages/AdminPage/AdminHomePage";
 import PrivateRoute from "./components/route/PrivateRoute";
 import AdminProductPage from "./pages/AdminPage/AdminProductPage";
 import AdminCustomerPage from "./pages/AdminPage/AdminCustomerPage";
+import AdminOrderPage from "./pages/AdminPage/AdminOrderPage";
+import AdminPostPage from "./pages/AdminPage/AdminPostPage";
+import SellerHomePage from "./pages/SellerPage/SellerHomePage";
+import SellerProductPage from "./pages/SellerPage/SellerProductPage";
+import SellerOrderPage from "./pages/SellerPage/SellerOrderPage";
+import SellerPostPage from "./pages/SellerPage/SellerPostPage";
 
 function App() {
   return (
@@ -63,6 +69,57 @@ function App() {
           element={
             <PrivateRoute requiredRole="ADMIN">
               <AdminCustomerPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-order"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminOrderPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-post"
+          element={
+            <PrivateRoute requiredRole="ADMIN">
+              <AdminPostPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Seller */}
+        {/* Dashboard */}
+        <Route
+          path="/seller-dashboard"
+          element={
+            <PrivateRoute requiredRole="SELLER">
+              <SellerHomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller-product"
+          element={
+            <PrivateRoute requiredRole="SELLER">
+              <SellerProductPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller-order"
+          element={
+            <PrivateRoute requiredRole="SELLER">
+              <SellerOrderPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller-post"
+          element={
+            <PrivateRoute requiredRole="SELLER">
+              <SellerPostPage />
             </PrivateRoute>
           }
         />

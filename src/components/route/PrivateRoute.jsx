@@ -13,12 +13,14 @@ function PrivateRoute({ children, requiredRole }) {
   // Nếu route yêu cầu role cụ thể và không khớp → chặn truy cập
   if (requiredRole && currentUser.role !== requiredRole) {
     message.error("Bạn không có quyền truy cập trang này!");
-    // Admin vào dashboard thì được phép, nhưng user vào admin thì không
-    return currentUser.role === "ADMIN" ? (
-      <Navigate to="/admin-dashboard" replace />
-    ) : (
-      <Navigate to="/dashboard" replace />
-    );
+
+    if (currentUser.role === "ADMIN") {
+      return <Navigate to="/admin-dashboard" replace />;
+    } else if (currentUser.role === "SELLER") {
+      return <Navigate to="/seller-dashboard" replace />;
+    } else {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return children;

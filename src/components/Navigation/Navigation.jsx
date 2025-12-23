@@ -6,13 +6,14 @@ function Navigation() {
   const inactive = "text-[#7a7a7a] hover:text-[#133e87]";
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  // Kiểm tra role người dùng
+  // Lấy role người dùng hiện tại
   const role = currentUser?.role || "GUEST";
 
   return (
     <nav className="bg-white border-t border-[#d1d1d1]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-center py-3">
+          {/* -------------------- ADMIN -------------------- */}
           {role === "ADMIN" ? (
             <>
               <NavLink
@@ -40,7 +41,7 @@ function Navigation() {
               </NavLink>
 
               <NavLink
-                to="/admin-orders"
+                to="/admin-order"
                 className={({ isActive }) =>
                   `${linkBase} ${isActive ? active : inactive}`
                 }>
@@ -48,7 +49,42 @@ function Navigation() {
               </NavLink>
 
               <NavLink
-                to="/admin-posts"
+                to="/admin-post"
+                className={({ isActive }) =>
+                  `${linkBase} border-r ${isActive ? active : inactive}`
+                }>
+                Quản Lý Bài Viết
+              </NavLink>
+            </>
+          ) : role === "SELLER" ? (
+            /* -------------------- SELLER -------------------- */
+            <>
+              <NavLink
+                to="/seller-dashboard"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
+                Trang Chủ
+              </NavLink>
+
+              <NavLink
+                to="/seller-product"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
+                Quản Lý Sản Phẩm
+              </NavLink>
+
+              <NavLink
+                to="/seller-order"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
+                Quản Lý Đơn Hàng
+              </NavLink>
+
+              <NavLink
+                to="/seller-post"
                 className={({ isActive }) =>
                   `${linkBase} border-r ${isActive ? active : inactive}`
                 }>
@@ -56,6 +92,7 @@ function Navigation() {
               </NavLink>
             </>
           ) : (
+            /* -------------------- USER (Mặc định) -------------------- */
             <>
               <NavLink
                 to="/dashboard"

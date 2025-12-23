@@ -12,6 +12,7 @@
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@tailwindcss/vite": "^4.1.12",
+    "@tinymce/tinymce-react": "^6.3.0",
     "antd": "^5.27.1",
     "dayjs": "^1.11.18",
     "framer-motion": "^12.23.12",

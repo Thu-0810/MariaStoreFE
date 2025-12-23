@@ -34,4 +34,15 @@
   background-color: #daeafa;
 }
 
+.ant-upload {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.ant-modal-content {
+  border-radius: 16px !important;
+  overflow: hidden;
+  padding: 50px !important;
+}
+
   
