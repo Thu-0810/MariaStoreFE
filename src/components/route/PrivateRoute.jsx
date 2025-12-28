@@ -2,21 +2,25 @@ import { Navigate } from "react-router-dom";
 import { message } from "antd";
 
 function PrivateRoute({ children, requiredRole }) {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const token = localStorage.getItem("accessToken");
+  const role = localStorage.getItem("role");
 
-  // Nếu chưa đăng nhập → chuyển về trang login
-  if (!currentUser) {
-    message.warning("Vui lòng đăng nhập trước!");
+  if (!token) {
+    setTimeout(() => {
+      message.warning("Vui lòng đăng nhập trước!");
+    }, 0);
+
     return <Navigate to="/login" replace />;
   }
 
-  // Nếu route yêu cầu role cụ thể và không khớp → chặn truy cập
-  if (requiredRole && currentUser.role !== requiredRole) {
-    message.error("Bạn không có quyền truy cập trang này!");
+  if (requiredRole && role !== requiredRole) {
+    setTimeout(() => {
+      message.error("Bạn không có quyền truy cập trang này!");
+    }, 0);
 
-    if (currentUser.role === "ADMIN") {
+    if (role === "ADMIN") {
       return <Navigate to="/admin-dashboard" replace />;
-    } else if (currentUser.role === "SELLER") {
+    } else if (role === "SELLER") {
       return <Navigate to="/seller-dashboard" replace />;
     } else {
       return <Navigate to="/dashboard" replace />;

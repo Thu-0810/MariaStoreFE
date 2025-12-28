@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, Rate, Typography, Progress } from "antd";
 import { HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import QuantityControl from "../QuantityControl";
 
 function DetailContainer() {
   const [quantity, setQuantity] = useState(0);
@@ -38,15 +39,12 @@ function DetailContainer() {
   };
   return (
     <div className="min-h-screen mt-20 pb-20 relative">
-      {/* Ảnh nền */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url(src/assets/img/Illustration299.jpg)" }}
       />
-      {/* Phần chi tiết sản phẩm */}
       <div className="relative z-10 flex justify-center px-4 pt-16 pb-16">
         <div className="max-w-5xl w-full bg-white/80 rounded-2xl shadow-xl p-8 md:flex gap-8">
-          {/* Hình sản phẩm */}
           <div className="md:w-1/2 mb-6 md:mb-0">
             <img
               src="src\assets\img\Illustration309.jpg"
@@ -55,7 +53,6 @@ function DetailContainer() {
             />
           </div>
 
-          {/* Thông tin chi tiết */}
           <div className="md:w-1/2">
             <h2 className="text-4xl font-bold text-[#133e87] mb-2">
               “Trời sao”
@@ -73,50 +70,31 @@ function DetailContainer() {
             <h3 className="text-xl font-semibold text-[#133e87] mt-6 mb-4">
               Giá tiền: 2,614,500đ
             </h3>
-            {/* Số lượng */}
             <div className="flex items-center space-x-4 mb-6">
               <span className="font-semibold text-[#133e87]">Số lượng</span>
-              <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-36">
-                <button
-                  onClick={() => setQuantity((prev) => Math.max(prev - 1, 0))}
-                  className="w-12 h-10 flex items-center justify-center text-[#133e87] text-xl font-bold hover:bg-[#e0e7ff] transition">
-                  −
-                </button>
-                <input
-                  type="number"
-                  min="0"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value) || 0)}
-                  className="w-full h-10 text-center text-lg text-[#133e87] font-medium outline-none border-l border-r border-gray-200
-                 appearance-none [-moz-appearance:textfield]"
-                />
-                <button
-                  onClick={() => setQuantity((prev) => prev + 1)}
-                  className="w-12 h-10 flex items-center justify-center text-[#133e87] text-xl font-bold hover:bg-[#e0e7ff] transition">
-                  +
-                </button>
-              </div>
+
+              <QuantityControl
+                value={quantity}
+                min={0}
+                onDecrease={() => setQuantity((prev) => Math.max(prev - 1, 0))}
+                onIncrease={() => setQuantity((prev) => prev + 1)}
+              />
             </div>
 
-            {/* Nút hành động */}
             <div className="flex gap-4 mb-8">
-              {/* Thêm vào giỏ hàng */}
               <button className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
                 <ShoppingCartOutlined className="text-lg" />
                 Thêm vào giỏ hàng
               </button>
 
-              {/* Mua ngay */}
               <button className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition">
                 Mua ngay
               </button>
 
-              {/* Yêu thích */}
               <button className="w-10 h-10 flex items-center justify-center text-[#133e87] border border-transparent hover:border-[#133e87] rounded-full transition">
                 <HeartOutlined className="text-lg" />
               </button>
             </div>
-            {/* Thông tin */}
             <h4 className="text-lg font-semibold text-[#133e87] mb-3">
               Thông tin chi tiết
             </h4>
@@ -127,8 +105,10 @@ function DetailContainer() {
               <div>Dung lượng file: ~6MB</div>
               <div>Tác giả: Fanart kết hợp với chủ đề watermark (tranh)</div>
               <div>Nguồn gốc: Firefly - Game Honkai: Star Rail</div>
+              <div>
+                Phong cách: Anime, fantasy, cảm xúc, không gian (galaxy style)
+              </div>
             </div>
-            {/* Đánh giá */}
             <h4 className="text-lg font-semibold text-[#133e87] mt-6 mb-3">
               Đánh giá
             </h4>
@@ -156,7 +136,6 @@ function DetailContainer() {
         </div>
       </div>
 
-      {/* Phần Đặt Hàng */}
       <section className="py-12 sm:py-16 bg-[#f6f6f6]/80 relative z-10">
         <div className="max-w-7xl mx-auto px-4">
           <motion.h2

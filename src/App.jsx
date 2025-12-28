@@ -19,6 +19,11 @@ import SellerHomePage from "./pages/SellerPage/SellerHomePage";
 import SellerProductPage from "./pages/SellerPage/SellerProductPage";
 import SellerOrderPage from "./pages/SellerPage/SellerOrderPage";
 import SellerPostPage from "./pages/SellerPage/SellerPostPage";
+import Cart from "./pages/Cart/Cart";
+import Checkout from "./pages/Cart/Checkout";
+import Payment from "./pages/Cart/Payment";
+import QRPayment from "./pages/Cart/QRPayment";
+import PaymentSuccess from "./pages/Cart/PaymentSuccess";
 
 function App() {
   return (
@@ -45,6 +50,13 @@ function App() {
         {/* DetailPage */}
         <Route path="/detail" element={<DetailPage />} />
         <Route path="/detail-community" element={<DeatailCommunityPage />} />
+
+        {/* Cart */}
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/payment/qr" element={<QRPayment />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
 
         {/* Admin */}
         {/* Dashboard */}

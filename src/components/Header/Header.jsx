@@ -7,6 +7,7 @@ import {
   DownOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import logo from "../../assets/img/logo.png";
 
 function Header() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -22,8 +23,8 @@ function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
+    localStorage.removeItem("accessToken");
     setCurrentUser(null);
-    setOpenDropdown(false);
     navigate("/dashboard");
   };
 
@@ -52,7 +53,7 @@ function Header() {
               }
             }}>
             <img
-              src="src/assets/img/logo.png"
+              src={logo}
               alt="MariaStore Logo"
               className="w-15 h-15 object-cover rounded-full"
             />
