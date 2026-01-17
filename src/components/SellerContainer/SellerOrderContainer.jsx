@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Input,
@@ -11,6 +10,7 @@ import {
   Tag,
 } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 // Dữ liệu sản phẩm mẫu
 const products = [
@@ -52,6 +52,15 @@ function SellerOrderContainer() {
   const [isIncompleteModalOpen, setIsIncompleteModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState([]);
 
+  const { t, i18n } = useTranslation();
+
+  const isCompleted = (s) => s === "Hoàn thành" || s === "Completed";
+
+  const getStatusLabel = (s) =>
+    isCompleted(s)
+      ? t("adminOrder.status.completed")
+      : t("adminOrder.status.incomplete");
+
   const [data, setData] = useState([
     {
       key: 1,
@@ -89,42 +98,42 @@ function SellerOrderContainer() {
 
   const columns = [
     {
-      title: "STT",
+      title: t("adminOrder.table.index"),
       dataIndex: "stt",
       key: "stt",
       width: 80,
     },
     {
-      title: "Mã đơn hàng",
+      title: t("adminOrder.table.order_code"),
       dataIndex: "orderCode",
       key: "orderCode",
     },
     {
-      title: "Mã hóa đơn",
+      title: t("adminOrder.table.invoice_code"),
       dataIndex: "invoiceCode",
       key: "invoiceCode",
     },
     {
-      title: "Phương thức thanh toán",
+      title: t("adminOrder.table.payment_method"),
       dataIndex: "paymentMethod",
       key: "paymentMethod",
     },
     {
-      title: "Tổng tiền",
+      title: t("adminOrder.table.total_amount"),
       dataIndex: "totalAmount",
       key: "totalAmount",
       width: 160,
     },
     {
-      title: "Trạng thái đơn hàng",
+      title: t("adminOrder.table.status"),
       dataIndex: "status",
       key: "status",
       width: 180,
       render: (status) => (
         <Tag
-          color={status === "Hoàn thành" ? "green" : "volcano"}
+          color={isCompleted(status) ? "green" : "volcano"}
           className="font-medium px-3 py-1 rounded-full">
-          {status}
+          {getStatusLabel(status)}
         </Tag>
       ),
     },
@@ -170,13 +179,13 @@ function SellerOrderContainer() {
           transition={{ duration: 0.7, delay: 0.3 }}>
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
-              Quản lý đơn hàng
+              {t("adminOrder.title")}
             </h1>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1">
                 <Input
-                  placeholder="Tìm kiếm..."
+                  placeholder={t("adminOrder.search_placeholder")}
                   className="max-w-xs"
                   style={{ borderColor: "#cbdceb" }}
                 />
@@ -186,12 +195,9 @@ function SellerOrderContainer() {
                 <Button
                   danger
                   type="primary"
-                  style={{
-                    backgroundColor: "#ff7383",
-                    borderColor: "#ff7383",
-                  }}
+                  style={{ backgroundColor: "#ff7383", borderColor: "#ff7383" }}
                   onClick={() => setIsDeleteModalOpen(true)}>
-                  Xóa Đơn Hàng
+                  {t("adminOrder.btn_delete")}
                 </Button>
 
                 {/* MODAL XÓA */}
@@ -204,8 +210,9 @@ function SellerOrderContainer() {
                   closable={false}
                   className="text-center rounded-2xl">
                   <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    Xác nhận muốn xóa đơn hàng chứ?
+                    {t("adminOrder.modal.delete_confirm")}
                   </p>
+
                   <div className="flex justify-center gap-4">
                     <Button
                       type="primary"
@@ -218,7 +225,7 @@ function SellerOrderContainer() {
                       onClick={() => {
                         if (selectedRowKeys.length === 0) {
                           message.warning(
-                            "Vui lòng chọn ít nhất một đơn hàng để xóa!"
+                            t("adminOrder.toast.select_one_for_delete")
                           );
                           return;
                         }
@@ -228,24 +235,21 @@ function SellerOrderContainer() {
                         setData(updatedData);
                         setSelectedRowKeys([]);
                         setIsDeleteModalOpen(false);
-                        message.success("Xóa đơn hàng thành công!");
+                        message.success(t("adminOrder.toast.delete_success"));
                       }}>
-                      Xóa
+                      {t("adminOrder.btn.delete")}
                     </Button>
+
                     <Button
                       className="px-6 py-1 rounded-full font-medium"
-                      style={{
-                        borderColor: "#133e87",
-                        color: "#133e87",
-                      }}
+                      style={{ borderColor: "#133e87", color: "#133e87" }}
                       onClick={() => setIsDeleteModalOpen(false)}>
-                      Hủy
+                      {t("adminOrder.btn.cancel")}
                     </Button>
                   </div>
                 </Modal>
-
                 <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                  Sửa đơn hàng
+                  {t("adminOrder.btn_edit")}
                 </button>
               </Space>
             </div>
@@ -317,17 +321,18 @@ function SellerOrderContainer() {
                 {/* Header */}
                 <div className="mb-6">
                   <h2 className="text-[#133e87] text-lg font-semibold mb-1">
-                    Chi tiết đơn hàng (đã hoàn thành)
+                    {t("adminOrder.modal.detail_title_done")}
                   </h2>
                   <p className="text-sm text-[#608bc1]">
-                    26.7.2025 • Đơn hàng {selectedOrder.orderCode}
+                    26.7.2025 • {t("adminOrder.table.order_code")}{" "}
+                    {selectedOrder.orderCode}
                   </p>
                 </div>
 
                 {/* Danh sách sản phẩm */}
                 <div className="bg-white/40 rounded-2xl p-4 mb-6">
                   <h3 className="text-sm font-semibold text-[#133e87] mb-4">
-                    Sản phẩm
+                    {t("adminOrder.modal.product_list")}
                   </h3>
                   <div className="space-y-4">
                     {products.map((product) => (
@@ -368,41 +373,47 @@ function SellerOrderContainer() {
 
                 {/* Tổng tiền */}
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#d9eafd]">
-                  <p className="font-semibold text-[#133e87]">Tổng tiền</p>
+                  <p className="font-semibold text-[#133e87]">
+                    {t("adminOrder.modal.total")}
+                  </p>
                   <p className="font-bold text-lg text-[#133e87]">
-                    {totalAmount.toLocaleString("vi-VN")}đ
+                    {totalAmount.toLocaleString(
+                      i18n.language === "vi" ? "vi-VN" : "en-US"
+                    )}
+                    {t("adminOrder.currency_suffix")}
                   </p>
                 </div>
 
                 {/* Chi tiết hóa đơn */}
-                <div className="bg-white/40 rounded-2xl p-4 mb-8 shadow-sm">
-                  <h3 className="text-sm font-semibold text-[#133e87] mb-4">
-                    Chi tiết đơn hàng
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-[#608bc1]">Mã Hóa Đơn</span>
-                      <span className="font-medium text-[#133e87]">
-                        {selectedOrder.invoiceCode}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#608bc1]">
-                        Phương Thức Thanh Toán
-                      </span>
-                      <span className="font-medium text-[#133e87]">
-                        {selectedOrder.paymentMethod}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#608bc1]">
-                        Thời Gian Thanh Toán
-                      </span>
-                      <span className="font-medium text-[#133e87]">
-                        26/7/2025 4:10PM
-                      </span>
-                    </div>
-                  </div>
+                <h3 className="text-sm font-semibold text-[#133e87] mb-4">
+                  {t("adminOrder.modal.order_detail")}
+                </h3>
+
+                <div className="flex justify-between">
+                  <span className="text-[#608bc1]">
+                    {t("adminOrder.modal.invoice_code")}
+                  </span>
+                  <span className="font-medium text-[#133e87]">
+                    {selectedOrder.invoiceCode}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-[#608bc1]">
+                    {t("adminOrder.modal.payment_method")}
+                  </span>
+                  <span className="font-medium text-[#133e87]">
+                    {selectedOrder.paymentMethod}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-[#608bc1]">
+                    {t("adminOrder.modal.paid_time")}
+                  </span>
+                  <span className="font-medium text-[#133e87]">
+                    26/7/2025 4:10PM
+                  </span>
                 </div>
 
                 {/* Nút hành động */}
@@ -410,7 +421,7 @@ function SellerOrderContainer() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="flex justify-center gap-6">
+                  className="flex justify-center gap-6 mt-10">
                   <Button
                     type="primary"
                     shape="round"
@@ -420,8 +431,9 @@ function SellerOrderContainer() {
                       borderColor: "#ff7383",
                       width: 160,
                     }}>
-                    Xóa Hóa Đơn
+                    {t("adminOrder.btn.delete_invoice")}
                   </Button>
+
                   <Button
                     type="primary"
                     shape="round"
@@ -431,7 +443,7 @@ function SellerOrderContainer() {
                       borderColor: "#133e87",
                       width: 160,
                     }}>
-                    In Hóa Đơn
+                    {t("adminOrder.btn.print_invoice")}
                   </Button>
                 </motion.div>
               </div>

@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { Input, Checkbox, Radio, Button } from "antd";
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 function OrderContainer() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  const money = (n) => (n || 0).toLocaleString(locale);
   const [forms, setForms] = useState([
     {
       orderInfo: "",
@@ -118,8 +122,13 @@ function OrderContainer() {
     }, 0);
   };
 
+  const rangeLabelKey = (v) =>
+    v === "tu-nguc" ? "tu_nguc" : v === "tu-goi" ? "tu_goi" : v;
+
+  const bgLabelKey = (v) => v;
+
   return (
-    <div className="relative min-h-screen flex flex-col items-center bg-[#f4faff] overflow-hidden mt-20">
+    <div className="relative min-h-screen flex flex-col items-center bg-[#f4faff] overflow-hidden">
       {/* Ảnh nền + overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -137,16 +146,16 @@ function OrderContainer() {
           {index === 0 && (
             <>
               <h2 className="text-center text-2xl font-bold text-[#133e87] mb-2">
-                Biểu Mẫu Đặt Tranh Tại MariaStore
+                {t("order.title")}{" "}
               </h2>
               <p className="text-center text-sm text-[#608bc1] mb-6">
-                Điền thông tin bên dưới để bắt đầu đặt hàng
+                {t("order.subtitle")}
               </p>
 
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm text-[#608bc1] mb-1">
-                    Đặt tên cho đơn của bạn (tùy chọn):
+                    {t("order.order_name_optional")}
                   </label>
                   <Input
                     value={form.orderInfo}
@@ -159,7 +168,7 @@ function OrderContainer() {
 
                 <div>
                   <label className="block text-sm text-[#608bc1] mb-1">
-                    Thông tin về đơn hàng của bạn:
+                    {t("order.order_detail")}
                   </label>
                   <Input.TextArea
                     rows={4}
@@ -169,7 +178,7 @@ function OrderContainer() {
 
                 <div>
                   <label className="block text-sm text-[#608bc1] mb-2">
-                    Cách thức liên lạc khác (Tùy chọn):
+                    {t("order.contact_optional")}
                   </label>
                   <div className="space-y-2">
                     <Checkbox
@@ -177,21 +186,25 @@ function OrderContainer() {
                       onChange={(e) =>
                         updateForm(index, "useTwitter", e.target.checked)
                       }>
-                      <span className="text-sm text-[#608bc1]">Twitter</span>
+                      <span className="text-sm text-[#608bc1]">
+                        {t("order.twitter")}
+                      </span>
                     </Checkbox>
                     <Checkbox
                       checked={form.useEmail}
                       onChange={(e) =>
                         updateForm(index, "useEmail", e.target.checked)
                       }>
-                      <span className="text-sm text-[#608bc1]">Email</span>
+                      <span className="text-sm text-[#608bc1]">
+                        {t("order.email")}
+                      </span>
                     </Checkbox>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm text-[#608bc1] mb-1">
-                    Tên người dùng Twitter hoặc Email của bạn? (Tùy chọn)
+                    {t("order.contact_value_optional")}
                   </label>
                   <Input
                     value={form.twitterHandle}
@@ -203,7 +216,7 @@ function OrderContainer() {
                 </div>
 
                 <p className="text-xs text-[#608bc1] leading-relaxed">
-                  Vui lòng kiểm tra kỹ đơn đặt tranh trước khi nhấn hoàn thành.
+                  {t("order.note_check")}
                 </p>
               </div>
             </>
@@ -213,17 +226,18 @@ function OrderContainer() {
           {index === 1 && (
             <>
               <h2 className="text-center text-2xl font-bold text-[#133e87] mb-6">
-                Tranh Số 1
+                {t("order.painting_1")}
               </h2>
 
               <div className="rounded-xl border border-[#cbdceb] bg-white/40 backdrop-blur-md shadow-sm overflow-hidden">
                 {["line", "color", "chibi"].map((val, i) => {
-                  const label = [
-                    "Phong cách 1: Tranh dạng tập trung nhiều vào đường nét",
-                    "Phong cách 2: Tranh dạng tập trung nhiều vào màu",
-                    "Phong cách 3: Tranh dạng Chibi",
-                  ][i];
+                  const styleLabelMap = {
+                    line: t("order.style_1"),
+                    color: t("order.style_2"),
+                    chibi: t("order.style_3"),
+                  };
 
+                  const label = styleLabelMap[val];
                   return (
                     <div
                       key={val}
@@ -251,7 +265,7 @@ function OrderContainer() {
                                   className="mb-4 p-4 bg-white/70 backdrop-blur-md">
                                   <div className="flex justify-between items-center mb-3">
                                     <h3 className="font-semibold text-[#133e87]">
-                                      Nhân vật {charIdx + 1}
+                                      {t("order.character")} {charIdx + 1}
                                     </h3>
                                     <Button
                                       size="small"
@@ -266,7 +280,7 @@ function OrderContainer() {
                                   {/* === Khối Phạm vi === */}
                                   <div className="p-4 bg-white/60">
                                     <p className="text-sm font-medium text-[#133e87] mb-3">
-                                      Phạm vi vẽ trong tranh
+                                      {t("order.draw_range")}
                                     </p>
 
                                     {/* Hai khối ngang hàng, KHÔNG khối nào nằm trong khối nào */}
@@ -281,19 +295,19 @@ function OrderContainer() {
                                             })
                                           }>
                                           <Radio.Button value="dau">
-                                            Đầu
+                                            {t("order.range.dau")}
                                           </Radio.Button>
                                           <Radio.Button value="tu-nguc">
-                                            Từ ngực đổ lên
+                                            {t("order.range.tu_nguc")}
                                           </Radio.Button>
                                           <Radio.Button value="nua-nguoi">
-                                            Nửa người
+                                            {t("order.range.nua_nguoi")}
                                           </Radio.Button>
                                           <Radio.Button value="tu-goi">
-                                            Từ đầu gối lên
+                                            {t("order.range.tu_goi")}
                                           </Radio.Button>
                                           <Radio.Button value="ca-nguoi">
-                                            Cả người
+                                            {t("order.range.ca_nguoi")}
                                           </Radio.Button>
                                         </Radio.Group>
                                       </div>
@@ -301,7 +315,7 @@ function OrderContainer() {
                                       {/* Ô đơn giá */}
                                       <div className="w-40 p-4 rounded-lg border border-[#cbdceb] bg-white/50 flex flex-col items-center justify-center">
                                         <p className="text-sm font-medium text-[#133e87] mb-1">
-                                          Đơn giá
+                                          {t("order.unit_price")}
                                         </p>
                                         <p className="text-lg font-bold text-[#133e87]">
                                           {RANGE_PRICE[
@@ -316,7 +330,7 @@ function OrderContainer() {
                                   {/* === Khối Phần nền === */}
                                   <div className="p-4 bg-white/60">
                                     <p className="text-sm font-medium text-[#133e87] mb-3">
-                                      Phần nền
+                                      {t("order.draw_range")}
                                     </p>
 
                                     <div className="flex gap-4">
@@ -329,17 +343,20 @@ function OrderContainer() {
                                               background: e.target.value,
                                             })
                                           }>
-                                          <Radio.Button value="don-sac">
-                                            Đơn sắc
+                                          <Radio.Button value="dau">
+                                            {t("order.range.dau")}
                                           </Radio.Button>
-                                          <Radio.Button value="don-gian">
-                                            Đơn giản
+                                          <Radio.Button value="tu-nguc">
+                                            {t("order.range.tu_nguc")}
                                           </Radio.Button>
-                                          <Radio.Button value="trung-binh">
-                                            Trung bình
+                                          <Radio.Button value="nua-nguoi">
+                                            {t("order.range.nua_nguoi")}
                                           </Radio.Button>
-                                          <Radio.Button value="chi-tiet">
-                                            Chi tiết
+                                          <Radio.Button value="tu-goi">
+                                            {t("order.range.tu_goi")}
+                                          </Radio.Button>
+                                          <Radio.Button value="ca-nguoi">
+                                            {t("order.range.ca_nguoi")}
                                           </Radio.Button>
                                         </Radio.Group>
                                       </div>
@@ -347,13 +364,11 @@ function OrderContainer() {
                                       {/* Ô đơn giá */}
                                       <div className="w-40 p-4 rounded-lg border border-[#cbdceb] bg-white/50 flex flex-col items-center justify-center">
                                         <p className="text-sm font-medium text-[#133e87] mb-1">
-                                          Đơn giá
+                                          {t("order.unit_price")}
                                         </p>
                                         <p className="text-lg font-bold text-[#133e87]">
-                                          {BG_PRICE[
-                                            c.background
-                                          ].toLocaleString()}{" "}
-                                          đ
+                                          {money(RANGE_PRICE[c.range])}{" "}
+                                          {t("order.currency")}
                                         </p>
                                       </div>
                                     </div>
@@ -365,12 +380,11 @@ function OrderContainer() {
 
                           {/* Nút thêm nhân vật – luôn hiển thị */}
                           <div
-                            className={`mt-4 p-2 mr-150 flex items-center gap-3 rounded-xl border border-[#cbdceb] 
-        ${
-          form.characters.length === 0
-            ? "rounded-xl border border-[#cbdceb] p-0"
-            : ""
-        }`}>
+                            className={`mt-4 p-2 mr-150 flex items-center gap-3 rounded-xl border border-[#cbdceb] ${
+                              form.characters.length === 0
+                                ? "rounded-xl border border-[#cbdceb] p-0"
+                                : ""
+                            }`}>
                             <Button
                               type="default"
                               shape="circle"
@@ -379,7 +393,7 @@ function OrderContainer() {
                               className="border-[#cbdceb] !text-[#133e87] bg-white/70 hover:bg-white/90"
                             />
                             <span className="!text-[#133e87] font-medium">
-                              Thêm nhân vật
+                              {t("order.add_character")}
                             </span>
                           </div>
                         </div>
@@ -392,10 +406,12 @@ function OrderContainer() {
               {/* Tổng tiền - Đặt ngoài khối phong cách */}
               {form.characters.length > 0 && (
                 <div className="mt-6 p-4 flex flex-col items-center justify-center">
-                  <p className="text-2xl font-bold text-[#133e87]">Tổng tiền</p>
+                  <p className="text-2xl font-bold text-[#133e87]">
+                    {t("order.total")}
+                  </p>
                   <div className="inline-block border-b-4 border-[#163c87] pb-2 mb-4 mt-2">
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900">
-                      {calculateTotalPrice(form).toLocaleString()}
+                      {money(calculateTotalPrice(form))}
                     </h1>
                   </div>
                 </div>
@@ -424,7 +440,7 @@ function OrderContainer() {
           <button
             className="h-12 px-8 rounded-full bg-white/30 backdrop-blur-md 
         border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white font-medium flex items-center justify-center">
-            Đặt Tranh
+            {t("order.order_btn")}
           </button>
         </div>
 
@@ -433,7 +449,7 @@ function OrderContainer() {
             <button
               className="h-12 px-8 rounded-full bg-white/30 backdrop-blur-md 
       border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white font-medium flex items-center justify-center">
-              Hoàn thành
+              {t("order.done_btn")}
             </button>
           </div>
         )}

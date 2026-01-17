@@ -1,14 +1,50 @@
 import { useEffect, useState } from "react";
-import { Card, Rate, Typography, Progress } from "antd";
+import { useParams } from "react-router-dom";
+import { Card, Rate, Progress, Spin } from "antd";
 import { HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import QuantityControl from "../QuantityControl";
+import { getProductDetailApi } from "../../api/productApi";
+import bgImage from "../../assets/img/Illustration299.jpg";
+import { useTranslation } from "react-i18next";
+const fallbackImage = "src/assets/img/Illustration309.jpg";
 
 function DetailContainer() {
-  const [quantity, setQuantity] = useState(0);
+  const { id } = useParams();
+
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        const res = await getProductDetailApi(id);
+        setProduct(res.data);
+      } catch (err) {
+        console.error("Fetch product detail failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [id]);
+
+  const formatPrice = (price) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+
   const slideInFromBottom = {
     hidden: { opacity: 0, y: 100 },
     visible: {
@@ -37,46 +73,58 @@ function DetailContainer() {
       transition: { duration: 0.6, ease: "easeOut" },
     },
   };
+
+  if (loading || !product) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen mt-20 pb-20 relative">
+    <div className="min-h-screen pb-20 relative">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(src/assets/img/Illustration299.jpg)" }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       />
+
       <div className="relative z-10 flex justify-center px-4 pt-16 pb-16">
         <div className="max-w-5xl w-full bg-white/80 rounded-2xl shadow-xl p-8 md:flex gap-8">
           <div className="md:w-1/2 mb-6 md:mb-0">
             <img
-              src="src\assets\img\Illustration309.jpg"
-              alt="Trời sao artwork"
+              src={product.mediaList?.[0] || fallbackImage}
+              alt={product.name}
               className="w-full h-[800px] object-cover rounded-xl"
             />
           </div>
 
           <div className="md:w-1/2">
             <h2 className="text-4xl font-bold text-[#133e87] mb-2">
-              “Trời sao”
+              {product.name}
             </h2>
-            <p className="text-[#133e87]">
-              <b>Loại sản phẩm:</b> Tranh chân dung
-            </p>
-            <p className="text-[#133e87] mt-4">
-              <b>Miêu tả:</b> Bầu trời sao ở thế giới trong mơ với những vệt
-              sáng lấp lánh như sao băng, tạo cảm giác mộng mơ, kỳ ảo.
-            </p>
-            <p className="italic text-[#133e87] font-bold">
-              Fanart nhân vật Firefly dần lộ lưa game Honkai: Star Rail
-            </p>
-            <h3 className="text-xl font-semibold text-[#133e87] mt-6 mb-4">
-              Giá tiền: 2,614,500đ
-            </h3>
-            <div className="flex items-center space-x-4 mb-6">
-              <span className="font-semibold text-[#133e87]">Số lượng</span>
 
+            <p className="text-[#133e87]">
+              <b>{t("productDetail.type")}: </b>
+              {product.categories?.join(", ") || "Đang cập nhật"}
+            </p>
+
+            <p className="text-[#133e87] mt-4">
+              <b>{t("productDetail.description")}:</b> {product.description}
+            </p>
+
+            <h3 className="text-xl font-semibold text-[#133e87] mt-6 mb-4">
+              {t("productDetail.price")}: {formatPrice(product.price)}
+            </h3>
+
+            <div className="flex items-center space-x-4 mb-6">
+              <span className="font-semibold text-[#133e87]">
+                {t("productDetail.quantity")}
+              </span>
               <QuantityControl
                 value={quantity}
-                min={0}
-                onDecrease={() => setQuantity((prev) => Math.max(prev - 1, 0))}
+                min={1}
+                onDecrease={() => setQuantity((prev) => Math.max(prev - 1, 1))}
                 onIncrease={() => setQuantity((prev) => prev + 1)}
               />
             </div>
@@ -84,39 +132,50 @@ function DetailContainer() {
             <div className="flex gap-4 mb-8">
               <button className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
                 <ShoppingCartOutlined className="text-lg" />
-                Thêm vào giỏ hàng
+                {t("productDetail.add_to_cart")}
               </button>
 
               <button className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition">
-                Mua ngay
+                {t("productDetail.buy_now")}
               </button>
 
               <button className="w-10 h-10 flex items-center justify-center text-[#133e87] border border-transparent hover:border-[#133e87] rounded-full transition">
                 <HeartOutlined className="text-lg" />
               </button>
             </div>
+
             <h4 className="text-lg font-semibold text-[#133e87] mb-3">
-              Thông tin chi tiết
+              {t("productDetail.detail_info")}
             </h4>
             <div className="space-y-1 text-sm text-[#133e87]">
-              <div>Loại tranh: Tranh kỹ thuật số (Digital Artwork)</div>
-              <div>Định dạng file: JPG độ phân giải cao</div>
-              <div>Kích thước gốc: 2800x4200 px</div>
-              <div>Dung lượng file: ~6MB</div>
-              <div>Tác giả: Fanart kết hợp với chủ đề watermark (tranh)</div>
-              <div>Nguồn gốc: Firefly - Game Honkai: Star Rail</div>
               <div>
-                Phong cách: Anime, fantasy, cảm xúc, không gian (galaxy style)
+                {t("productDetail.art_type")}:
+                {t("productDetail.art_type_value")}
+              </div>
+              <div>
+                {t("productDetail.file_format")}:
+                {t("productDetail.file_format_value")}
+              </div>
+              <div>
+                {t("productDetail.category")}:
+                {product.categories?.join(", ") || t("productDetail.updating")}
+              </div>
+              <div>
+                {t("productDetail.status")}: {product.status}
               </div>
             </div>
+
             <h4 className="text-lg font-semibold text-[#133e87] mt-6 mb-3">
-              Đánh giá
+              {t("productDetail.rating")}
             </h4>
             <div className="flex items-center space-x-3 mb-4">
               <h2 className="text-2xl font-bold text-[#133e87] mb-0">4.7</h2>
               <Rate disabled defaultValue={4.5} />
-              <span className="text-sm text-[#133e87] ml-2">86% lượt</span>
+              <span className="text-sm text-[#133e87] ml-2">
+                86% {t("productDetail.rating_suffix")}
+              </span>
             </div>
+
             {[5, 4, 3, 2, 1].map((star, i) => (
               <div key={i} className="flex items-center space-x-2 text-xs mb-1">
                 <span className="w-2">{star}</span>
@@ -144,7 +203,7 @@ function DetailContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             variants={slideInFromBottom}>
-            Đặt Tranh
+            {t("productDetail.order_painting")}
           </motion.h2>
 
           <motion.div
@@ -174,14 +233,12 @@ function DetailContainer() {
                 key={idx}
                 className="text-center"
                 variants={staggerItem}>
-                <div className="relative mb-4">
-                  <img
-                    src={item.src || "/placeholder.svg"}
-                    alt={item.title}
-                    className="w-full h-48 sm:h-72 lg:h-80 object-cover rounded-lg"
-                  />
-                </div>
-                <p className="text-[#7a7a7a] text-xs sm:text-sm mb-2">
+                <img
+                  src={item.src}
+                  alt={item.title}
+                  className="w-full h-48 sm:h-72 lg:h-80 object-cover rounded-lg mb-3"
+                />
+                <p className="text-[#7a7a7a] text-xs sm:text-sm">
                   {item.description}
                 </p>
                 <h3 className="text-[#133e87] font-medium text-sm sm:text-base">
@@ -189,17 +246,6 @@ function DetailContainer() {
                 </h3>
               </motion.div>
             ))}
-          </motion.div>
-
-          <motion.div
-            className="text-center mt-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            variants={slideInFromBottom}>
-            <button className="border border-[#CCCCCC] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base">
-              ĐẾN ĐẶT TRANH →
-            </button>
           </motion.div>
         </div>
       </section>

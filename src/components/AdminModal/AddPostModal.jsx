@@ -3,6 +3,7 @@ import { Modal, Input, Button, Upload, Select, message } from "antd";
 import { motion } from "framer-motion";
 import { PlusOutlined } from "@ant-design/icons";
 import { Editor } from "@tinymce/tinymce-react";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
@@ -12,6 +13,8 @@ function AddPostModal({ open, onCancel, onAdd }) {
   const [hashtag, setHashtag] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [content, setContent] = useState("");
+
+  const { t } = useTranslation();
 
   // Reset form mỗi lần mở modal
   useEffect(() => {
@@ -26,18 +29,18 @@ function AddPostModal({ open, onCancel, onAdd }) {
 
   const handleAdd = () => {
     if (!title || !author || !hashtag) {
-      message.warning("Vui lòng nhập đầy đủ thông tin!");
+      message.warning(t("adminPost.addModal.toast_required"));
       return;
     }
     onAdd({ title, author, hashtag, coverImage, content });
-    message.success("Thêm bài viết thành công!");
+    message.success(t("adminPost.addModal.toast_success"));
     onCancel();
   };
 
   const uploadProps = {
     beforeUpload: (file) => {
       if (file.size > 3 * 1024 * 1024) {
-        message.error("Ảnh không được vượt quá 3MB");
+        message.error(t("adminPost.addModal.image_too_large"));
         return false;
       }
       setCoverImage(file);
@@ -59,7 +62,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}>
         <h2 className="text-[#133e87] text-2xl font-bold text-center mb-6">
-          Thêm bài viết
+          {t("adminPost.addModal.title")}
         </h2>
 
         {/* Trình soạn thảo TinyMCE ---> ĐƯA LÊN TRÊN */}
@@ -115,7 +118,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
                   />
                 ) : (
                   <div className="flex flex-col justify-center items-center w-full h-full text-[#133e87]">
-                    + Thêm Ảnh Bìa
+                    {t("adminPost.addModal.cover_add")}
                   </div>
                 )}
               </Upload>
@@ -127,7 +130,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
             <div className="flex flex-col space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Tên Bài Viết*
+                  {t("adminPost.addModal.post_title_label")}{" "}
                 </label>
                 <Input
                   value={title}
@@ -138,7 +141,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
 
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Tên Người Viết*
+                  {t("adminPost.addModal.author_label")}{" "}
                 </label>
                 <Input
                   value={author}
@@ -149,15 +152,21 @@ function AddPostModal({ open, onCancel, onAdd }) {
 
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Hashtag*
+                  {t("adminPost.addModal.hashtag_label")}{" "}
                 </label>
                 <Select
                   value={hashtag}
                   onChange={(value) => setHashtag(value)}
                   className="w-full rounded-lg h-10">
-                  <Option value="tin-tuc">#TinTuc</Option>
-                  <Option value="su-kien">#SuKien</Option>
-                  <Option value="review">#Review</Option>
+                  <Option value="tin-tuc">
+                    {t("adminPost.addModal.hashtag.news")}
+                  </Option>
+                  <Option value="su-kien">
+                    {t("adminPost.addModal.hashtag.event")}
+                  </Option>
+                  <Option value="review">
+                    {t("adminPost.addModal.hashtag.review")}
+                  </Option>
                 </Select>
               </div>
             </div>
@@ -169,14 +178,14 @@ function AddPostModal({ open, onCancel, onAdd }) {
                 type="primary"
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ backgroundColor: "#133e87", borderColor: "#133e87" }}>
-                Thêm Bài Viết
+                {t("adminPost.addModal.btn_add")}{" "}
               </Button>
 
               <Button
                 onClick={onCancel}
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ borderColor: "#133e87", color: "#133e87" }}>
-                Hủy
+                {t("adminPost.common.cancel")}{" "}
               </Button>
             </div>
           </div>

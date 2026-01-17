@@ -4,87 +4,28 @@ import {
   DownOutlined,
   ShoppingCartOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Dropdown } from "antd";
+import { Card, Dropdown, Pagination, Spin } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getProductsPagedApi } from "../../api/productApi";
+import { getCategoriesApi } from "../../api/categoryApi";
 
-const products = [
-  {
-    id: 1,
-    name: "Gif Tặng Thú",
-    price: "430.850đ",
-    image: "src/assets/img/Illustration85.1.jpg",
-  },
-  {
-    id: 2,
-    name: "2D Andres Mỹ",
-    price: "574.975đ",
-    image: "src/assets/img/Illustration43.1.jpg",
-  },
-  {
-    id: 3,
-    name: "Fanart Mania Monuments",
-    price: "692.850đ",
-    image: "src/assets/img/Illustration219.jpg",
-  },
-  {
-    id: 4,
-    name: "Kj Neko Sugar Halloween",
-    price: "850.225đ",
-    image: "src/assets/img/Illustration336.png",
-  },
-  {
-    id: 5,
-    name: "Neko Đen Sen",
-    price: "392.850đ",
-    image: "src/assets/img/Illustration80.1.jpg",
-  },
-  {
-    id: 6,
-    name: "Tình Sánh",
-    price: "723.900đ",
-    image: "src/assets/img/Illustration122.jpg",
-  },
-  {
-    id: 7,
-    name: "Tết Thú",
-    price: "492.850đ",
-    image: "src/assets/img/Illustration132.jpg",
-  },
-  {
-    id: 8,
-    name: "Cánh Cụt",
-    price: "392.850đ",
-    image: "src/assets/img/Illustration128.jpg",
-  },
-  {
-    id: 9,
-    name: "Sticker Bộ Mania Monuments",
-    price: "2.357.000đ",
-    image: "src/assets/img/Illustration158.jpg",
-  },
-  {
-    id: 10,
-    name: "Tàu Thương Đường",
-    price: "723.900đ",
-    image: "src/assets/img/Illustration133.jpg",
-  },
-  {
-    id: 11,
-    name: "Fanart Gensys",
-    price: "523.800đ",
-    image: "src/assets/img/Illustration172.jpg",
-  },
-  {
-    id: 12,
-    name: "Donut",
-    price: "692.850đ",
-    image: "src/assets/img/Illustration200.jpg",
-  },
-];
+const placeholderImage = "src/assets/img/Illustration80.1.jpg";
 
 function StoreContainer() {
   const navigate = useNavigate();
+
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [sort, setSort] = useState("newest");
+  const [loading, setLoading] = useState(false);
+
   const sortMenuItems = [
     { key: "newest", label: "Mới nhất" },
     { key: "oldest", label: "Cũ nhất" },
@@ -92,14 +33,48 @@ function StoreContainer() {
     { key: "z-a", label: "Z-A" },
   ];
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategoriesApi();
+        setCategories(res.data);
+      } catch (err) {
+        console.error("Fetch categories failed", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await getProductsPagedApi({
+          page: page - 1,
+          size: pageSize,
+          sort,
+          category: selectedCategory,
+        });
+
+        setProducts(res.data.content);
+        setTotal(res.data.totalElements);
+      } catch (err) {
+        console.error("Fetch products failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [page, sort, selectedCategory]);
+
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("vi-VN").format(price) + "đ";
+
   const fadeInUp = {
     hidden: { opacity: 0, y: 60 },
     visible: { opacity: 1, y: 0 },
-  };
-
-  const fadeInLeft = {
-    hidden: { opacity: 0, x: -60 },
-    visible: { opacity: 1, x: 0 },
   };
 
   const fadeInRight = {
@@ -111,9 +86,7 @@ function StoreContainer() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.1 },
     },
   };
 
@@ -123,8 +96,7 @@ function StoreContainer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f6] mt-20">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-[#f6f6f6]">
       <motion.section
         className="relative h-150 bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden"
         initial="hidden"
@@ -134,57 +106,56 @@ function StoreContainer() {
         transition={{ duration: 0.8 }}>
         <div className="absolute inset-0">
           <img
-            src="src\assets\img\Illustration251.jpg"
-            alt="Anime character with balloons"
+            src="src/assets/img/Illustration251.jpg"
+            alt="Hero"
             className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Category overlay */}
+        {/* CATEGORY OVERLAY (DYNAMIC) */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full px-2">
           <motion.div
-            className="flex gap-4 overflow-x-auto overflow-y-hidden no-scrollbar justify-center"
+            className="flex gap-4 overflow-x-auto no-scrollbar justify-center"
             variants={staggerContainer}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}>
-            {[
-              { src: "src/assets/img/Illustration128.jpg", title: "Nhãn Dán" },
-              { src: "src/assets/img/Illustration156.jpg", title: "Chibi" },
-              {
-                src: "src/assets/img/Illustration157.2.jpg",
-                title: "Ảnh Động",
-              },
-              {
-                src: "src/assets/img/Illustration212.jpg",
-                title: "Biểu Tượng Cảm Xúc",
-              },
-              {
-                src: "src/assets/img/Illustration318.1.jpg",
-                title: "Tranh Chân Dung",
-              },
-              { src: "src/assets/img/Kigoro.2.jpg", title: "2D Avatar" },
-            ].map((item, idx) => (
+            animate="visible">
+            {categories.map((cat) => (
               <motion.div
-                key={idx}
-                className="group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex-shrink-0"
-                variants={staggerItem}
-                transition={{ duration: 0.5 }}
-                whileHover={{ scale: 1.05 }}>
-                {/* Ảnh */}
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setPage(1);
+                }}
+                className="
+              group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm
+              hover:shadow-2xl transition-all duration-300 flex-shrink-0
+              cursor-pointer
+            "
+                variants={staggerItem}>
                 <img
-                  src={item.src || "/placeholder.svg"}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  src={placeholderImage}
+                  alt={cat.name}
+                  className="
+                w-full h-full object-cover
+                transition-transform duration-500
+                group-hover:scale-110
+              "
                 />
 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300"></div>
+                <div
+                  className={`
+                absolute inset-0 transition-opacity duration-300
+                ${
+                  selectedCategory === cat.name
+                    ? "bg-black/0"
+                    : "bg-black/30 group-hover:bg-black/0"
+                }
+              `}
+                />
 
-                {/* Text */}
                 <div className="absolute bottom-0 left-0 w-full p-3 z-10">
                   <h3 className="font-semibold text-white text-left">
-                    {item.title}
+                    {cat.name}
                   </h3>
                 </div>
               </motion.div>
@@ -193,118 +164,104 @@ function StoreContainer() {
         </div>
       </motion.section>
 
-      {/* Main Content */}
       <div className="container mx-auto px-36 py-6">
+        {/* SORT */}
         <motion.div
           className="flex justify-end mb-6"
+          variants={fadeInRight}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInRight}
-          transition={{ duration: 0.6 }}>
+          viewport={{ once: true }}>
           <span className="text-[#133e87] font-semibold">
             Sắp xếp theo:&nbsp;
           </span>
           <Dropdown
-            menu={{ items: sortMenuItems }}
-            trigger={["click"]}
-            placement="bottomRight">
+            menu={{
+              items: sortMenuItems,
+              onClick: ({ key }) => {
+                setSort(key);
+                setPage(1);
+              },
+            }}>
             <span className="cursor-pointer text-[#133e87] font-semibold flex items-center gap-1 hover:text-[#608bc1]">
-              Mặc định
+              {sortMenuItems.find((i) => i.key === sort)?.label}
               <DownOutlined className="text-[#608bc1]" />
             </span>
           </Dropdown>
+
+          {selectedCategory && (
+            <span
+              onClick={() => {
+                setSelectedCategory(null);
+                setPage(1);
+              }}
+              className="ml-4 cursor-pointer text-sm text-[#608bc1] hover:underline">
+              Bỏ lọc
+            </span>
+          )}
         </motion.div>
 
-        <motion.div
-          className="grid grid-cols-4 gap-4"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}>
-          {products.map((product) => (
-            <motion.div
-              key={product.id}
-              variants={staggerItem}
-              transition={{ duration: 0.5 }}
-              whileHover={{ y: -5 }}>
-              <Card
-                className="bg-white border border-[#d9d9d9] hover:shadow-md transition-shadow"
-                bodyStyle={{ padding: "8px" }}
-                cover={
-                  <div className="relative">
-                    <img
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      className="w-full h-70 object-cover"
-                    />
-                    {/* Icon giỏ hàng tròn, nền đen mờ */}
-                    <button
-                      // onClick={() => addToCart(product)}
-                      className="
-              absolute bottom-2 right-2
-              flex items-center justify-center
-              w-10 h-10
-              rounded-full
-              bg-gray-300 hover:bg-gray-400
-              transition
-            ">
-                      <ShoppingCartOutlined className="text-white text-lg" />
-                    </button>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-4 gap-4"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}>
+            {products.map((product) => (
+              <motion.div
+                key={product.id}
+                variants={staggerItem}
+                whileHover={{ y: -5 }}>
+                <Card
+                  bodyStyle={{ padding: "8px" }}
+                  cover={
+                    <div className="relative">
+                      <img
+                        src={placeholderImage}
+                        alt={product.name}
+                        className="w-full h-70 object-cover"
+                      />
+                      <button className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
+                        <ShoppingCartOutlined className="text-white" />
+                      </button>
+                    </div>
+                  }
+                  onClick={() => navigate(`/detail/${product.id}`)}>
+                  <h4 className="text-sm font-medium text-[#133e87] line-clamp-2">
+                    {product.name}
+                  </h4>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-sm font-bold text-[#133e87]">
+                      {formatPrice(product.price)}
+                    </span>
+                    <div className="flex text-xs">
+                      <StarFilled className="text-yellow-400" />
+                      <StarFilled className="text-yellow-400" />
+                      <StarFilled className="text-yellow-400" />
+                      <StarFilled className="text-yellow-400" />
+                      <StarOutlined className="text-[#d1d1d1]" />
+                    </div>
                   </div>
-                }
-                onClick={() => navigate(`/detail`)}>
-                <h4 className="text-sm font-medium text-[#133e87] mb-1 line-clamp-2">
-                  {product.name}
-                </h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[#133e87]">
-                    {product.price}
-                  </span>
-                  <div className="flex items-center gap-0.5 text-xs">
-                    <StarFilled className="text-yellow-400" />
-                    <StarFilled className="text-yellow-400" />
-                    <StarFilled className="text-yellow-400" />
-                    <StarFilled className="text-yellow-400" />
-                    <StarOutlined className="text-[#d1d1d1]" />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
-        {/* Pagination */}
-        <motion.div
-          className="flex justify-center items-center gap-2 mt-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          transition={{ duration: 0.6, delay: 0.2 }}>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            1
-          </Button>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            2
-          </Button>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            3
-          </Button>
-          <span className="text-[#608bc1]">...</span>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            8
-          </Button>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            9
-          </Button>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            10
-          </Button>
-          <Button size="small" className="text-[#608bc1] border-[#d9d9d9]">
-            →
-          </Button>
-        </motion.div>
+        <div className="flex justify-center mt-10">
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={(p) => setPage(p)}
+            showSizeChanger={false}
+          />
+        </div>
       </div>
     </div>
   );

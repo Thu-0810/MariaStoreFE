@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   SearchOutlined,
   ShoppingCartOutlined,
@@ -8,17 +8,34 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/img/logo.png";
+import { useTranslation } from "react-i18next";
 
 function Header() {
   const [currentUser, setCurrentUser] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [openLang, setOpenLang] = useState(false);
   const navigate = useNavigate();
+
+  const { t, i18n } = useTranslation();
+
+  const wrapperRef = useRef(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setCurrentUser(JSON.parse(storedUser));
+  }, []);
+
+  // đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (!wrapperRef.current) return;
+      if (!wrapperRef.current.contains(e.target)) {
+        setOpenDropdown(false);
+        setOpenLang(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -28,17 +45,25 @@ function Header() {
     navigate("/dashboard");
   };
 
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem("lng", lng);
+    setOpenLang(false);
+  };
+
+  const currentLangLabel =
+    i18n.language === "en" ? t("header.english") : t("header.vietnamese");
+
   return (
     <header className="bg-[#d9eafd] relative">
-      <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="max-w-7xl mx-auto px-4 py-3" ref={wrapperRef}>
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => {
-              if (!currentUser) {
-                navigate("/dashboard");
-              } else {
+              if (!currentUser) navigate("/dashboard");
+              else {
                 switch (currentUser.role) {
                   case "ADMIN":
                     navigate("/admin-dashboard");
@@ -48,7 +73,6 @@ function Header() {
                     break;
                   default:
                     navigate("/dashboard");
-                    break;
                 }
               }
             }}>
@@ -65,7 +89,7 @@ function Header() {
             <div className="relative flex items-center">
               <input
                 type="text"
-                placeholder="Tìm kiếm"
+                placeholder={t("header.search_placeholder")}
                 className="flex-1 pl-4 pr-12 py-2 bg-white border border-[#d1d1d1] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#133e87] focus:border-transparent"
               />
               <SearchOutlined className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#888888]" />
@@ -79,12 +103,36 @@ function Header() {
                 className="flex items-center gap-1 cursor-pointer"
                 onClick={() => navigate("/cart")}>
                 <ShoppingCartOutlined />
-                <span>Giỏ Hàng</span>
+                <span>{t("header.cart")}</span>
               </div>
             )}
-            <div className="flex items-center gap-1">
-              <GlobalOutlined />
-              <span>Tiếng Việt</span>
+
+            {/* Language switch */}
+            <div className="relative">
+              <div
+                className="flex items-center gap-1 cursor-pointer select-none"
+                onClick={() => setOpenLang((v) => !v)}>
+                <GlobalOutlined />
+                <span>{currentLangLabel}</span>
+                <DownOutlined className="text-xs" />
+              </div>
+
+              {openLang && (
+                <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-xl overflow-hidden z-50">
+                  <ul className="text-[#133e87] font-medium">
+                    <li
+                      className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                      onClick={() => changeLanguage("vi")}>
+                      {t("header.vietnamese")}
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                      onClick={() => changeLanguage("en")}>
+                      {t("header.english")}
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
 
             {currentUser ? (
@@ -107,13 +155,11 @@ function Header() {
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl overflow-hidden z-50">
                     <ul className="text-[#133e87] font-medium">
                       {currentUser.role === "ADMIN" ? (
-                        <>
-                          <li
-                            className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
-                            onClick={handleLogout}>
-                            Đăng xuất
-                          </li>
-                        </>
+                        <li
+                          className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
+                          onClick={handleLogout}>
+                          {t("header.logout")}
+                        </li>
                       ) : (
                         <>
                           <li
@@ -122,25 +168,25 @@ function Header() {
                               navigate("/my-profile");
                               setOpenDropdown(false);
                             }}>
-                            Tài khoản
+                            {t("header.account")}
                           </li>
                           <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                            Yêu cầu
+                            {t("header.requests")}
                           </li>
                           <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                            Đơn hàng
+                            {t("header.orders")}
                           </li>
                           <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                            Sản phẩm đã lưu
+                            {t("header.saved_products")}
                           </li>
                           <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
-                            Bài viết
+                            {t("header.posts")}
                           </li>
                           <hr />
                           <li
                             className="px-4 py-2 text-red-600 hover:bg-[#fbeaea] cursor-pointer"
                             onClick={handleLogout}>
-                            Đăng xuất
+                            {t("header.logout")}
                           </li>
                         </>
                       )}
@@ -154,12 +200,12 @@ function Header() {
                   className="flex items-center gap-1 cursor-pointer"
                   onClick={() => navigate("/register")}>
                   <UserOutlined />
-                  <span>Đăng Ký</span>
+                  <span>{t("header.register")}</span>
                 </div>
                 <span
                   className="pl-4 border-l border-[#193a80] cursor-pointer"
                   onClick={() => navigate("/login")}>
-                  Đăng Nhập
+                  {t("header.login")}
                 </span>
               </>
             )}

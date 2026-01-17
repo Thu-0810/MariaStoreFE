@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Input,
   Button,
@@ -13,6 +13,21 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCategoriesApi } from "../../api/categoryApi";
+import {
+  createProductApi,
+  getProductDetailApi,
+  getProductsPagedApi,
+  lockProductsApi,
+  softDeleteProductsApi,
+  unlockProductsApi,
+  updateProductApi,
+} from "../../api/productApi";
+import {
+  deleteProductImageApi,
+  uploadProductImageApi,
+} from "../../api/productMediaApi";
+import { useTranslation } from "react-i18next";
 
 function AdminProductContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -21,423 +36,357 @@ function AdminProductContainer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
-  const [form] = Form.useForm();
-  const [imagePreview, setImagePreview] = useState(null);
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [createImagePreview, setCreateImagePreview] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Dữ liệu mẫu cho từng danh mục
-  const categoryData = {
-    "Nhãn Dán": [
-      {
-        key: 1,
-        stt: 1,
-        name: "Nhãn dán ôm",
-        category: "Nhãn Dán",
-        quantity: 1,
-        date: "20/05/2025",
-        price: "392,850đ",
-        status: "Còn hàng",
-        description:
-          "Nhãn dán ôm dễ thương, thích hợp trang trí laptop hoặc điện thoại.",
-        fileType: "PNG",
-        fileSize: "1.2MB",
-        size: "640x640px",
-        author: "Minh Hoạ Studio",
-        character: "Chibi Ôm",
-        origin: "Việt Nam",
-        style: "Cute / Chibi",
-        extraInfo: "Hỗ trợ in trên nền trong suốt.",
-        image: "https://example.com/nhan-dan-om.png",
-      },
-      {
-        key: 2,
-        stt: 2,
-        name: "Sticker Nhãn Dán vui vẻ",
-        category: "Nhãn Dán",
-        quantity: 1,
-        date: "21/06/2025",
-        price: "420,000đ",
-        status: "Còn hàng",
-        description: "Sticker chibi tươi sáng, biểu cảm vui vẻ và năng động.",
-        fileType: "JPG",
-        fileSize: "950KB",
-        size: "800x800px",
-        author: "Haru Design",
-        character: "Vui Vẻ",
-        origin: "Nhật Bản",
-        style: "Anime",
-        extraInfo: "Có thể dùng làm biểu tượng mạng xã hội.",
-        image: "https://example.com/sticker-vui-ve.jpg",
-      },
-    ],
+  const [pageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
-    Chibi: [
-      {
-        key: 3,
-        stt: 1,
-        name: "Maria Thỏ chibi",
-        category: "Chibi",
-        quantity: 1,
-        date: "05/10/2025",
-        price: "392,850đ",
-        status: "Còn hàng",
-        description: "Hình vẽ Maria phong cách thỏ chibi siêu đáng yêu.",
-        fileType: "PNG",
-        fileSize: "1.1MB",
-        size: "720x720px",
-        author: "Maria Art",
-        character: "Maria Bunny",
-        origin: "Hàn Quốc",
-        style: "Chibi / Kawaii",
-        extraInfo: "Có hiệu ứng ánh sáng nhẹ trên nền.",
-        image: "https://example.com/maria-tho-chibi.png",
-      },
-      {
-        key: 4,
-        stt: 2,
-        name: "Chibi mèo dễ thương",
-        category: "Chibi",
-        quantity: 1,
-        date: "22/07/2025",
-        price: "450,000đ",
-        status: "Hết hàng",
-        description: "Chibi mèo nhỏ ngộ nghĩnh, tông màu pastel nhẹ nhàng.",
-        fileType: "JPG",
-        fileSize: "870KB",
-        size: "640x640px",
-        author: "Yuki Studio",
-        character: "Mèo Neko",
-        origin: "Nhật Bản",
-        style: "Pastel / Soft",
-        extraInfo: "Sử dụng tốt làm icon chat hoặc avatar.",
-        image: "https://example.com/chibi-meo.jpg",
-      },
-    ],
+  const [imageFile, setImageFile] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [removedImageIds, setRemovedImageIds] = useState([]);
 
-    "Ảnh Động": [
-      {
-        key: 5,
-        stt: 1,
-        name: "Gif tai thỏ",
-        category: "Ảnh Động",
-        quantity: 1,
-        date: "20/05/2025",
-        price: "430,850đ",
-        status: "Còn hàng",
-        description: "Gif ngắn với nhân vật đội tai thỏ chuyển động vui mắt.",
-        fileType: "GIF",
-        fileSize: "2.3MB",
-        size: "480x480px",
-        author: "Tomo Art",
-        character: "Bunny Girl",
-        origin: "Nhật Bản",
-        style: "Anime / Motion",
-        extraInfo: "Chạy mượt trên mọi nền tảng mạng xã hội.",
-        image: "https://example.com/gif-tai-tho.gif",
-      },
-      {
-        key: 6,
-        stt: 2,
-        name: "Gif Vịt nhỏ",
-        category: "Ảnh Động",
-        quantity: 1,
-        date: "22/03/2025",
-        price: "430,850đ",
-        status: "Hết hàng",
-        description: "Gif vui nhộn chú vịt nhỏ chạy tung tăng.",
-        fileType: "GIF",
-        fileSize: "1.8MB",
-        size: "400x400px",
-        author: "CuteMotion",
-        character: "Vịt Con",
-        origin: "Hàn Quốc",
-        style: "Cartoon / Funny",
-        extraInfo: "Phổ biến trong cộng đồng chat Discord.",
-        image: "https://example.com/gif-vit-nho.gif",
-      },
-    ],
-
-    "Biểu Tượng Cảm Xúc": [
-      {
-        key: 7,
-        stt: 1,
-        name: "Icon vui vẻ",
-        category: "Biểu Tượng Cảm Xúc",
-        quantity: 1,
-        date: "10/02/2025",
-        price: "300,000đ",
-        status: "Còn hàng",
-        description: "Icon thể hiện cảm xúc vui tươi, màu sắc sinh động.",
-        fileType: "PNG",
-        fileSize: "600KB",
-        size: "256x256px",
-        author: "EmojiLab",
-        character: "Smiley",
-        origin: "Việt Nam",
-        style: "Flat / Modern",
-        extraInfo: "Hỗ trợ nền trong suốt.",
-        image: "https://example.com/icon-vui-ve.png",
-      },
-      {
-        key: 8,
-        stt: 2,
-        name: "Icon buồn nhẹ",
-        category: "Biểu Tượng Cảm Xúc",
-        quantity: 1,
-        date: "12/03/2025",
-        price: "310,000đ",
-        status: "Hàng trưng bày",
-        description: "Icon diễn tả cảm xúc nhẹ nhàng, gam màu lạnh.",
-        fileType: "SVG",
-        fileSize: "400KB",
-        size: "256x256px",
-        author: "EmojiLab",
-        character: "SadFace",
-        origin: "Hàn Quốc",
-        style: "Minimal",
-        extraInfo: "Phù hợp với giao diện web.",
-        image: "https://example.com/icon-buon-nhe.svg",
-      },
-    ],
-
-    "Tranh Chân Dung": [
-      {
-        key: 9,
-        stt: 1,
-        name: "Tranh gió nổi",
-        category: "Tranh Chân Dung",
-        quantity: 1,
-        date: "01/04/2025",
-        price: "900,000đ",
-        status: "Còn hàng",
-        description: "Tranh chân dung với hiệu ứng gió và ánh sáng.",
-        fileType: "JPG",
-        fileSize: "5MB",
-        size: "1920x1080px",
-        author: "ArtWind Studio",
-        character: "Wind Girl",
-        origin: "Việt Nam",
-        style: "Realism",
-        extraInfo: "In chất lượng cao trên canvas.",
-        image: "https://example.com/tranh-gio-noi.jpg",
-      },
-      {
-        key: 10,
-        stt: 2,
-        name: "Tranh sấm sét",
-        category: "Tranh Chân Dung",
-        quantity: 1,
-        date: "10/06/2025",
-        price: "1,200,000đ",
-        status: "Hết hàng",
-        description: "Chân dung trừu tượng lấy cảm hứng từ sấm sét.",
-        fileType: "PNG",
-        fileSize: "4.8MB",
-        size: "1920x1080px",
-        author: "StormyArt",
-        character: "Thunder Soul",
-        origin: "Pháp",
-        style: "Abstract",
-        extraInfo: "Tác phẩm đạt giải tại triển lãm 2025.",
-        image: "https://example.com/tranh-sam-set.png",
-      },
-    ],
-
-    "Avatar 2D": [
-      {
-        key: 11,
-        stt: 1,
-        name: "Avatar mèo con",
-        category: "Avatar 2D",
-        quantity: 1,
-        date: "20/07/2025",
-        price: "250,000đ",
-        status: "Còn hàng",
-        description: "Hình đại diện mèo con dễ thương tông màu hồng pastel.",
-        fileType: "PNG",
-        fileSize: "900KB",
-        size: "512x512px",
-        author: "MeowArt",
-        character: "Mèo Con",
-        origin: "Nhật Bản",
-        style: "Chibi / Pastel",
-        extraInfo: "Dùng tốt cho profile mạng xã hội.",
-        image: "https://example.com/avatar-meo-con.png",
-      },
-      {
-        key: 12,
-        stt: 2,
-        name: "Avatar gấu ngủ",
-        category: "Avatar 2D",
-        quantity: 1,
-        date: "28/08/2025",
-        price: "280,000đ",
-        status: "Còn hàng",
-        description: "Avatar chú gấu đang ngủ, phong cách tối giản.",
-        fileType: "PNG",
-        fileSize: "800KB",
-        size: "512x512px",
-        author: "Bear Studio",
-        character: "Gấu Ngủ",
-        origin: "Hàn Quốc",
-        style: "Minimal / Cute",
-        extraInfo: "Dành cho người yêu thích phong cách dễ thương.",
-        image: "https://example.com/avatar-gau-ngu.png",
-      },
-    ],
-  };
-
-  const columns = [
-    { title: "STT", dataIndex: "stt", key: "stt", width: 80 },
-    { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: 120 },
-    { title: "Ngày nhập", dataIndex: "date", key: "date", width: 140 },
-    { title: "Giá tiền", dataIndex: "price", key: "price", width: 140 },
-    {
-      title: "Tình trạng hàng",
-      dataIndex: "status",
-      key: "status",
-      width: 160,
-    },
-  ];
-
-  const [data, setData] = useState(categoryData);
-
+  const { t } = useTranslation();
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
   };
 
-  const categories = [
-    "Nhãn Dán",
-    "Chibi",
-    "Ảnh Động",
-    "Biểu Tượng Cảm Xúc",
-    "Tranh Chân Dung",
-    "Avatar 2D",
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategoriesApi();
+        setCategories(res.data);
+      } catch (err) {
+        message.error(t("adminProduct.toast.load_products_failed"));
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await getProductsPagedApi({
+        page: currentPage - 1,
+        size: pageSize,
+        sort: "createdAt,desc",
+        category: selectedCategory,
+      });
+
+      setProducts(res.data.content);
+      setTotal(res.data.totalElements);
+    } catch (err) {
+      message.error(t("adminProduct.toast.load_products_failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, selectedCategory]);
+
+  const columns = [
+    {
+      title: t("adminProduct.table.index"),
+      render: (_, __, index) => index + 1,
+    },
+    { title: t("adminProduct.table.product_name"), dataIndex: "name" },
+    { title: t("adminProduct.table.quantity"), dataIndex: "quantity" },
+    { title: t("adminProduct.table.created_at"), dataIndex: "createdAt" },
+    {
+      title: t("adminProduct.table.price"),
+      dataIndex: "price",
+      render: (v) => `${v.toLocaleString("vi-VN")}đ`,
+    },
+    { title: t("adminProduct.table.status"), dataIndex: "status" },
   ];
 
-  const allProducts = Object.values(categoryData).flat();
+  const mapPayload = (values) => ({
+    name: values.name,
+    price: Number(values.price),
+    description: values.description,
+    status: values.status,
+    categoryIds: [Number(values.category)],
 
-  const filteredProducts = selectedCategory
-    ? categoryData[selectedCategory] || []
-    : allProducts;
+    fileFormat: values.fileType,
+    resolution: values.size,
+    fileSize: values.fileSize,
+    author: values.author,
+    style: values.style,
+    origin: values.origin,
+    characterName: values.character,
+    extraInfo: values.extraInfo,
+  });
 
-  const handleCancel = () => {
-    form.resetFields();
-    setImagePreview(null);
-    setIsModalOpen(false);
-  };
+  const handleCreateSubmit = async (values) => {
+    try {
+      const payload = mapPayload(values);
 
-  const handleSubmit = (values) => {
-    // Kiểm tra có ảnh chưa
-    if (!imagePreview) {
-      message.warning("Vui lòng tải lên hình ảnh sản phẩm!");
-      return;
+      const res = await createProductApi(payload);
+      const productId = res.data.id;
+
+      if (imageFile) {
+        await uploadProductImageApi(productId, imageFile, true);
+      }
+
+      message.success(t("adminProduct.toast.create_success"));
+      setIsModalOpen(false);
+      createForm.resetFields();
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      message.error(t("adminProduct.toast.create_failed"));
     }
+  };
 
-    // Tạo sản phẩm mới
-    const newProduct = {
-      key: Date.now(),
-      stt: data[values.category].length + 1,
-      name: values.name,
-      quantity: 1,
-      date: new Date().toLocaleDateString("vi-VN"),
-      price: `${Number(values.price).toLocaleString("vi-VN")}đ`,
-      status: values.status,
-      description: values.description,
-      size: values.size || "640x640",
-      fileType: values.fileType || "JPG",
-      fileSize: values.fileSize || "1.2 MB",
-      author: values.author || "Chưa rõ",
-      character: values.character || "Không có",
-      origin: values.origin || "Việt Nam",
-      style: values.style || "Hiện đại",
-      extraInfo: values.extraInfo || "",
-      image: imagePreview,
-    };
+  const handleEditSubmit = async (values) => {
+    if (!isEditMode || submitting) return;
 
-    // Thêm sản phẩm vào danh mục tương ứng
-    const updatedCategoryData = [...data[values.category], newProduct];
+    try {
+      setSubmitting(true);
 
-    // Cập nhật state tổng
-    setData({
-      ...data,
-      [values.category]: updatedCategoryData,
-    });
+      const payload = mapPayload(values);
 
-    // Nếu thêm đúng vào danh mục đang xem → cập nhật bảng ngay
-    if (values.category === selectedCategory) {
-      message.success("Thêm sản phẩm thành công!");
-    } else {
-      message.success(`Đã thêm vào danh mục "${values.category}"`);
+      await updateProductApi(selectedProduct.id, payload);
+
+      for (const imageId of removedImageIds) {
+        await deleteProductImageApi(imageId);
+      }
+
+      if (editImageFile) {
+        await uploadProductImageApi(selectedProduct.id, editImageFile, true);
+      }
+
+      message.success(t("adminProduct.toast.update_success"));
+
+      setIsEditMode(false);
+      setIsViewModalOpen(false);
+      setSelectedProduct(null);
+
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      message.error(t("adminProduct.toast.update_failed"));
+    } finally {
+      setSubmitting(false);
     }
-
-    // Reset form + đóng modal
-    form.resetFields();
-    setImagePreview(null);
-    setIsModalOpen(false);
   };
 
-  const handleRowClick = (record) => {
-    setSelectedProduct(record);
-    form.setFieldsValue({
-      name: record.name,
-      category: selectedCategory,
-      status: record.status,
-      price: record.price.replace(/\D/g, ""),
-      description: record.description || "",
-      size: record.size || "640x640",
-      fileType: record.fileType || "JPG",
-      fileSize: record.fileSize || "1.2 MB",
-      author: record.author || "Chưa rõ",
-      character: record.character || "Không có",
-      origin: record.origin || "Việt Nam",
-      style: record.style || "Hiện đại",
-      extraInfo: record.extraInfo || "",
-    });
-
-    setImagePreview(record.image || null);
-    setIsViewModalOpen(true);
+  const getCategoryIdByName = (name) => {
+    const found = categories.find((c) => c.name === name);
+    return found ? found.id : null;
   };
 
-  const handleImageUpload = (info) => {
-    const file = info.file.originFileObj || info.file; // ✅ hỗ trợ cả 2 dạng
+  const handleRowClick = async (record) => {
+    try {
+      const res = await getProductDetailApi(record.id);
+      const product = res.data;
+
+      console.log("DETAIL PRODUCT:", product);
+
+      setSelectedProduct(product);
+
+      setRemovedImageIds([]);
+      setEditImageFile(null);
+
+      // Ảnh (nếu có)
+      if (product.images?.length > 0) {
+        setEditImagePreview(
+          `http://localhost:8080${product.images[0].imageUrl}`
+        );
+      } else {
+        setEditImagePreview(null);
+      }
+      editForm.setFieldsValue({
+        name: product.name,
+        category: getCategoryIdByName(product.categories?.[0]),
+        status: product.status,
+        price: product.price,
+        description: product.description,
+
+        fileType: product.meta?.fileFormat,
+        size: product.meta?.resolution,
+        fileSize: product.meta?.fileSize,
+        author: product.meta?.author,
+        character: product.meta?.characterName,
+        origin: product.meta?.origin,
+        style: product.meta?.style,
+        extraInfo: product.meta?.extraInfo,
+      });
+      setIsEditMode(false);
+      setIsViewModalOpen(true);
+    } catch (err) {
+      console.error("DETAIL ERROR:", err);
+      message.error(t("adminProduct.toast.load_detail_failed"));
+    }
+  };
+
+  const handleImageUpload = (info, targetForm, setPreview, setFile) => {
+    const file = info.file.originFileObj || info.file;
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      message.error("Vui lòng chọn tệp hình ảnh hợp lệ!");
+    if (!file.type?.startsWith("image/")) {
+      message.error(t("adminProduct.toast.invalid_image"));
       return;
     }
 
-    const fileType = file.type.split("/")[1].toUpperCase();
-    const reader = new FileReader();
+    setFile(file);
 
+    const reader = new FileReader();
     reader.onload = (e) => {
-      const imageUrl = e.target.result;
-      setImagePreview(imageUrl);
+      setPreview(e.target.result);
 
       const img = new Image();
       img.onload = () => {
-        const size = `${img.width}x${img.height}`;
-        // ✅ Gán giá trị form sau khi load xong
-        form.setFieldsValue({
-          size: size,
-          fileType: fileType,
+        targetForm.setFieldsValue({
+          size: `${img.width}x${img.height}`,
+          fileType: file.type.split("/")[1].toUpperCase(),
         });
       };
-      img.src = imageUrl;
+      img.src = e.target.result;
     };
+
     reader.readAsDataURL(file);
   };
 
-  const handleRemoveImage = () => {
-    setImagePreview(null);
-    form.setFieldsValue({
+  const handleRemoveCreateImage = () => {
+    setCreateImagePreview(null);
+    setImageFile(null);
+    createForm.setFieldsValue({
       size: "",
       fileType: "",
     });
+  };
+
+  const handleRemoveEditImage = () => {
+    if (selectedProduct?.images?.[0]?.id) {
+      setRemovedImageIds([selectedProduct.images[0].id]);
+    }
+
+    setEditImagePreview(null);
+    setEditImageFile(null);
+
+    editForm.setFieldsValue({
+      size: "",
+      fileType: "",
+    });
+  };
+
+  const handleCreateCancel = () => {
+    createForm.resetFields();
+    setCreateImagePreview(null);
+    setImageFile(null);
+    setIsModalOpen(false);
+  };
+
+  const removeProducts = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t("adminProduct.toast.select_one_for_delete"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await softDeleteProductsApi(selectedRowKeys);
+
+      message.success(t("adminProduct.toast.delete_success"));
+
+      setSelectedRowKeys([]);
+      setIsDeleteModalOpen(false);
+      fetchProducts();
+    } catch (err) {
+      console.error("DELETE ERROR:", err);
+      message.error(t("adminProduct.toast.delete_failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isSelectedLocked =
+    selectedRowKeys.length === 1 &&
+    products.find((p) => p.id === selectedRowKeys[0])?.status === "LOCKED";
+
+  const lockProducts = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t("adminProduct.toast.select_one_for_lock"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await lockProductsApi(selectedRowKeys);
+
+      message.success(t("adminProduct.toast.lock_success"));
+
+      setSelectedRowKeys([]);
+      setIsLockModalOpen(false);
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      message.error(t("adminProduct.toast.lock_failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleLockProducts = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t("adminProduct.toast.select_one_for_action"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      if (isSelectedLocked) {
+        await unlockProductsApi(selectedRowKeys);
+        message.success(t("adminProduct.toast.unlock_success"));
+      } else {
+        await lockProductsApi(selectedRowKeys);
+        message.success(t("adminProduct.toast.lock_success"));
+      }
+
+      setSelectedRowKeys([]);
+      setIsLockModalOpen(false);
+      fetchProducts();
+
+      if (selectedProduct) {
+        const res = await getProductDetailApi(selectedProduct.id);
+        setSelectedProduct(res.data);
+
+        if (res.data.images?.length > 0) {
+          setEditImagePreview(
+            `http://localhost:8080${res.data.images[0].imageUrl}`
+          );
+        }
+
+        editForm.setFieldsValue({
+          name: res.data.name,
+          category: getCategoryIdByName(res.data.categories?.[0]),
+          status: res.data.status,
+          price: res.data.price,
+          description: res.data.description,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      message.error(t("adminProduct.toast.action_failed"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -467,16 +416,19 @@ function AdminProductContainer() {
           <div className="max-w-7xl mx-auto flex flex-wrap justify-center gap-8">
             {categories.map((cat) => (
               <motion.button
-                key={cat}
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setCurrentPage(1);
+                }}
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedCategory(cat)}
                 className={`px-8 py-3 rounded-2xl text-lg font-semibold shadow-md transition-all ${
-                  selectedCategory === cat
+                  selectedCategory === cat.name
                     ? "bg-[#133e87] text-white"
                     : "bg-white/80 text-[#133e87] hover:bg-[#e8f1ff]"
                 }`}>
-                {cat}
+                {cat.name}
               </motion.button>
             ))}
           </div>
@@ -490,18 +442,23 @@ function AdminProductContainer() {
           transition={{ duration: 0.7, delay: 0.3 }}>
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
-              {`Quản lý ${selectedCategory || "sản phẩm"}`}
+              {t("adminProduct.title_manage", {
+                category:
+                  selectedCategory || t("adminProduct.title_manage_default"),
+              })}
             </h1>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1">
                 <Input
-                  placeholder="Tìm Kiếm..."
+                  placeholder={t("adminProduct.search_placeholder")}
                   className="max-w-xs"
                   style={{ borderColor: "#cbdceb" }}
                 />
               </div>
+
               <Space>
+                {/* Delete */}
                 <Button
                   danger
                   type="primary"
@@ -510,8 +467,9 @@ function AdminProductContainer() {
                     borderColor: "#ff7383",
                   }}
                   onClick={() => setIsDeleteModalOpen(true)}>
-                  Xóa Sản Phẩm
+                  {t("adminProduct.btn_delete")}
                 </Button>
+
                 <Modal
                   open={isDeleteModalOpen}
                   onCancel={() => setIsDeleteModalOpen(false)}
@@ -521,7 +479,7 @@ function AdminProductContainer() {
                   closable={false}
                   className="text-center rounded-2xl">
                   <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    Xác nhận muốn xóa sản phẩm chứ?
+                    {t("adminProduct.confirm_delete")}
                   </p>
                   <div className="flex justify-center gap-4">
                     <Button
@@ -532,35 +490,8 @@ function AdminProductContainer() {
                         backgroundColor: "#ff7383",
                         borderColor: "#ff7383",
                       }}
-                      onClick={() => {
-                        if (selectedRowKeys.length === 0) {
-                          message.warning(
-                            "Vui lòng chọn ít nhất một sản phẩm để xóa!"
-                          );
-                          return;
-                        }
-
-                        // Lọc bỏ sản phẩm được chọn khỏi danh mục hiện tại
-                        const updatedCategoryData = data[
-                          selectedCategory
-                        ].filter((item) => !selectedRowKeys.includes(item.key));
-
-                        // Cập nhật state tổng
-                        setData({
-                          ...data,
-                          [selectedCategory]: updatedCategoryData,
-                        });
-
-                        // Đặt lại selection
-                        setSelectedRowKeys([]);
-
-                        // Đóng modal
-                        setIsDeleteModalOpen(false);
-
-                        // Thông báo
-                        message.success("Xóa sản phẩm thành công!");
-                      }}>
-                      Xóa
+                      onClick={removeProducts}>
+                      {t("adminProduct.btn_delete_ok")}
                     </Button>
                     <Button
                       className="px-6 py-1 rounded-full font-medium"
@@ -569,15 +500,18 @@ function AdminProductContainer() {
                         color: "#133e87",
                       }}
                       onClick={() => setIsDeleteModalOpen(false)}>
-                      Hủy
+                      {t("adminProduct.btn_cancel")}
                     </Button>
                   </div>
                 </Modal>
 
+                {/* Lock / Unlock */}
                 <button
                   onClick={() => setIsLockModalOpen(true)}
-                  className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                  Khóa Sản Phẩm
+                  className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 py-1 rounded-lg">
+                  {isSelectedLocked
+                    ? t("adminProduct.btn_unlock")
+                    : t("adminProduct.btn_lock")}
                 </button>
 
                 <Modal
@@ -588,23 +522,27 @@ function AdminProductContainer() {
                   width={360}
                   closable={false}
                   className="text-center rounded-2xl">
-                  <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    Xác nhận muốn khóa sản phẩm chứ?
+                  <p className="text-[#133e87] text-base font-medium mb-6 text-center">
+                    {isSelectedLocked
+                      ? t("adminProduct.confirm_unlock")
+                      : t("adminProduct.confirm_lock")}
                   </p>
+
                   <div className="flex justify-center gap-4">
                     <Button
                       type="primary"
-                      className="px-6 py-1 rounded-full text-white font-medium"
                       style={{
-                        backgroundColor: "#133e87",
-                        borderColor: "#133e87",
+                        backgroundColor: isSelectedLocked
+                          ? "#22c55e"
+                          : "#133e87",
+                        borderColor: isSelectedLocked ? "#22c55e" : "#133e87",
                       }}
-                      onClick={() => {
-                        console.log("Đã xác nhận khóa sản phẩm");
-                        setIsLockModalOpen(false);
-                      }}>
-                      Khóa
+                      onClick={toggleLockProducts}>
+                      {isSelectedLocked
+                        ? t("adminProduct.btn_unlock_ok")
+                        : t("adminProduct.btn_lock_ok")}
                     </Button>
+
                     <Button
                       className="px-6 py-1 rounded-full font-medium"
                       style={{
@@ -612,46 +550,48 @@ function AdminProductContainer() {
                         color: "#133e87",
                       }}
                       onClick={() => setIsLockModalOpen(false)}>
-                      Hủy
+                      {t("adminProduct.btn_cancel")}
                     </Button>
                   </div>
                 </Modal>
 
+                {/* Create */}
                 <button
+                  type="button"
                   onClick={() => {
-                    form.resetFields();
-                    setImagePreview(null);
+                    createForm.resetFields();
+                    setCreateImagePreview(null);
                     setSelectedProduct(null);
                     setIsModalOpen(true);
                   }}
                   className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                  Thêm Sản Phẩm
+                  {t("adminProduct.btn_add")}
                 </button>
+
                 <Modal
                   open={isModalOpen}
-                  onCancel={handleCancel}
+                  onCancel={handleCreateCancel}
                   footer={null}
                   width={1200}
                   centered
                   destroyOnClose>
                   <div className="p-8">
                     <h1 className="text-3xl font-bold text-[#133e87] text-center mb-8">
-                      Thông Tin Sản Phẩm
+                      {t("adminProduct.modal_create_title")}
                     </h1>
 
                     <Form
-                      form={form}
+                      form={createForm}
                       layout="vertical"
-                      onFinish={handleSubmit}
+                      onFinish={handleCreateSubmit}
                       initialValues={{ category: selectedCategory }}>
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* LEFT: Hình ảnh */}
                         <div className="flex flex-col items-center justify-center">
                           <div className="bg-[#d9eafd]/40 rounded-2xl h-[480px] w-full flex items-center justify-center border-2 border-dashed border-[#cbdceb] relative overflow-hidden">
-                            {imagePreview ? (
+                            {createImagePreview ? (
                               <div className="relative w-full h-full flex items-center justify-center">
                                 <img
-                                  src={imagePreview}
+                                  src={createImagePreview}
                                   alt="preview"
                                   className="rounded-2xl object-contain max-h-full"
                                 />
@@ -659,9 +599,9 @@ function AdminProductContainer() {
                                   type="text"
                                   danger
                                   size="small"
-                                  className="!absolute top-2 right-2 bg-white/80 hover:bg-white text-red-500 font-medium border rounded-md"
-                                  onClick={handleRemoveImage}>
-                                  Xóa ảnh
+                                  className="!absolute top-2 right-2"
+                                  onClick={handleRemoveCreateImage}>
+                                  {t("adminProduct.image.remove")}
                                 </Button>
                               </div>
                             ) : (
@@ -669,12 +609,19 @@ function AdminProductContainer() {
                                 accept="image/*"
                                 showUploadList={false}
                                 beforeUpload={() => false}
-                                onChange={handleImageUpload}>
+                                onChange={(info) =>
+                                  handleImageUpload(
+                                    info,
+                                    createForm,
+                                    setCreateImagePreview,
+                                    setImageFile
+                                  )
+                                }>
                                 <Button
                                   icon={<UploadOutlined />}
                                   size="large"
                                   className="bg-white/80 hover:bg-white text-[#608bc1] font-medium border-0">
-                                  Thêm Ảnh
+                                  {t("adminProduct.image.add")}
                                 </Button>
                               </Upload>
                             )}
@@ -683,18 +630,19 @@ function AdminProductContainer() {
 
                         {/* MIDDLE: Thông tin cơ bản */}
                         <div className="flex flex-col gap-4">
-                          {/* Tên */}
                           <Form.Item
                             name="name"
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Tên
+                                {t("adminProduct.field.name")}
                               </span>
                             }
                             rules={[
                               {
                                 required: true,
-                                message: "Vui lòng nhập tên sản phẩm",
+                                message: t(
+                                  "adminProduct.validation.required_name"
+                                ),
                               },
                             ]}>
                             <Input
@@ -703,26 +651,27 @@ function AdminProductContainer() {
                             />
                           </Form.Item>
 
-                          {/* Loại tranh & Tình trạng */}
                           <div className="grid grid-cols-2 gap-4">
                             <Form.Item
                               name="category"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Loại Tranh
+                                  {t("adminProduct.field.category")}
                                 </span>
                               }
                               rules={[
                                 {
                                   required: true,
-                                  message: "Vui lòng chọn loại sản phẩm",
+                                  message: t(
+                                    "adminProduct.validation.required_category"
+                                  ),
                                 },
                               ]}>
                               <Select
                                 size="large"
                                 options={categories.map((cat) => ({
-                                  value: cat,
-                                  label: cat,
+                                  value: cat.id,
+                                  label: cat.name,
                                 }))}
                               />
                             </Form.Item>
@@ -731,13 +680,15 @@ function AdminProductContainer() {
                               name="status"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Tình Trạng
+                                  {t("adminProduct.field.status")}
                                 </span>
                               }
                               rules={[
                                 {
                                   required: true,
-                                  message: "Vui lòng chọn tình trạng",
+                                  message: t(
+                                    "adminProduct.validation.required_status"
+                                  ),
                                 },
                               ]}>
                               <Select
@@ -754,19 +705,20 @@ function AdminProductContainer() {
                             </Form.Item>
                           </div>
 
-                          {/* Giá tiền & Định dạng file */}
                           <div className="grid grid-cols-2 gap-4">
                             <Form.Item
                               name="price"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Giá Tiền
+                                  {t("adminProduct.field.price")}
                                 </span>
                               }
                               rules={[
                                 {
                                   required: true,
-                                  message: "Vui lòng nhập giá tiền",
+                                  message: t(
+                                    "adminProduct.validation.required_price"
+                                  ),
                                 },
                               ]}>
                               <Input
@@ -777,7 +729,7 @@ function AdminProductContainer() {
                                     /\D/g,
                                     ""
                                   );
-                                  form.setFieldsValue({ price: value });
+                                  createForm.setFieldsValue({ price: value });
                                 }}
                               />
                             </Form.Item>
@@ -786,7 +738,7 @@ function AdminProductContainer() {
                               name="fileType"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Định Dạng File
+                                  {t("adminProduct.field.fileType")}
                                 </span>
                               }>
                               <Input
@@ -797,12 +749,11 @@ function AdminProductContainer() {
                             </Form.Item>
                           </div>
 
-                          {/* Miêu tả */}
                           <Form.Item
                             name="description"
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Miêu Tả
+                                {t("adminProduct.field.description")}
                               </span>
                             }>
                             <Input.TextArea
@@ -811,13 +762,12 @@ function AdminProductContainer() {
                             />
                           </Form.Item>
 
-                          {/* Kích thước & Dung lượng */}
                           <div className="grid grid-cols-2 gap-4">
                             <Form.Item
                               name="size"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Kích Thước Gốc
+                                  {t("adminProduct.field.size")}
                                 </span>
                               }>
                               <Input
@@ -831,7 +781,7 @@ function AdminProductContainer() {
                               name="fileSize"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Dung Lượng File
+                                  {t("adminProduct.field.fileSize")}
                                 </span>
                               }>
                               <Input
@@ -845,13 +795,12 @@ function AdminProductContainer() {
 
                         {/* RIGHT: Thông tin thêm */}
                         <div className="flex flex-col gap-4">
-                          {/* Tác giả & Nhân vật */}
                           <div className="grid grid-cols-2 gap-4">
                             <Form.Item
                               name="author"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Tác Giả
+                                  {t("adminProduct.field.author")}
                                 </span>
                               }>
                               <Input
@@ -859,11 +808,12 @@ function AdminProductContainer() {
                                 className="bg-white border-[#cbdceb]"
                               />
                             </Form.Item>
+
                             <Form.Item
                               name="character"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Nhân Vật
+                                  {t("adminProduct.field.character")}
                                 </span>
                               }>
                               <Input
@@ -873,13 +823,12 @@ function AdminProductContainer() {
                             </Form.Item>
                           </div>
 
-                          {/* Nguồn gốc & Phong cách */}
                           <div className="grid grid-cols-2 gap-4">
                             <Form.Item
                               name="origin"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Nguồn Gốc
+                                  {t("adminProduct.field.origin")}
                                 </span>
                               }>
                               <Input
@@ -887,11 +836,12 @@ function AdminProductContainer() {
                                 className="bg-white border-[#cbdceb]"
                               />
                             </Form.Item>
+
                             <Form.Item
                               name="style"
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Phong Cách
+                                  {t("adminProduct.field.style")}
                                 </span>
                               }>
                               <Input
@@ -901,12 +851,11 @@ function AdminProductContainer() {
                             </Form.Item>
                           </div>
 
-                          {/* Thông tin thêm */}
                           <Form.Item
                             name="extraInfo"
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Thông Tin Thêm
+                                {t("adminProduct.field.extraInfo")}
                               </span>
                             }>
                             <Input.TextArea
@@ -917,15 +866,16 @@ function AdminProductContainer() {
 
                           <div className="flex justify-end gap-4 mt-auto">
                             <button
-                              onClick={handleCancel}
+                              type="button"
+                              onClick={handleCreateCancel}
                               className="border text-white bg-red-600 hover:bg-red-400 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                              Hủy
+                              {t("adminProduct.btn_cancel")}
                             </button>
 
                             <button
                               type="submit"
                               className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                              Lưu Thông Tin
+                              {t("adminProduct.action.create")}
                             </button>
                           </div>
                         </div>
@@ -947,24 +897,56 @@ function AdminProductContainer() {
                   destroyOnClose>
                   <div className="p-8">
                     <h1 className="text-3xl font-bold text-[#133e87] text-center mb-8">
-                      Chi Tiết Sản Phẩm
+                      {t("adminProduct.modal_detail_title")}
                     </h1>
 
-                    <Form form={form} layout="vertical">
+                    <Form
+                      form={editForm}
+                      disabled={selectedProduct?.status === "LOCKED"}
+                      layout="vertical"
+                      validateTrigger="onSubmit">
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* LEFT: Ảnh sản phẩm */}
                         <div className="flex flex-col items-center justify-center">
                           <div className="bg-[#d9eafd]/40 rounded-2xl h-[530px] w-full flex items-center justify-center border-2 border-dashed border-[#cbdceb] relative overflow-hidden">
-                            {imagePreview ? (
-                              <img
-                                src={imagePreview}
-                                alt="product"
-                                className="rounded-2xl object-contain max-h-full"
-                              />
+                            {editImagePreview ? (
+                              <div className="relative w-full h-full flex items-center justify-center">
+                                <img
+                                  src={editImagePreview}
+                                  alt="preview"
+                                  className="rounded-2xl object-contain max-h-full"
+                                />
+                                {isEditMode && (
+                                  <Button
+                                    type="text"
+                                    danger
+                                    size="small"
+                                    className="!absolute top-2 right-2"
+                                    onClick={handleRemoveEditImage}>
+                                    Xóa ảnh
+                                  </Button>
+                                )}
+                              </div>
                             ) : (
-                              <span className="text-[#608bc1] font-medium">
-                                Không có ảnh hiển thị
-                              </span>
+                              <Upload
+                                accept="image/*"
+                                showUploadList={false}
+                                beforeUpload={() => false}
+                                onChange={(info) =>
+                                  handleImageUpload(
+                                    info,
+                                    editForm,
+                                    setEditImagePreview,
+                                    setEditImageFile
+                                  )
+                                }>
+                                <Button
+                                  icon={<UploadOutlined />}
+                                  size="large"
+                                  disabled={!isEditMode}
+                                  className="bg-white/80 hover:bg-white text-[#608bc1] font-medium border-0">
+                                  {t("adminProduct.image.add")}
+                                </Button>
+                              </Upload>
                             )}
                           </div>
                         </div>
@@ -975,13 +957,13 @@ function AdminProductContainer() {
                           <Form.Item
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Tên
+                                {t("adminProduct.field.name")}
                               </span>
                             }
                             name="name">
                             <Input
                               size="large"
-                              disabled
+                              disabled={!isEditMode}
                               className="bg-gray-50 border-[#cbdceb]"
                             />
                           </Form.Item>
@@ -991,27 +973,37 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Loại Sản Phẩm
+                                  {t("adminProduct.field.category")}
                                 </span>
                               }
                               name="category">
-                              <Input
+                              <Select
                                 size="large"
-                                disabled
-                                className="bg-gray-50 border-[#cbdceb]"
+                                disabled={!isEditMode}
+                                options={categories.map((cat) => ({
+                                  value: cat.id,
+                                  label: cat.name,
+                                }))}
                               />
                             </Form.Item>
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Tình Trạng Hàng
+                                  {t("adminProduct.field.status")}
                                 </span>
                               }
                               name="status">
-                              <Input
+                              <Select
                                 size="large"
-                                disabled
-                                className="bg-gray-50 border-[#cbdceb]"
+                                disabled={!isEditMode}
+                                options={[
+                                  { value: "Còn hàng", label: "Còn hàng" },
+                                  { value: "Hết hàng", label: "Hết hàng" },
+                                  {
+                                    value: "Hàng trưng bày",
+                                    label: "Hàng trưng bày",
+                                  },
+                                ]}
                               />
                             </Form.Item>
                           </div>
@@ -1021,20 +1013,20 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Giá Tiền
+                                  {t("adminProduct.field.price")}
                                 </span>
                               }
                               name="price">
                               <Input
                                 size="large"
-                                disabled
+                                disabled={!isEditMode}
                                 className="bg-gray-50 border-[#cbdceb]"
                               />
                             </Form.Item>
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Định Dạng File
+                                  {t("adminProduct.field.fileType")}
                                 </span>
                               }
                               name="fileType">
@@ -1050,13 +1042,13 @@ function AdminProductContainer() {
                           <Form.Item
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Miêu Tả
+                                {t("adminProduct.field.description")}
                               </span>
                             }
                             name="description">
                             <Input.TextArea
                               rows={2}
-                              disabled
+                              disabled={!isEditMode}
                               className="bg-gray-50 border-[#cbdceb]"
                             />
                           </Form.Item>
@@ -1066,7 +1058,7 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Kích Thước Gốc
+                                  {t("adminProduct.field.size")}
                                 </span>
                               }
                               name="size">
@@ -1079,7 +1071,7 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Dung Lượng File
+                                  {t("adminProduct.field.fileSize")}
                                 </span>
                               }
                               name="fileSize">
@@ -1098,26 +1090,26 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Tác Giả
+                                  {t("adminProduct.field.author")}
                                 </span>
                               }
                               name="author">
                               <Input
                                 size="large"
-                                disabled
+                                disabled={!isEditMode}
                                 className="bg-gray-50 border-[#cbdceb]"
                               />
                             </Form.Item>
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Nhân Vật
+                                  {t("adminProduct.field.character")}
                                 </span>
                               }
                               name="character">
                               <Input
                                 size="large"
-                                disabled
+                                disabled={!isEditMode}
                                 className="bg-gray-50 border-[#cbdceb]"
                               />
                             </Form.Item>
@@ -1127,26 +1119,26 @@ function AdminProductContainer() {
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Nguồn Gốc
+                                  {t("adminProduct.field.origin")}
                                 </span>
                               }
                               name="origin">
                               <Input
                                 size="large"
-                                disabled
+                                disabled={!isEditMode}
                                 className="bg-gray-50 border-[#cbdceb]"
                               />
                             </Form.Item>
                             <Form.Item
                               label={
                                 <span className="text-[#133e87] font-medium">
-                                  Phong Cách
+                                  {t("adminProduct.field.style")}
                                 </span>
                               }
                               name="style">
                               <Input
                                 size="large"
-                                disabled
+                                disabled={!isEditMode}
                                 className="bg-gray-50 border-[#cbdceb]"
                               />
                             </Form.Item>
@@ -1155,13 +1147,13 @@ function AdminProductContainer() {
                           <Form.Item
                             label={
                               <span className="text-[#133e87] font-medium">
-                                Thông Tin Thêm
+                                {t("adminProduct.field.extraInfo")}
                               </span>
                             }
                             name="extraInfo">
                             <Input.TextArea
                               rows={4}
-                              disabled
+                              disabled={!isEditMode}
                               className="bg-gray-50 border-[#cbdceb]"
                             />
                           </Form.Item>
@@ -1170,16 +1162,41 @@ function AdminProductContainer() {
 
                       <div className="flex justify-end gap-4 mt-auto">
                         <button
-                          onClick={() => setIsViewModalOpen(false)}
-                          className="border text-white bg-red-600 hover:bg-red-400 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                          Hủy
+                          type="button"
+                          onClick={() => {
+                            setIsEditMode(false);
+                            setIsViewModalOpen(false);
+                          }}
+                          className="border text-white bg-red-600 hover:bg-red-400 px-6 py-1 rounded-lg">
+                          {t("adminProduct.btn_cancel")}
                         </button>
 
-                        <button
-                          type="submit"
-                          className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                          Sửa Thông Tin
-                        </button>
+                        {!isEditMode ? (
+                          <button
+                            type="button"
+                            disabled={selectedProduct?.status === "LOCKED"}
+                            onClick={() => setIsEditMode(true)}
+                            className={`border px-6 py-1 rounded-lg ${
+                              selectedProduct?.status === "LOCKED"
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                : "border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white"
+                            }`}>
+                            {t("adminProduct.action.edit")}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={submitting}
+                            onClick={async () => {
+                              try {
+                                const values = await editForm.validateFields();
+                                await handleEditSubmit(values);
+                              } catch (err) {}
+                            }}
+                            className="border border-green-700 text-green-700 hover:bg-green-700 hover:text-white px-6 py-1 rounded-lg">
+                            {t("adminProduct.action.save")}
+                          </button>
+                        )}
                       </div>
                     </Form>
                   </div>
@@ -1196,10 +1213,12 @@ function AdminProductContainer() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}>
                 <Table
+                  rowKey="id"
                   columns={columns}
-                  dataSource={filteredProducts}
-                  rowSelection={rowSelection}
+                  dataSource={products}
+                  loading={loading}
                   pagination={false}
+                  rowSelection={rowSelection}
                   className="custom-table"
                   onRow={(record) => ({
                     onClick: () => handleRowClick(record),
@@ -1212,8 +1231,8 @@ function AdminProductContainer() {
             <div className="flex justify-center mt-8">
               <Pagination
                 current={currentPage}
-                total={100}
-                pageSize={10}
+                total={total}
+                pageSize={pageSize}
                 onChange={(page) => setCurrentPage(page)}
                 showSizeChanger={false}
                 className="custom-ant-pagination"

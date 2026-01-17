@@ -16,17 +16,18 @@ import {
 import { Card } from "antd";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const revenueData = [
-  { month: "Tháng 1", thisYear: 10, lastYear: 8 },
-  { month: "Tháng 2", thisYear: 8, lastYear: 12 },
-  { month: "Tháng 3", thisYear: 12, lastYear: 10 },
-  { month: "Tháng 4", thisYear: 15, lastYear: 14 },
-  { month: "Tháng 5", thisYear: 22, lastYear: 18 },
-  { month: "Tháng 6", thisYear: 28, lastYear: 25 },
-  { month: "Tháng 7", thisYear: 18, lastYear: 20 },
-  { month: "Tháng 8", thisYear: 20, lastYear: 22 },
-  { month: "Tháng 9", thisYear: 25, lastYear: 24 },
+  { monthKey: "adminHome.month.m1", thisYear: 10, lastYear: 8 },
+  { monthKey: "adminHome.month.m2", thisYear: 8, lastYear: 12 },
+  { monthKey: "adminHome.month.m3", thisYear: 12, lastYear: 10 },
+  { monthKey: "adminHome.month.m4", thisYear: 15, lastYear: 14 },
+  { monthKey: "adminHome.month.m5", thisYear: 22, lastYear: 18 },
+  { monthKey: "adminHome.month.m6", thisYear: 28, lastYear: 25 },
+  { monthKey: "adminHome.month.m7", thisYear: 18, lastYear: 20 },
+  { monthKey: "adminHome.month.m8", thisYear: 20, lastYear: 22 },
+  { monthKey: "adminHome.month.m9", thisYear: 25, lastYear: 24 },
 ];
 
 const deviceData = [
@@ -52,6 +53,7 @@ const categoryData = [
 
 function SellerHomeContainer() {
   const [selectedPeriod, setSelectedPeriod] = useState("thisYear");
+  const { t } = useTranslation();
 
   const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -61,6 +63,11 @@ function SellerHomeContainer() {
       transition: { delay: i * 0.15, duration: 0.6, ease: "easeOut" },
     }),
   };
+
+  const revenueDataI18n = revenueData.map((d) => ({
+    ...d,
+    month: t(d.monthKey),
+  }));
 
   return (
     <div
@@ -77,14 +84,22 @@ function SellerHomeContainer() {
           animate="visible">
           {[
             {
-              title: "Tổng Doanh Thu Hôm Nay",
+              title: t("adminHome.cards.revenue_today"),
               value: "9,999,999đ",
               color: "#d9eafd",
             },
-            { title: "Số Đơn Đã Bán Hôm Nay", value: "100", color: "#fdf6eb" },
-            { title: "Tổng Số Khách Hàng", value: "1000", color: "#d9eafd" },
             {
-              title: "Khách Mới Trong Hôm Nay",
+              title: t("adminHome.cards.orders_today"),
+              value: "100",
+              color: "#fdf6eb",
+            },
+            {
+              title: t("adminHome.cards.total_customers"),
+              value: "1000",
+              color: "#d9eafd",
+            },
+            {
+              title: t("adminHome.cards.new_customers_today"),
               value: "100",
               color: "#fdf6eb",
             },
@@ -126,7 +141,7 @@ function SellerHomeContainer() {
             className="mb-10">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[#133e87] font-semibold text-lg">
-                Biểu đồ tổng doanh thu trong năm (chục triệu VNĐ)
+                {t("adminHome.charts.revenue_title")}
               </h3>
               <div className="flex gap-4">
                 <button
@@ -136,7 +151,7 @@ function SellerHomeContainer() {
                       ? "text-[#133e87] font-semibold"
                       : "text-gray-400 hover:text-[#133e87]"
                   }`}>
-                  Năm nay
+                  {t("adminHome.period.this_year")}{" "}
                 </button>
                 <button
                   onClick={() => setSelectedPeriod("lastYear")}
@@ -145,12 +160,12 @@ function SellerHomeContainer() {
                       ? "text-[#133e87] font-semibold"
                       : "text-gray-400 hover:text-[#133e87]"
                   }`}>
-                  Năm ngoái
+                  {t("adminHome.period.last_year")}
                 </button>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
+              <LineChart data={revenueDataI18n}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" stroke="#bcbcbc" />
                 <YAxis stroke="#bcbcbc" />
@@ -163,9 +178,9 @@ function SellerHomeContainer() {
                   }}
                   formatter={(value, name) => {
                     const nameMap = {
-                      thisYear: "Năm nay",
-                      lastYear: "Năm ngoái",
-                      value: "Giá trị",
+                      thisYear: t("adminHome.legend.this_year"),
+                      lastYear: t("adminHome.legend.last_year"),
+                      value: t("adminHome.tooltip.value"),
                     };
                     return [value, nameMap[name] || name];
                   }}
@@ -173,8 +188,8 @@ function SellerHomeContainer() {
                 <Legend
                   formatter={(value) => {
                     const nameMap = {
-                      thisYear: "Năm nay",
-                      lastYear: "Năm ngoái",
+                      thisYear: t("adminHome.legend.this_year"),
+                      lastYear: t("adminHome.legend.last_year"),
                     };
                     return nameMap[value] || value;
                   }}
@@ -187,7 +202,11 @@ function SellerHomeContainer() {
                   stroke="#608bc1"
                   strokeWidth={3}
                   dot={{ fill: "#608bc1", r: 4 }}
-                  name={selectedPeriod === "thisYear" ? "Năm nay" : "Năm ngoái"}
+                  name={
+                    selectedPeriod === "thisYear"
+                      ? t("adminHome.legend.this_year")
+                      : t("adminHome.legend.last_year")
+                  }
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -202,7 +221,7 @@ function SellerHomeContainer() {
             custom={2}>
             <div>
               <h3 className="text-[#133e87] font-semibold mb-4">
-                Tổng lượt đăng nhập theo thiết bị (nghìn lượt)
+                {t("adminHome.charts.device_title")}{" "}
               </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={deviceData}>
@@ -216,7 +235,10 @@ function SellerHomeContainer() {
                       border: "none",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                     }}
-                    formatter={(value) => [`${value} lượt`, "Số lượng"]}
+                    formatter={(value) => [
+                      `${value} ${t("adminHome.tooltip.turns_suffix")}`,
+                      t("adminHome.tooltip.quantity"),
+                    ]}
                   />
                   <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                     <Cell fill="#92bfff" />
@@ -229,7 +251,7 @@ function SellerHomeContainer() {
 
             <div>
               <h3 className="text-[#133e87] font-semibold mb-4">
-                Tỷ lệ sử dụng phương thức thanh toán (nghìn lượt)
+                {t("adminHome.charts.payment_title")}{" "}
               </h3>
               <div className="flex justify-center items-center">
                 <ResponsiveContainer width="70%" height={300}>
@@ -253,7 +275,10 @@ function SellerHomeContainer() {
                         border: "none",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                       }}
-                      formatter={(value, name) => [`${value} lượt`, name]}
+                      formatter={(value, name) => [
+                        `${value} ${t("adminHome.tooltip.turns_suffix")}`,
+                        name,
+                      ]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -281,7 +306,7 @@ function SellerHomeContainer() {
             animate="visible"
             custom={3}>
             <h3 className="text-[#133e87] font-semibold mb-4">
-              Tổng lượng tranh đã bán theo từng danh mục (trăm tranh)
+              {t("adminHome.charts.category_title")}{" "}
             </h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={categoryData}>
@@ -295,7 +320,10 @@ function SellerHomeContainer() {
                     border: "none",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                   }}
-                  formatter={(value, name) => [`${value} tranh`, name]}
+                  formatter={(value, name) => [
+                    `${value} ${t("adminHome.tooltip.paintings_suffix")}`,
+                    name,
+                  ]}
                 />
                 <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                   <Cell fill="#92bfff" />

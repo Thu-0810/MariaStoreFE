@@ -1,9 +1,11 @@
 import { Button, Input, Card, Modal, Tabs } from "antd";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function ProfileContainer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("yeuCau"); // tab mặc định
+  const { t, i18n } = useTranslation();
+  const [activeTab, setActiveTab] = useState("yeuCau");
   const [backgroundImage, setBackgroundImage] = useState(
     "src/assets/img/Illustration328.jpg"
   );
@@ -20,28 +22,27 @@ function ProfileContainer() {
     switch (activeTab) {
       case "yeuCau":
         return (
-          <p className="text-[#6b7280] text-lg">Tạm Thời Đặt Yêu Cầu Nào</p>
+          <p className="text-[#6b7280] text-lg">{t("profile.empty_request")}</p>
         );
       case "donHang":
         return (
-          <p className="text-[#6b7280] text-lg">Danh sách đơn hàng của bạn</p>
+          <p className="text-[#6b7280] text-lg">{t("profile.empty_orders")}</p>
         );
       case "sanPham":
         return (
           <p className="text-[#6b7280] text-lg">
-            Các sản phẩm bạn đã yêu thích
+            {t("profile.empty_favorites")}
           </p>
         );
       case "baiViet":
         return (
-          <p className="text-[#6b7280] text-lg">
-            Bài viết của bạn sẽ xuất hiện ở đây
-          </p>
+          <p className="text-[#6b7280] text-lg">{t("profile.empty_posts")}</p>
         );
       default:
         return null;
     }
   };
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -106,7 +107,7 @@ function ProfileContainer() {
              bg-[#d9eafc] border border-[#d9eafc]
              rounded-3xl hover:bg-[#133e87] hover:border-[#133e87]
              transition-colors duration-200">
-                Sửa Thông Tin
+                {t("profile.edit_info_btn")}
               </button>
             </div>
           </Card>
@@ -141,7 +142,7 @@ function ProfileContainer() {
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-center text-[#193a80] font-medium text-base">
-                Chỉnh sửa thông tin hồ sơ
+                {t("profile.modal_title")}{" "}
               </h2>
             </div>
 
@@ -249,7 +250,7 @@ function ProfileContainer() {
 
                 <div>
                   <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    Tên tài khoản
+                    {t("profile.account_name")}
                   </label>
                   <Input
                     placeholder="Tên Tài Khoản"
@@ -267,10 +268,10 @@ function ProfileContainer() {
 
                 <div>
                   <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    Thông tin chi tiết
+                    {t("profile.detail_info")}
                   </label>
                   <Input
-                    placeholder="Thông Tin Chi Tiết"
+                    placeholder={t("profile.detail_info_ph")}
                     value={formData.detailedInfo}
                     onChange={(e) =>
                       handleInputChange("detailedInfo", e.target.value)
@@ -292,7 +293,7 @@ function ProfileContainer() {
              bg-[#d9eafc] border border-[#d9eafc]
              rounded-3xl hover:bg-[#133e87] hover:border-[#133e87]
              transition-colors duration-200">
-                  Lưu
+                  {t("profile.save")}
                 </button>
               </div>
             </div>
@@ -314,7 +315,7 @@ function ProfileContainer() {
                         ? "text-[#133e87] border-b-2 border-[#133e87]"
                         : "text-[#6b7280] hover:text-[#608bc1]"
                     }`}>
-                    Yêu cầu
+                    {t("profile.tab_request")}
                   </button>
                   <button
                     onClick={() => setActiveTab("donHang")}
@@ -323,7 +324,7 @@ function ProfileContainer() {
                         ? "text-[#133e87] border-b-2 border-[#133e87]"
                         : "text-[#6b7280] hover:text-[#608bc1]"
                     }`}>
-                    Đơn hàng
+                    {t("profile.tab_request")}
                   </button>
                   <button
                     onClick={() => setActiveTab("sanPham")}
@@ -332,7 +333,7 @@ function ProfileContainer() {
                         ? "text-[#133e87] border-b-2 border-[#133e87]"
                         : "text-[#6b7280] hover:text-[#608bc1]"
                     }`}>
-                    Sản phẩm đã thích
+                    {t("profile.tab_favorites")}
                   </button>
                   <button
                     onClick={() => setActiveTab("baiViet")}
@@ -341,7 +342,7 @@ function ProfileContainer() {
                         ? "text-[#133e87] border-b-2 border-[#133e87]"
                         : "text-[#6b7280] hover:text-[#608bc1]"
                     }`}>
-                    Bài viết
+                    {t("profile.tab_posts")}
                   </button>
                 </nav>
               </div>

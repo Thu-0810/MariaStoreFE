@@ -1,12 +1,20 @@
 import { Modal, Input, message } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SendOutlined, EditOutlined } from "@ant-design/icons";
 import EditPostModal from "./EditPostModal"; // 🔹 import modal chỉnh sửa
+import { useTranslation } from "react-i18next";
 
 function DetailPostModal({ open, onClose, post: initialPost }) {
   const [post, setPost] = useState(initialPost || {});
   const [showComments, setShowComments] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    setPost(initialPost || {});
+  }, [initialPost, open]);
+
   const [comments, setComments] = useState([
     {
       id: 1,
@@ -33,7 +41,7 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
     };
     setComments([...comments, newItem]);
     setNewComment("");
-    message.success("Đã thêm bình luận!");
+    message.success(t("adminPost.detailModal.toast_comment_added"));
   };
 
   const handleEditPost = () => {
@@ -55,15 +63,16 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
             <div className="max-w-4xl mx-auto">
               {/* Tiêu đề */}
               <h1 className="text-[#133e87] text-2xl font-bold italic text-center mb-4">
-                {post.title || "Tiêu đề bài viết"}
+                {post.title || t("adminPost.detailModal.fallback_title")}
               </h1>
               <p className="text-[#608bc1] text-sm text-center mb-1">
-                Ngày {post.createdAt || "N/A"}
+                {t("adminPost.detailModal.date_prefix")}{" "}
+                {post.createdAt || "N/A"}
               </p>
               <p className="text-[#608bc1] text-sm text-center mb-6">
-                Được viết bởi:{" "}
+                {t("adminPost.detailModal.written_by")}{" "}
                 <span className="font-semibold">
-                  {post.author || "Ẩn danh"}
+                  {post.author || t("adminPost.detailModal.anonymous")}
                 </span>
               </p>
 
@@ -98,13 +107,15 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                   onClick={handleEditPost}
                   className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
                   <EditOutlined />
-                  Chỉnh sửa bài viết
+                  {t("adminPost.detailModal.edit_post")}
                 </button>
 
                 <button
                   onClick={() => setShowComments(!showComments)}
                   className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
-                  {showComments ? "Ẩn bình luận" : "Xem bình luận"}
+                  {showComments
+                    ? t("adminPost.detailModal.hide_comments")
+                    : t("adminPost.detailModal.show_comments")}
                 </button>
               </div>
 
@@ -112,7 +123,7 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
               {showComments && (
                 <div className="mt-6 bg-[#ffffff]/90 rounded-2xl p-6 shadow-inner">
                   <h2 className="text-[#133e87] font-semibold mb-4">
-                    Bình luận
+                    {t("adminPost.detailModal.comments_title")}
                   </h2>
                   <div className="space-y-4 mb-4 max-h-60 overflow-y-auto">
                     {comments.map((c) => (
@@ -135,7 +146,9 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                   {/* Ô nhập bình luận */}
                   <div className="flex items-center gap-2 mt-4">
                     <Input
-                      placeholder="Viết bình luận..."
+                      placeholder={t(
+                        "adminPost.detailModal.comment_placeholder"
+                      )}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onPressEnter={handleAddComment}

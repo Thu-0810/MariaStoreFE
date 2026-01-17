@@ -1,23 +1,21 @@
 import { Card } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function CommunityContainer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center mt-20"
-      style={{
-        backgroundImage: "url('src/assets/img/Illustration311.jpg')",
-      }}>
-      {/* Lớp phủ làm mờ toàn trang */}
+      className="relative min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: "url('src/assets/img/Illustration311.jpg')" }}>
       <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
 
-      {/* Nội dung chính */}
       <main className="relative z-10 max-w-[90%] md:max-w-5xl mx-auto px-4 py-6 sm:py-10 lg:py-12">
-        {/* Khung trắng mờ */}
         <Card className="bg-gray-300/70 backdrop-blur-md border-none rounded-3xl p-4 sm:p-6 lg:p-10 shadow-lg">
-          {/* ===== HERO ===== */}
+          {/* HERO */}
           <motion.div
             className="text-center mb-8 sm:mb-12"
             initial={{ opacity: 0, y: 50 }}
@@ -30,19 +28,20 @@ function CommunityContainer() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}>
-              Cộng Đồng
+              {t("community.title")}
             </motion.h1>
+
             <motion.p
               className="text-[#608bc1] text-base sm:text-lg"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}>
-              Các chia sẻ về tranh vẽ được viết bởi những người yêu vẽ tranh
+              {t("community.subtitle")}
             </motion.p>
           </motion.div>
 
-          {/* ===== BÀI VIẾT NỔI BẬT ===== */}
+          {/* FEATURED */}
           <motion.section
             className="mb-8 sm:mb-12"
             initial={{ opacity: 0, x: -50 }}
@@ -55,8 +54,9 @@ function CommunityContainer() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}>
-              Bài Viết Nổi Bật
+              {t("community.featured")}
             </motion.h2>
+
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
               initial="hidden"
@@ -64,77 +64,93 @@ function CommunityContainer() {
               viewport={{ once: true }}
               variants={{
                 hidden: {},
-                visible: {
-                  transition: {
-                    staggerChildren: 0.2,
-                  },
-                },
+                visible: { transition: { staggerChildren: 0.2 } },
               }}>
               {[
                 {
                   src: "src/assets/img/Illustration153.jpg",
-                  title: "Mua Tranh Tại Maria Store",
+                  titleKey: "community.post.buy_at_mariastore",
                 },
                 {
                   src: "src/assets/img/Illustration212.jpg",
-                  title: "Biểu Tượng Cảm Xúc",
+                  titleKey: "community.post.emoji",
                 },
                 {
                   src: "src/assets/img/Illustration122.jpg",
-                  title: "Biểu Tượng Cảm Xúc",
+                  titleKey: "community.post.emoji",
                 },
               ].map((item, idx) => (
                 <CardItem
                   key={idx}
-                  item={item}
+                  item={{ ...item, title: t(item.titleKey) }}
                   onClick={() => navigate(`/detail-community`)}
                 />
               ))}
             </motion.div>
           </motion.section>
 
-          {/* ===== TẤT CẢ BÀI VIẾT ===== */}
+          {/* ALL POSTS */}
           <ArticleSection
-            title="Tất Cả Bài Viết"
+            title={t("community.all_posts")}
+            viewMoreText={t("community.view_more")}
             items={[
-              { src: "src/assets/img/Illustration164.jpg", title: "Nhãn Dán" },
-              { src: "src/assets/img/Illustration173.jpg", title: "Chibi" },
-              { src: "src/assets/img/Illustration161.jpg", title: "Ảnh Động" },
+              {
+                src: "src/assets/img/Illustration164.jpg",
+                titleKey: "community.post.stickers",
+              },
+              {
+                src: "src/assets/img/Illustration173.jpg",
+                titleKey: "community.post.chibi",
+              },
+              {
+                src: "src/assets/img/Illustration161.jpg",
+                titleKey: "community.post.animation",
+              },
               {
                 src: "src/assets/img/Illustration133.jpg",
-                title: "Biểu Tượng Cảm Xúc",
+                titleKey: "community.post.emoji",
               },
               {
                 src: "src/assets/img/Illustration318.1.jpg",
-                title: "Tranh Chân Dung",
+                titleKey: "community.post.portrait",
               },
               {
                 src: "src/assets/img/Illustration43.1.jpg",
-                title: "2D Avatars",
+                titleKey: "community.post.avatars_2d",
               },
-            ]}
+            ].map((it) => ({ ...it, title: t(it.titleKey) }))}
           />
 
-          {/* ===== CÁC BÀI VIẾT KHÁC ===== */}
+          {/* OTHER POSTS */}
           <ArticleSection
-            title="Các Bài Viết Khác"
+            title={t("community.other_posts")}
+            viewMoreText={t("community.view_more")}
             items={[
-              { src: "src/assets/img/Illustration196.jpg", title: "Nhãn Dán" },
-              { src: "src/assets/img/Illustration254.3.jpg", title: "Chibi" },
-              { src: "src/assets/img/Illustration165.jpg", title: "Ảnh Động" },
+              {
+                src: "src/assets/img/Illustration196.jpg",
+                titleKey: "community.post.stickers",
+              },
+              {
+                src: "src/assets/img/Illustration254.3.jpg",
+                titleKey: "community.post.chibi",
+              },
+              {
+                src: "src/assets/img/Illustration165.jpg",
+                titleKey: "community.post.animation",
+              },
               {
                 src: "src/assets/img/Illustration192.jpg",
-                title: "Biểu Tượng Cảm Xúc",
+                titleKey: "community.post.emoji",
               },
               {
                 src: "src/assets/img/Illustration200.jpg",
-                title: "Tranh Chân Dung",
+                titleKey: "community.post.portrait",
               },
               {
                 src: "src/assets/img/Illustration187.jpg",
-                title: "2D Avatars",
+                titleKey: "community.post.avatars_2d",
               },
-            ]}
+            ].map((it) => ({ ...it, title: t(it.titleKey) }))}
           />
         </Card>
       </main>
@@ -175,6 +191,8 @@ function CardItem({ item, onClick }) {
 }
 
 function ArticleSection({ title, items }) {
+  const { t } = useTranslation();
+
   return (
     <motion.section
       className="mb-8 sm:mb-12"
@@ -218,7 +236,7 @@ function ArticleSection({ title, items }) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           transition={{ duration: 0.2 }}>
-          XEM THÊM →
+          {t("nav.more")} →
         </motion.button>
       </motion.div>
     </motion.section>

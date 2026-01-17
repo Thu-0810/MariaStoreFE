@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Input, Button, Upload, Select, message } from "antd";
 import { motion } from "framer-motion";
 import { Editor } from "@tinymce/tinymce-react";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
@@ -11,6 +12,8 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
   const [hashtag, setHashtag] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [content, setContent] = useState("");
+
+  const { t } = useTranslation();
 
   // 🔹 Khi mở modal, fill dữ liệu bài viết cũ
   useEffect(() => {
@@ -25,7 +28,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
 
   const handleUpdate = () => {
     if (!title || !author || !hashtag) {
-      message.warning("Vui lòng nhập đầy đủ thông tin!");
+      message.warning(t("adminPost.editModal.toast_required"));
       return;
     }
     const updatedPost = {
@@ -37,14 +40,14 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
       content,
     };
     onUpdate(updatedPost);
-    message.success("Cập nhật bài viết thành công!");
+    message.success(t("adminPost.editModal.toast_success"));
     onCancel();
   };
 
   const uploadProps = {
     beforeUpload: (file) => {
       if (file.size > 3 * 1024 * 1024) {
-        message.error("Ảnh không được vượt quá 3MB");
+        message.error(t("adminPost.addModal.image_too_large"));
         return false;
       }
       setCoverImage(file);
@@ -66,7 +69,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}>
         <h2 className="text-[#133e87] text-2xl font-bold text-center mb-6">
-          Chỉnh sửa bài viết
+          {t("adminPost.editModal.title")}
         </h2>
 
         {/* Trình soạn thảo TinyMCE */}
@@ -125,7 +128,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                   />
                 ) : (
                   <div className="flex flex-col justify-center items-center w-full h-full text-[#133e87]">
-                    + Thêm Ảnh Bìa
+                    {t("adminPost.addModal.cover_add")}
                   </div>
                 )}
               </Upload>
@@ -137,7 +140,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
             <div className="flex flex-col space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Tên Bài Viết*
+                  {t("adminPost.addModal.post_title_label")}
                 </label>
                 <Input
                   value={title}
@@ -148,7 +151,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
 
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Tên Người Viết*
+                  {t("adminPost.addModal.author_label")}{" "}
                 </label>
                 <Input
                   value={author}
@@ -159,15 +162,21 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
 
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  Hashtag*
+                  {t("adminPost.addModal.hashtag_label")}{" "}
                 </label>
                 <Select
                   value={hashtag}
                   onChange={(value) => setHashtag(value)}
                   className="w-full rounded-lg h-10">
-                  <Option value="tin-tuc">#TinTuc</Option>
-                  <Option value="su-kien">#SuKien</Option>
-                  <Option value="review">#Review</Option>
+                  <Option value="tin-tuc">
+                    {t("adminPost.addModal.hashtag.news")}
+                  </Option>
+                  <Option value="su-kien">
+                    {t("adminPost.addModal.hashtag.event")}
+                  </Option>
+                  <Option value="review">
+                    {t("adminPost.addModal.hashtag.review")}
+                  </Option>
                 </Select>
               </div>
             </div>
@@ -179,14 +188,14 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                 type="primary"
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ backgroundColor: "#133e87", borderColor: "#133e87" }}>
-                Cập nhật bài viết
+                {t("adminPost.editModal.btn_update")}
               </Button>
 
               <Button
                 onClick={onCancel}
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ borderColor: "#133e87", color: "#133e87" }}>
-                Hủy
+                {t("adminPost.common.cancel")}
               </Button>
             </div>
           </div>

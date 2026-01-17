@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 function HomeContainer() {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
   const slideInFromLeft = {
     hidden: { opacity: 0, x: -100 },
     visible: {
@@ -49,7 +54,7 @@ function HomeContainer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f6] mt-20">
+    <div className="min-h-screen bg-[#f6f6f6]">
       {/* Hero Section */}
       <section className="relative py-12 sm:py-16 px-4 sm:px-6 lg:px-8 flex items-center">
         <div
@@ -88,8 +93,10 @@ function HomeContainer() {
                 </p>
               </div>
 
-              <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-medium rounded-lg transition-colors">
-                XEM THÊM →
+              <button
+                className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-medium rounded-lg transition-colors"
+                onClick={() => navigate("/detail")}>
+                {t("nav.more")} →
               </button>
             </motion.div>
 
@@ -129,7 +136,7 @@ function HomeContainer() {
             variants={slideInFromBottom}>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-blue-900"></div>
             <h2 className="text-2xl sm:text-3xl font-bold text-blue-900 mx-6 text-center">
-              Cửa Hàng
+              {t("nav.store")}
             </h2>
             <div className="flex-1 h-px bg-gradient-to-l from-transparent to-blue-900"></div>
           </motion.div>
@@ -188,8 +195,10 @@ function HomeContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             variants={slideInFromBottom}>
-            <button className="border border-[#CCCCCC] bg-[#ffffff] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base">
-              XEM THÊM →
+            <button
+              className="border border-[#CCCCCC] bg-[#ffffff] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base"
+              onClick={() => navigate("/store")}>
+              {t("nav.more")} →
             </button>
           </motion.div>
         </div>
@@ -254,8 +263,10 @@ function HomeContainer() {
                 </p>
               </div>
 
-              <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-medium rounded-lg transition-colors">
-                XEM THÊM →
+              <button
+                className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-medium rounded-lg transition-colors"
+                onClick={() => navigate("/detail")}>
+                {t("nav.more")} →
               </button>
             </motion.div>
           </div>
@@ -271,7 +282,7 @@ function HomeContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             variants={slideInFromBottom}>
-            Đặt Tranh
+            {t("nav.order_painting")}
           </motion.h2>
 
           <motion.div
@@ -324,8 +335,10 @@ function HomeContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             variants={slideInFromBottom}>
-            <button className="border border-[#CCCCCC] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base">
-              ĐẾN ĐẶT TRANH →
+            <button
+              className="border border-[#CCCCCC] text-[#133e87] hover:bg-[#133e87] hover:text-white px-6 py-2 text-sm sm:text-base"
+              onClick={() => navigate("/order")}>
+              {t("nav.go_order")} →
             </button>
           </motion.div>
         </div>

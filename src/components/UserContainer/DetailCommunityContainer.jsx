@@ -1,9 +1,11 @@
 import { Input, Button } from "antd";
 import { useState } from "react";
 import { SendOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 function DetailCommunityContainer() {
   const [showComments, setShowComments] = useState(false);
+  const { t } = useTranslation();
   const [comments, setComments] = useState([
     {
       id: 1,
@@ -34,7 +36,7 @@ function DetailCommunityContainer() {
 
   return (
     <div
-      className="relative min-h-screen bg-cover bg-center mt-20"
+      className="relative min-h-screen bg-cover bg-center"
       style={{
         backgroundImage: "url('src/assets/img/Illustration311.jpg')",
       }}>
@@ -197,7 +199,9 @@ function DetailCommunityContainer() {
                 <button
                   onClick={() => setShowComments(!showComments)}
                   className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
-                  {showComments ? "Ẩn bình luận" : "Xem bình luận"}
+                  {showComments
+                    ? t("detailCommunity.hide_comments")
+                    : t("detailCommunity.show_comments")}
                 </button>
               </div>
 
@@ -205,7 +209,7 @@ function DetailCommunityContainer() {
               {showComments && (
                 <div className="mt-8 bg-gradient-to-br from-[#ffffff]/90 to-[#ffecc8]/40 rounded-3xl p-6 shadow-md transition-all duration-500">
                   <h2 className="text-[#133e87] font-semibold mb-4">
-                    Bình luận
+                    {t("detailCommunity.comments_title")}
                   </h2>
 
                   {/* Danh sách bình luận */}
@@ -235,7 +239,7 @@ function DetailCommunityContainer() {
                       className="w-10 h-10 rounded-full"
                     />
                     <Input
-                      placeholder="Viết bình luận..."
+                      placeholder={t("detailCommunity.comment_placeholder")}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onPressEnter={handleAddComment}

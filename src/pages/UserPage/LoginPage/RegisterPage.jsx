@@ -2,10 +2,12 @@ import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { registerApi } from "../../../api/authApi";
 import { errorMessageMapper } from "../../../utils/errorMessageMapper";
+import { useTranslation } from "react-i18next";
 
 function RegisterPage() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleRegister = async (values) => {
     try {
@@ -18,21 +20,24 @@ function RegisterPage() {
 
       await registerApi(payload);
 
-      message.success("Đăng ký thành công! Vui lòng đăng nhập.");
+      message.success(t("auth.register_success"));
       navigate("/login");
     } catch (err) {
       const backendMessage = err.response?.data?.message;
 
+      // case backend trả string cố định
       if (backendMessage === "Email already exists") {
         form.setFields([
           {
             name: "email",
-            errors: ["Email đã tồn tại trong hệ thống"],
+            errors: [t("auth.email_exists")],
           },
         ]);
-      } else {
-        message.error(errorMessageMapper(backendMessage));
+        return;
       }
+
+      // fallback: mapper cũ (nếu bạn muốn i18n hóa mapper nữa thì mình chỉ tiếp)
+      message.error(errorMessageMapper(backendMessage));
     }
   };
 
@@ -41,9 +46,7 @@ function RegisterPage() {
       <main className="relative min-h-screen">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('src/assets/img/Illustration122.jpg')`,
-          }}
+          style={{ backgroundImage: `url('src/assets/img/Illustration122.jpg')` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#d9eafd]/20"></div>
         </div>
@@ -51,41 +54,33 @@ function RegisterPage() {
         <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md shadow-lg">
             <h2 className="text-[#133e87] text-xl font-bold text-center mb-6">
-              Đăng ký tài khoản
+              {t("auth.register_title")}
             </h2>
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleRegister}
-            >
+            <Form form={form} layout="vertical" onFinish={handleRegister}>
               <Form.Item
-                label="Họ"
+                label={t("auth.first_name")}
                 name="firstName"
-                rules={[
-                  { required: true, message: "Vui lòng nhập họ!" },
-                ]}
+                rules={[{ required: true, message: t("auth.required_first_name") }]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item
-                label="Tên"
+                label={t("auth.last_name")}
                 name="lastName"
-                rules={[
-                  { required: true, message: "Vui lòng nhập tên!" },
-                ]}
+                rules={[{ required: true, message: t("auth.required_last_name") }]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item
-                label="Số điện thoại (Tùy chọn)"
+                label={t("auth.phone_optional")}
                 name="phone"
                 rules={[
                   {
                     pattern: /^(0|\+84)[0-9]{9}$/,
-                    message: "Số điện thoại không hợp lệ!",
+                    message: t("auth.invalid_phone"),
                   },
                 ]}
               >
@@ -93,25 +88,22 @@ function RegisterPage() {
               </Form.Item>
 
               <Form.Item
-                label="Email"
+                label={t("auth.email")}
                 name="email"
                 rules={[
-                  { required: true, message: "Vui lòng nhập email!" },
-                  { type: "email", message: "Email không đúng định dạng!" },
+                  { required: true, message: t("auth.required_email") },
+                  { type: "email", message: t("auth.invalid_email") },
                 ]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item
-                label="Mật khẩu"
+                label={t("auth.password")}
                 name="password"
                 rules={[
-                  { required: true, message: "Vui lòng nhập mật khẩu!" },
-                  {
-                    min: 6,
-                    message: "Mật khẩu phải có ít nhất 6 ký tự!",
-                  },
+                  { required: true, message: t("auth.required_password") },
+                  { min: 6, message: t("auth.password_min_6") },
                 ]}
               >
                 <Input.Password />
@@ -123,16 +115,13 @@ function RegisterPage() {
                 className="w-full font-medium py-2.5 mt-4 h-10"
                 style={{ backgroundColor: "#608bc1", borderColor: "#608bc1" }}
               >
-                Đăng ký
+                {t("auth.btn_register")}
               </Button>
             </Form>
 
             <div className="text-center mt-4">
-              <a
-                href="/login"
-                className="text-[#d61f6f] text-sm hover:underline"
-              >
-                Đã có tài khoản? Đăng nhập
+              <a href="/login" className="text-[#d61f6f] text-sm hover:underline">
+                {t("auth.already_have_account")}
               </a>
             </div>
           </div>

@@ -21,6 +21,7 @@ import {
 } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 function AdminCustomerContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -32,6 +33,8 @@ function AdminCustomerContainer() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(null);
+
+  const { t } = useTranslation();
 
   // Dữ liệu mẫu cho từng danh mục
   const [data, setData] = useState([
@@ -76,18 +79,36 @@ function AdminCustomerContainer() {
   ]);
 
   const columns = [
-    { title: "STT", dataIndex: "stt", key: "stt", width: 80 },
-    { title: "Tên hiển thị", dataIndex: "displayName", key: "displayName" },
-    { title: "Tên người dùng", dataIndex: "username", key: "username" },
-    { title: "Số đơn đã mua", dataIndex: "orders", key: "orders", width: 140 },
     {
-      title: "Ngày tạo tài khoản",
+      title: t("adminCustomer.table.index"),
+      dataIndex: "stt",
+      key: "stt",
+      width: 80,
+    },
+    {
+      title: t("adminCustomer.table.display_name"),
+      dataIndex: "displayName",
+      key: "displayName",
+    },
+    {
+      title: t("adminCustomer.table.username"),
+      dataIndex: "username",
+      key: "username",
+    },
+    {
+      title: t("adminCustomer.table.orders_count"),
+      dataIndex: "orders",
+      key: "orders",
+      width: 140,
+    },
+    {
+      title: t("adminCustomer.table.created_at"),
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
     },
     {
-      title: "Tổng tiền",
+      title: t("adminCustomer.table.total_amount"),
       dataIndex: "totalAmount",
       key: "totalAmount",
       width: 160,
@@ -113,7 +134,7 @@ function AdminCustomerContainer() {
       )
     );
     setIsEditing(false);
-    message.success("Cập nhật thông tin thành công!");
+    message.success(t("adminCustomer.toast.update_success"));
   };
 
   const handleChange = (field, value) => {
@@ -146,13 +167,16 @@ function AdminCustomerContainer() {
           transition={{ duration: 0.7, delay: 0.3 }}>
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
-              {`Quản lý ${selectedCategory || "khách hàng"}`}
+              {t("adminCustomer.title_manage", {
+                category:
+                  selectedCategory || t("adminCustomer.title_manage_default"),
+              })}
             </h1>
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1">
                 <Input
-                  placeholder="Tìm Kiếm..."
+                  placeholder={t("adminCustomer.search_placeholder")}
                   className="max-w-xs"
                   style={{ borderColor: "#cbdceb" }}
                 />
@@ -166,7 +190,7 @@ function AdminCustomerContainer() {
                     borderColor: "#ff7383",
                   }}
                   onClick={() => setIsDeleteModalOpen(true)}>
-                  Xóa Tài Khoản
+                  {t("adminCustomer.btn_delete")}
                 </Button>
                 <Modal
                   open={isDeleteModalOpen}
@@ -177,7 +201,7 @@ function AdminCustomerContainer() {
                   closable={false}
                   className="text-center rounded-2xl">
                   <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    Xác nhận muốn xóa tài khoản chứ?
+                    {t("adminCustomer.confirm_delete")}
                   </p>
                   <div className="flex justify-center gap-4">
                     <Button
@@ -191,7 +215,7 @@ function AdminCustomerContainer() {
                       onClick={() => {
                         if (selectedRowKeys.length === 0) {
                           message.warning(
-                            "Vui lòng chọn ít nhất một tài khoản để xóa!"
+                            t("adminCustomer.toast.select_one_for_delete")
                           );
                           return;
                         }
@@ -211,9 +235,11 @@ function AdminCustomerContainer() {
                         setIsDeleteModalOpen(false);
 
                         // Thông báo
-                        message.success("Xóa tài khoản thành công!");
+                        message.success(
+                          t("adminCustomer.toast.delete_success")
+                        );
                       }}>
-                      Xóa
+                      {t("adminCustomer.btn_delete_ok")}
                     </Button>
                     <Button
                       className="px-6 py-1 rounded-full font-medium"
@@ -222,7 +248,7 @@ function AdminCustomerContainer() {
                         color: "#133e87",
                       }}
                       onClick={() => setIsDeleteModalOpen(false)}>
-                      Hủy
+                      {t("adminCustomer.btn_cancel")}
                     </Button>
                   </div>
                 </Modal>
@@ -230,7 +256,7 @@ function AdminCustomerContainer() {
                 <button
                   onClick={() => setIsLockModalOpen(true)}
                   className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                  Khóa Tài Khoản
+                  {t("adminCustomer.btn_lock")}
                 </button>
 
                 <Modal
@@ -242,7 +268,7 @@ function AdminCustomerContainer() {
                   closable={false}
                   className="text-center rounded-2xl">
                   <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    Xác nhận muốn khóa tài khoản chứ?
+                    {t("adminCustomer.confirm_lock")}
                   </p>
                   <div className="flex justify-center gap-4">
                     <Button
@@ -253,10 +279,9 @@ function AdminCustomerContainer() {
                         borderColor: "#133e87",
                       }}
                       onClick={() => {
-                        console.log("Đã xác nhận khóa tài khoản");
                         setIsLockModalOpen(false);
                       }}>
-                      Khóa
+                      {t("adminCustomer.btn_lock_ok")}
                     </Button>
                     <Button
                       className="px-6 py-1 rounded-full font-medium"
@@ -265,7 +290,7 @@ function AdminCustomerContainer() {
                         color: "#133e87",
                       }}
                       onClick={() => setIsLockModalOpen(false)}>
-                      Hủy
+                      {t("adminCustomer.btn_cancel")}
                     </Button>
                   </div>
                 </Modal>
@@ -355,7 +380,9 @@ function AdminCustomerContainer() {
                                 if (isEditing) handleSave();
                                 else setIsEditing(true);
                               }}>
-                              {isEditing ? "Lưu Thông Tin" : "Sửa Thông Tin"}
+                              {isEditing
+                                ? t("adminCustomer.detail.btn_save")
+                                : t("adminCustomer.detail.btn_edit")}
                             </Button>
                             <Button
                               type="primary"
@@ -365,7 +392,7 @@ function AdminCustomerContainer() {
                               }}
                               className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
                               onClick={() => setIsLockModalOpen(true)}>
-                              Khóa Tài Khoản
+                              {t("adminCustomer.btn_lock")}
                             </Button>
 
                             <Modal
@@ -377,7 +404,7 @@ function AdminCustomerContainer() {
                               closable={false}
                               className="text-center rounded-2xl">
                               <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                                Xác nhận muốn khóa tài khoản chứ?
+                                {t("adminCustomer.confirm_lock")}
                               </p>
                               <div className="flex justify-center gap-4">
                                 <Button
@@ -388,15 +415,12 @@ function AdminCustomerContainer() {
                                     borderColor: "#133e87",
                                   }}
                                   onClick={() => {
-                                    console.log(
-                                      `Đã khóa tài khoản: ${selectedCustomer.username}`
-                                    );
                                     message.success(
-                                      "Khóa tài khoản thành công!"
+                                      t("adminCustomer.toast.delete_success")
                                     );
                                     setIsLockModalOpen(false);
                                   }}>
-                                  Khóa
+                                  {t("adminCustomer.btn_delete_ok")}
                                 </Button>
                                 <Button
                                   className="px-6 py-1 rounded-full font-medium"
@@ -405,7 +429,7 @@ function AdminCustomerContainer() {
                                     color: "#133e87",
                                   }}
                                   onClick={() => setIsLockModalOpen(false)}>
-                                  Hủy
+                                  {t("adminCustomer.btn_cancel")}
                                 </Button>
                               </div>
                             </Modal>
@@ -418,7 +442,7 @@ function AdminCustomerContainer() {
                               }}
                               className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
                               onClick={() => setIsDeleteModalOpen(true)}>
-                              Xóa Tài Khoản
+                              {t("adminCustomer.btn_delete")}
                             </Button>
 
                             <Modal
@@ -430,7 +454,7 @@ function AdminCustomerContainer() {
                               closable={false}
                               className="text-center rounded-2xl">
                               <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                                Xác nhận muốn xóa tài khoản chứ?
+                                {t("adminCustomer.confirm_delete")}
                               </p>
                               <div className="flex justify-center gap-4">
                                 <Button
@@ -458,11 +482,11 @@ function AdminCustomerContainer() {
                                       setSelectedCustomer(null);
                                       setIsViewModalOpen(false);
                                       message.success(
-                                        "Xóa tài khoản thành công!"
+                                        t("adminCustomer.toast.delete_success")
                                       );
                                     });
                                   }}>
-                                  Xóa
+                                  {t("adminCustomer.btn_delete_ok")}
                                 </Button>
                                 <Button
                                   className="px-6 py-1 rounded-full font-medium"
@@ -471,7 +495,7 @@ function AdminCustomerContainer() {
                                     color: "#133e87",
                                   }}
                                   onClick={() => setIsDeleteModalOpen(false)}>
-                                  Hủy
+                                  {t("adminCustomer.btn_cancel")}
                                 </Button>
                               </div>
                             </Modal>
@@ -487,7 +511,7 @@ function AdminCustomerContainer() {
                         <div className="grid grid-cols-3 gap-4 mb-8">
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Tên Hiển Thị
+                              {t("adminCustomer.detail.display_name")}
                             </label>
                             <Input
                               value={selectedCustomer.displayName}
@@ -499,7 +523,7 @@ function AdminCustomerContainer() {
                           </div>
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Tên Người Dùng
+                              {t("adminCustomer.detail.username")}
                             </label>
                             <Input
                               value={selectedCustomer.username}
@@ -511,7 +535,7 @@ function AdminCustomerContainer() {
                           </div>
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Số Điện Thoại
+                              {t("adminCustomer.detail.phone")}
                             </label>
                             <Input
                               value={selectedCustomer.phone}
@@ -526,15 +550,26 @@ function AdminCustomerContainer() {
                         <div className="grid grid-cols-3 gap-4 mb-8">
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Giới Tính
+                              {t("adminCustomer.detail.gender")}
                             </label>
                             <Select
                               value={selectedCustomer.gender}
                               onChange={(val) => handleChange("gender", val)}
                               options={[
-                                { value: "male", label: "Nam" },
-                                { value: "female", label: "Nữ" },
-                                { value: "other", label: "Khác" },
+                                {
+                                  value: "male",
+                                  label: t("adminCustomer.detail.gender_male"),
+                                },
+                                {
+                                  value: "female",
+                                  label: t(
+                                    "adminCustomer.detail.gender_female"
+                                  ),
+                                },
+                                {
+                                  value: "other",
+                                  label: t("adminCustomer.detail.gender_other"),
+                                },
                               ]}
                               disabled={!isEditing}
                               className="w-full"
@@ -543,7 +578,7 @@ function AdminCustomerContainer() {
                           </div>
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Ngày Sinh
+                              {t("adminCustomer.detail.birthday")}{" "}
                             </label>
                             <DatePicker
                               value={
@@ -564,7 +599,7 @@ function AdminCustomerContainer() {
                           </div>
                           <div>
                             <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                              Email
+                              {t("adminCustomer.detail.email")}{" "}
                             </label>
                             <Input
                               value={selectedCustomer.email}
@@ -579,28 +614,36 @@ function AdminCustomerContainer() {
                         {/* Lịch sử đơn hàng */}
                         <div className="mb-6">
                           <h3 className="text-[#133e87] font-semibold mb-4">
-                            Thống kê đơn hàng:
+                            {t("adminCustomer.detail.orders_stats")}
                           </h3>
                           <Table
                             columns={[
                               {
-                                title: "STT",
+                                title: t(
+                                  "adminCustomer.detail.order_table.index"
+                                ),
                                 dataIndex: "stt",
                                 key: "stt",
                                 width: 80,
                               },
                               {
-                                title: "Mã đơn",
+                                title: t(
+                                  "adminCustomer.detail.order_table.order_number"
+                                ),
                                 dataIndex: "orderNumber",
                                 key: "orderNumber",
                               },
                               {
-                                title: "Ngày đặt",
+                                title: t(
+                                  "adminCustomer.detail.order_table.order_date"
+                                ),
                                 dataIndex: "date",
                                 key: "date",
                               },
                               {
-                                title: "Tổng tiền",
+                                title: t(
+                                  "adminCustomer.detail.order_table.total"
+                                ),
                                 dataIndex: "total",
                                 key: "total",
                               },
@@ -609,7 +652,6 @@ function AdminCustomerContainer() {
                             pagination={false}
                             className="custom-table"
                           />
-
                           <div className="flex justify-center items-center gap-2 mt-4">
                             <Button
                               type="text"
@@ -629,7 +671,7 @@ function AdminCustomerContainer() {
 
                         <div className="flex justify-between items-center pt-4 border-t border-[#d1d1d1]">
                           <span className="text-[#133e87] font-semibold text-lg">
-                            Tổng Giá Trị
+                            {t("adminCustomer.detail.total_value")}
                           </span>
                           <span className="text-[#133e87] font-bold text-2xl">
                             {selectedCustomer.totalAmount}

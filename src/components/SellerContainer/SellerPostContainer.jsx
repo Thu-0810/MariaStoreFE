@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Input, Button, Table, Space, Pagination, Modal, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import AddPostModal from "../SellerModal/AddPostModal";
-import DetailPostModal from "../SellerModal/DetailPostModal";
+import AddPostModal from "../AdminModal/AddPostModal";
+import DetailPostModal from "../AdminModal/DetailPostModal";
+import { useTranslation } from "react-i18next";
 
 function SellerPostContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -11,6 +12,8 @@ function SellerPostContainer() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+
+  const { t } = useTranslation();
 
   const [data, setData] = useState([
     {
@@ -34,31 +37,31 @@ function SellerPostContainer() {
 
   const columns = [
     {
-      title: "STT",
+      title: t("adminPost.table.index"),
       dataIndex: "stt",
       key: "stt",
       width: 80,
     },
     {
-      title: "Tên bài viết",
+      title: t("adminPost.table.post_name"),
       dataIndex: "title",
       key: "title",
       render: (text) => text || "",
     },
     {
-      title: "Tác giả",
+      title: t("adminPost.table.author"),
       dataIndex: "author",
       key: "author",
       render: (text) => text || "",
     },
     {
-      title: "Username",
+      title: t("adminPost.table.username"),
       dataIndex: "username",
       key: "username",
       render: (text) => text || "",
     },
     {
-      title: "Ngày tạo",
+      title: t("adminPost.table.created_at"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => text || "",
@@ -95,14 +98,14 @@ function SellerPostContainer() {
           transition={{ duration: 0.7, delay: 0.3 }}>
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
-              Quản Lý Bài Viết
+              {t("adminPost.title")}
             </h1>
 
             {/* Thanh công cụ */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1">
                 <Input
-                  placeholder="Tìm Kiếm..."
+                  placeholder={t("adminPost.search_placeholder")}
                   className="max-w-xs"
                   style={{ borderColor: "#cbdceb" }}
                 />
@@ -117,14 +120,14 @@ function SellerPostContainer() {
                     borderColor: "#ff7383",
                   }}
                   onClick={() => setIsDeleteModalOpen(true)}>
-                  Xóa Bài Viết
+                  {t("adminPost.btn_delete")}
                 </Button>
 
                 <Button
                   className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 py-1 font-medium rounded-lg transition-colors"
                   style={{ borderColor: "#133e87", color: "#133e87" }}
                   onClick={() => setIsAddModalOpen(true)}>
-                  Thêm Bài Viết
+                  {t("adminPost.btn_add")}
                 </Button>
               </Space>
             </div>
@@ -139,7 +142,7 @@ function SellerPostContainer() {
               closable={false}
               className="text-center rounded-2xl">
               <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                Xác nhận muốn xóa bài viết chứ?
+                {t("adminPost.modal.delete_confirm")}
               </p>
               <div className="flex justify-center gap-4">
                 <Button
@@ -163,7 +166,7 @@ function SellerPostContainer() {
                     setIsDeleteModalOpen(false);
                     message.success("Xóa bài viết thành công!");
                   }}>
-                  Xóa
+                  {t("adminPost.common.delete")}
                 </Button>
                 <Button
                   className="px-6 py-1 rounded-full font-medium"
@@ -172,7 +175,7 @@ function SellerPostContainer() {
                     color: "#133e87",
                   }}
                   onClick={() => setIsDeleteModalOpen(false)}>
-                  Hủy
+                  {t("adminPost.common.cancel")}
                 </Button>
               </div>
             </Modal>
