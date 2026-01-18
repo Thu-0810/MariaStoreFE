@@ -1,5 +1,5 @@
 import axiosClient from "./axiosClient";
 
 export const getCategoriesApi = () => {
-  return axiosClient.get("/categories");
+  return axiosClient.get("/categories/with-thumbnail");
 };

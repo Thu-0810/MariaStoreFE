@@ -10,8 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getProductsPagedApi } from "../../api/productApi";
 import { getCategoriesApi } from "../../api/categoryApi";
-
-const placeholderImage = "src/assets/img/Illustration80.1.jpg";
+import { toServerUrl } from "../../utils/url";
 
 function StoreContainer() {
   const navigate = useNavigate();
@@ -57,7 +56,18 @@ function StoreContainer() {
           category: selectedCategory,
         });
 
-        setProducts(res.data.content);
+        const mapped = (res.data.content || []).map((p) => {
+          const primary =
+            p.images?.find((x) => x.isPrimary)?.imageUrl ||
+            p.images?.[0]?.imageUrl;
+
+          return {
+            ...p,
+            primaryImage: primary ? toServerUrl(primary) : null,
+          };
+        });
+
+        setProducts(mapped);
         setTotal(res.data.totalElements);
       } catch (err) {
         console.error("Fetch products failed", err);
@@ -133,7 +143,9 @@ function StoreContainer() {
             "
                 variants={staggerItem}>
                 <img
-                  src={placeholderImage}
+                  src={
+                    cat.thumbnailUrl ? toServerUrl(cat.thumbnailUrl) : fallback
+                  }
                   alt={cat.name}
                   className="
                 w-full h-full object-cover
@@ -221,11 +233,17 @@ function StoreContainer() {
                   bodyStyle={{ padding: "8px" }}
                   cover={
                     <div className="relative">
-                      <img
-                        src={placeholderImage}
-                        alt={product.name}
-                        className="w-full h-70 object-cover"
-                      />
+                      {product.primaryImageUrl ? (
+                        <img
+                          src={toServerUrl(product.primaryImageUrl)}
+                          alt={product.name}
+                          className="w-full h-70 object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-70 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+                          No image
+                        </div>
+                      )}
                       <button className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
                         <ShoppingCartOutlined className="text-white" />
                       </button>

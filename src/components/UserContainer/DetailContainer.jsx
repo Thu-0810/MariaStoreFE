@@ -7,6 +7,7 @@ import QuantityControl from "../QuantityControl";
 import { getProductDetailApi } from "../../api/productApi";
 import bgImage from "../../assets/img/Illustration299.jpg";
 import { useTranslation } from "react-i18next";
+import { toServerUrl } from "../../utils/url";
 const fallbackImage = "src/assets/img/Illustration309.jpg";
 
 function DetailContainer() {
@@ -28,7 +29,17 @@ function DetailContainer() {
       try {
         setLoading(true);
         const res = await getProductDetailApi(id);
-        setProduct(res.data);
+        const data = res.data;
+
+        const primary =
+          data.images?.find((x) => x.isPrimary)?.imageUrl ||
+          data.images?.[0]?.imageUrl;
+
+        setProduct({
+          ...data,
+          primaryImage: toServerUrl(primary),
+          imageUrls: (data.images || []).map((x) => toServerUrl(x.imageUrl)),
+        });
       } catch (err) {
         console.error("Fetch product detail failed", err);
       } finally {
@@ -38,7 +49,6 @@ function DetailContainer() {
 
     fetchDetail();
   }, [id]);
-
   const formatPrice = (price) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
@@ -82,6 +92,36 @@ function DetailContainer() {
     );
   }
 
+  const rating = product?.rating || {};
+  const avg = Number(rating.averageRating ?? 0);
+  const total = Number(rating.totalReviews ?? 0);
+
+  const starCounts = {
+    5: Number(rating.fiveStar ?? 0),
+    4: Number(rating.fourStar ?? 0),
+    3: Number(rating.threeStar ?? 0),
+    2: Number(rating.twoStar ?? 0),
+    1: Number(rating.oneStar ?? 0),
+  };
+
+  const totalFromStars =
+    starCounts[5] +
+    starCounts[4] +
+    starCounts[3] +
+    starCounts[2] +
+    starCounts[1];
+
+  const safeTotal = total > 0 ? total : totalFromStars;
+
+  const starPercents = [5, 4, 3, 2, 1].map((s) =>
+    safeTotal > 0 ? Math.round((starCounts[s] / safeTotal) * 100) : 0
+  );
+
+  const positivePercent =
+    safeTotal > 0
+      ? Math.round(((starCounts[5] + starCounts[4]) / safeTotal) * 100)
+      : 0;
+
   return (
     <div className="min-h-screen pb-20 relative">
       <div
@@ -93,7 +133,7 @@ function DetailContainer() {
         <div className="max-w-5xl w-full bg-white/80 rounded-2xl shadow-xl p-8 md:flex gap-8">
           <div className="md:w-1/2 mb-6 md:mb-0">
             <img
-              src={product.mediaList?.[0] || fallbackImage}
+              src={product.primaryImage || fallbackImage}
               alt={product.name}
               className="w-full h-[800px] object-cover rounded-xl"
             />
@@ -149,15 +189,13 @@ function DetailContainer() {
             </h4>
             <div className="space-y-1 text-sm text-[#133e87]">
               <div>
-                {t("productDetail.art_type")}:
-                {t("productDetail.art_type_value")}
+                {t("productDetail.art_type")}: {product.categories}
               </div>
               <div>
-                {t("productDetail.file_format")}:
-                {t("productDetail.file_format_value")}
+                {t("productDetail.file_format")}: {product.meta.fileFormat}
               </div>
               <div>
-                {t("productDetail.category")}:
+                {t("productDetail.category")}:{" "}
                 {product.categories?.join(", ") || t("productDetail.updating")}
               </div>
               <div>
@@ -168,26 +206,36 @@ function DetailContainer() {
             <h4 className="text-lg font-semibold text-[#133e87] mt-6 mb-3">
               {t("productDetail.rating")}
             </h4>
+
             <div className="flex items-center space-x-3 mb-4">
-              <h2 className="text-2xl font-bold text-[#133e87] mb-0">4.7</h2>
-              <Rate disabled defaultValue={4.5} />
+              <h2 className="text-2xl font-bold text-[#133e87] mb-0">
+                {avg.toFixed(1)}
+              </h2>
+
+              <Rate disabled allowHalf value={avg} />
+
               <span className="text-sm text-[#133e87] ml-2">
-                86% {t("productDetail.rating_suffix")}
+                {positivePercent}% {t("productDetail.rating_suffix")} (
+                {safeTotal})
               </span>
             </div>
 
             {[5, 4, 3, 2, 1].map((star, i) => (
-              <div key={i} className="flex items-center space-x-2 text-xs mb-1">
+              <div
+                key={star}
+                className="flex items-center space-x-2 text-xs mb-1">
                 <span className="w-2">{star}</span>
+
                 <Progress
-                  percent={[68, 18, 9, 3, 2][i]}
+                  percent={starPercents[i]}
                   size="small"
                   strokeColor="#ffd09b"
                   showInfo={false}
                   className="flex-1"
                 />
+
                 <span className="w-8 text-[#133e87] ml-2">
-                  {[68, 18, 9, 3, 2][i]}%
+                  {starPercents[i]}%
                 </span>
               </div>
             ))}

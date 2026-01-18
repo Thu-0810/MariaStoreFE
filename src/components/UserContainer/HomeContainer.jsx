@@ -1,10 +1,28 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { getCategoriesApi } from "../../api/categoryApi";
+import { toServerUrl } from "../../utils/url";
 
 function HomeContainer() {
+  const [categories, setCategories] = useState([]);
+
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategoriesApi();
+        setCategories(res.data || []);
+      } catch (err) {
+        console.error("Fetch categories failed", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const slideInFromLeft = {
     hidden: { opacity: 0, x: -100 },
@@ -148,41 +166,29 @@ function HomeContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={staggerContainer}>
-            {[
-              { src: "src/assets/img/Illustration128.jpg", title: "Nhãn Dán" },
-              { src: "src/assets/img/Illustration156.jpg", title: "Chibi" },
-              {
-                src: "src/assets/img/Illustration157.2.jpg",
-                title: "Ảnh Động",
-              },
-              {
-                src: "src/assets/img/Illustration212.jpg",
-                title: "Biểu Tượng Cảm Xúc",
-              },
-              {
-                src: "src/assets/img/Illustration318.1.jpg",
-                title: "Tranh Chân Dung",
-              },
-              { src: "src/assets/img/Kigoro.2.jpg", title: "2D Avatar" },
-            ].map((item, idx) => (
+            {categories.slice(0, 6).map((cat) => (
               <motion.div
-                key={idx}
-                className="group relative h-48 sm:h-56 lg:h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
-                variants={staggerItem}>
-                {/* Ảnh */}
+                key={cat.id}
+                className="group relative h-48 sm:h-56 lg:h-64 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                variants={staggerItem}
+                onClick={() =>
+                  navigate(`/store?category=${encodeURIComponent(cat.name)}`)
+                }>
                 <img
-                  src={item.src || "/placeholder.svg"}
+                  src={
+                    cat.thumbnailUrl
+                      ? toServerUrl(cat.thumbnailUrl)
+                      : "src/assets/img/Illustration309.jpg"
+                  }
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  alt={item.title}
+                  alt={cat.name}
                 />
 
-                {/* Overlay mặc định tối, hover thì biến mất */}
                 <div className="absolute inset-0 bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300"></div>
 
-                {/* Text */}
                 <div className="absolute bottom-0 left-0 w-full p-3 z-10">
                   <h3 className="font-semibold text-white text-left">
-                    {item.title}
+                    {cat.name}
                   </h3>
                 </div>
               </motion.div>
