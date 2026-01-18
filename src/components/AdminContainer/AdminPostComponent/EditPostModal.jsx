@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Modal, Input, Button, Upload, Select, message } from "antd";
 import { motion } from "framer-motion";
@@ -16,7 +15,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
 
   const { t } = useTranslation();
 
-  // 🔹 Khi mở modal, fill dữ liệu bài viết cũ
   useEffect(() => {
     if (open && post) {
       setTitle(post.title || "");
@@ -73,7 +71,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
           {t("adminPost.editModal.title")}
         </h2>
 
-        {/* Trình soạn thảo TinyMCE */}
         <div className="mb-6">
           <Editor
             apiKey="wlrnb7cm26qkks9m0018sky9y15ihbilpclj05851n6a13q8"
@@ -110,7 +107,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Cột trái: Ảnh bìa */}
           <div className="flex justify-center items-center">
             <div className="w-full h-[280px] bg-[#e8eff6] rounded-xl overflow-hidden">
               <Upload
@@ -136,7 +132,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
             </div>
           </div>
 
-          {/* Cột phải: Form nhập liệu */}
           <div className="flex flex-col justify-between h-full">
             <div className="flex flex-col space-y-4">
               <div>
@@ -182,7 +177,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
               </div>
             </div>
 
-            {/* Nút hành động */}
             <div className="flex justify-start gap-4 mt-6">
               <Button
                 onClick={handleUpdate}

@@ -16,7 +16,6 @@ function AddPostModal({ open, onCancel, onAdd }) {
 
   const { t } = useTranslation();
 
-  // Reset form mỗi lần mở modal
   useEffect(() => {
     if (open) {
       setTitle("");
@@ -65,7 +64,6 @@ function AddPostModal({ open, onCancel, onAdd }) {
           {t("adminPost.addModal.title")}
         </h2>
 
-        {/* Trình soạn thảo TinyMCE ---> ĐƯA LÊN TRÊN */}
         <div className="mb-6">
           <Editor
             apiKey="wlrnb7cm26qkks9m0018sky9y15ihbilpclj05851n6a13q8"
@@ -101,9 +99,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
           />
         </div>
 
-        {/* PHẦN DƯỚI */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* CỘT TRÁI - KHUNG ẢNH FULL */}
           <div className="flex justify-center items-center">
             <div className="w-full h-[280px] bg-[#e8eff6] rounded-xl overflow-hidden">
               <Upload
@@ -125,7 +121,6 @@ function AddPostModal({ open, onCancel, onAdd }) {
             </div>
           </div>
 
-          {/* CỘT PHẢI - FORM NHẬP LIỆU + NÚT */}
           <div className="flex flex-col justify-between h-full">
             <div className="flex flex-col space-y-4">
               <div>
@@ -171,7 +166,6 @@ function AddPostModal({ open, onCancel, onAdd }) {
               </div>
             </div>
 
-            {/* NÚT HÀNH ĐỘNG - NGAY DƯỚI FORM */}
             <div className="flex justify-start gap-4 mt-6">
               <Button
                 onClick={handleAdd}

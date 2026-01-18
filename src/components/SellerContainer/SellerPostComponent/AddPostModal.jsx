@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Input, Button, Upload, Select, message } from "antd";
 import { motion } from "framer-motion";
+import { PlusOutlined } from "@ant-design/icons";
 import { Editor } from "@tinymce/tinymce-react";
 import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
-function EditPostModal({ open, onCancel, onUpdate, post }) {
+function AddPostModal({ open, onCancel, onAdd }) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [hashtag, setHashtag] = useState("");
@@ -15,32 +16,23 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
 
   const { t } = useTranslation();
 
-  // 🔹 Khi mở modal, fill dữ liệu bài viết cũ
   useEffect(() => {
-    if (open && post) {
-      setTitle(post.title || "");
-      setAuthor(post.author || "");
-      setHashtag(post.hashtag || "");
-      setCoverImage(post.coverImage || null);
-      setContent(post.content || "");
+    if (open) {
+      setTitle("");
+      setAuthor("");
+      setHashtag("");
+      setCoverImage(null);
+      setContent("");
     }
-  }, [open, post]);
+  }, [open]);
 
-  const handleUpdate = () => {
+  const handleAdd = () => {
     if (!title || !author || !hashtag) {
-      message.warning(t("adminPost.editModal.toast_required"));
+      message.warning(t("adminPost.addModal.toast_required"));
       return;
     }
-    const updatedPost = {
-      ...post,
-      title,
-      author,
-      hashtag,
-      coverImage,
-      content,
-    };
-    onUpdate(updatedPost);
-    message.success(t("adminPost.editModal.toast_success"));
+    onAdd({ title, author, hashtag, coverImage, content });
+    message.success(t("adminPost.addModal.toast_success"));
     onCancel();
   };
 
@@ -69,10 +61,9 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}>
         <h2 className="text-[#133e87] text-2xl font-bold text-center mb-6">
-          {t("adminPost.editModal.title")}
+          {t("adminPost.addModal.title")}
         </h2>
 
-        {/* Trình soạn thảo TinyMCE */}
         <div className="mb-6">
           <Editor
             apiKey="wlrnb7cm26qkks9m0018sky9y15ihbilpclj05851n6a13q8"
@@ -109,7 +100,6 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
         </div>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Cột trái: Ảnh bìa */}
           <div className="flex justify-center items-center">
             <div className="w-full h-[280px] bg-[#e8eff6] rounded-xl overflow-hidden">
               <Upload
@@ -118,11 +108,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                 className="w-full h-full">
                 {coverImage ? (
                   <img
-                    src={
-                      coverImage instanceof File
-                        ? URL.createObjectURL(coverImage)
-                        : coverImage
-                    }
+                    src={URL.createObjectURL(coverImage)}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
@@ -135,12 +121,11 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
             </div>
           </div>
 
-          {/* Cột phải: Form nhập liệu */}
           <div className="flex flex-col justify-between h-full">
             <div className="flex flex-col space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
-                  {t("adminPost.addModal.post_title_label")}
+                  {t("adminPost.addModal.post_title_label")}{" "}
                 </label>
                 <Input
                   value={title}
@@ -181,21 +166,20 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
               </div>
             </div>
 
-            {/* Nút hành động */}
             <div className="flex justify-start gap-4 mt-6">
               <Button
-                onClick={handleUpdate}
+                onClick={handleAdd}
                 type="primary"
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ backgroundColor: "#133e87", borderColor: "#133e87" }}>
-                {t("adminPost.editModal.btn_update")}
+                {t("adminPost.addModal.btn_add")}{" "}
               </Button>
 
               <Button
                 onClick={onCancel}
                 className="px-6 py-1 rounded-full font-medium"
                 style={{ borderColor: "#133e87", color: "#133e87" }}>
-                {t("adminPost.common.cancel")}
+                {t("adminPost.common.cancel")}{" "}
               </Button>
             </div>
           </div>
@@ -205,4 +189,4 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
   );
 }
 
-export default EditPostModal;
+export default AddPostModal;

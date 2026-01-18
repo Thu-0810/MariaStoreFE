@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Input, Button, Table, Space, Pagination, Modal, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import AddPostModal from "../AdminModal/AddPostModal";
-import DetailPostModal from "../AdminModal/DetailPostModal";
+import AddPostModal from "./AdminPostComponent/AddPostModal";
+import DetailPostModal from "./AdminPostComponent/DetailPostModal";
 import { useTranslation } from "react-i18next";
 
 function AdminPostContainer() {

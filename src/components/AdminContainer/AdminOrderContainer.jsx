@@ -1,18 +1,13 @@
 import { useState } from "react";
-import {
-  Input,
-  Button,
-  Table,
-  Space,
-  Pagination,
-  Modal,
-  message,
-  Tag,
-} from "antd";
+import { Pagination, message, Tag } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import OrderActionBar from "./AdminOrderComponent/OrderActionBar";
+import ConfirmDeleteOrderModal from "./AdminOrderComponent/ConfirmDeleteOrderModal";
+import OrderDetailModal from "./AdminOrderComponent/OrderDetailModal";
+import OrdersTable from "./AdminOrderComponent/OrdersTable";
+import OrderIncompleteModal from "./AdminOrderComponent/OrderIncompleteModal";
 
-// Dữ liệu sản phẩm mẫu
 const products = [
   {
     id: 1,
@@ -47,9 +42,11 @@ const products = [
 function AdminOrderContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isIncompleteModalOpen, setIsIncompleteModalOpen] = useState(false);
+
   const [selectedOrder, setSelectedOrder] = useState([]);
 
   const { t, i18n } = useTranslation();
@@ -154,6 +151,20 @@ function AdminOrderContainer() {
     }
   };
 
+  const confirmDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t("adminOrder.toast.select_one_for_delete"));
+      return;
+    }
+    const updatedData = data.filter(
+      (item) => !selectedRowKeys.includes(item.key)
+    );
+    setData(updatedData);
+    setSelectedRowKeys([]);
+    setIsDeleteModalOpen(false);
+    message.success(t("adminOrder.toast.delete_success"));
+  };
+
   return (
     <motion.div
       className="min-h-screen relative overflow-hidden"
@@ -182,79 +193,19 @@ function AdminOrderContainer() {
               {t("adminOrder.title")}
             </h1>
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1">
-                <Input
-                  placeholder={t("adminOrder.search_placeholder")}
-                  className="max-w-xs"
-                  style={{ borderColor: "#cbdceb" }}
-                />
-              </div>
+            <OrderActionBar
+              t={t}
+              onOpenDelete={() => setIsDeleteModalOpen(true)}
+              onEdit={() => {}}
+            />
 
-              <Space>
-                <Button
-                  danger
-                  type="primary"
-                  style={{ backgroundColor: "#ff7383", borderColor: "#ff7383" }}
-                  onClick={() => setIsDeleteModalOpen(true)}>
-                  {t("adminOrder.btn_delete")}
-                </Button>
+            <ConfirmDeleteOrderModal
+              t={t}
+              open={isDeleteModalOpen}
+              onCancel={() => setIsDeleteModalOpen(false)}
+              onConfirm={confirmDelete}
+            />
 
-                {/* MODAL XÓA */}
-                <Modal
-                  open={isDeleteModalOpen}
-                  onCancel={() => setIsDeleteModalOpen(false)}
-                  footer={null}
-                  centered
-                  width={360}
-                  closable={false}
-                  className="text-center rounded-2xl">
-                  <p className="text-[#133e87] text-base text-center font-medium mb-6">
-                    {t("adminOrder.modal.delete_confirm")}
-                  </p>
-
-                  <div className="flex justify-center gap-4">
-                    <Button
-                      type="primary"
-                      danger
-                      className="px-6 py-1 rounded-full text-white font-medium"
-                      style={{
-                        backgroundColor: "#ff7383",
-                        borderColor: "#ff7383",
-                      }}
-                      onClick={() => {
-                        if (selectedRowKeys.length === 0) {
-                          message.warning(
-                            t("adminOrder.toast.select_one_for_delete")
-                          );
-                          return;
-                        }
-                        const updatedData = data.filter(
-                          (item) => !selectedRowKeys.includes(item.key)
-                        );
-                        setData(updatedData);
-                        setSelectedRowKeys([]);
-                        setIsDeleteModalOpen(false);
-                        message.success(t("adminOrder.toast.delete_success"));
-                      }}>
-                      {t("adminOrder.btn.delete")}
-                    </Button>
-
-                    <Button
-                      className="px-6 py-1 rounded-full font-medium"
-                      style={{ borderColor: "#133e87", color: "#133e87" }}
-                      onClick={() => setIsDeleteModalOpen(false)}>
-                      {t("adminOrder.btn.cancel")}
-                    </Button>
-                  </div>
-                </Modal>
-                <button className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-4 py-1 text-sm sm:text-base font-medium rounded-lg transition-colors">
-                  {t("adminOrder.btn_edit")}
-                </button>
-              </Space>
-            </div>
-
-            {/* Bảng đơn hàng */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={"orders"}
@@ -262,15 +213,11 @@ function AdminOrderContainer() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}>
-                <Table
+                <OrdersTable
                   columns={columns}
                   dataSource={data}
                   rowSelection={rowSelection}
-                  pagination={false}
-                  onRow={(record) => ({
-                    onClick: () => handleRowClick(record),
-                  })}
-                  className="custom-table cursor-pointer"
+                  onRowClick={handleRowClick}
                 />
               </motion.div>
             </AnimatePresence>
@@ -290,167 +237,22 @@ function AdminOrderContainer() {
         </motion.div>
       </div>
 
-      {/* MODAL CHI TIẾT ĐƠN HÀNG */}
-      <Modal
+      <OrderDetailModal
+        t={t}
+        i18n={i18n}
         open={isDetailModalOpen}
         onCancel={() => setIsDetailModalOpen(false)}
-        footer={null}
-        centered
-        width={720}
-        closable={true}
-        className="rounded-3xl overflow-hidden p-0"
-        maskStyle={{
-          backdropFilter: "blur(3px)",
-          backgroundColor: "rgba(255,255,255,0.4)",
-        }}>
-        <AnimatePresence>
-          {isDetailModalOpen && (
-            <motion.div
-              key="orderDetail"
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="relative rounded-3xl overflow-hidden"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(243,248,255,0.96) 100%)",
-                backdropFilter: "blur(12px)",
-              }}>
-              <div className="p-8">
-                {/* Header */}
-                <div className="mb-6">
-                  <h2 className="text-[#133e87] text-lg font-semibold mb-1">
-                    {t("adminOrder.modal.detail_title_done")}
-                  </h2>
-                  <p className="text-sm text-[#608bc1]">
-                    26.7.2025 • {t("adminOrder.table.order_code")}{" "}
-                    {selectedOrder.orderCode}
-                  </p>
-                </div>
+        selectedOrder={selectedOrder}
+        products={products}
+        totalAmount={totalAmount}
+      />
 
-                {/* Danh sách sản phẩm */}
-                <div className="bg-white/40 rounded-2xl p-4 mb-6">
-                  <h3 className="text-sm font-semibold text-[#133e87] mb-4">
-                    {t("adminOrder.modal.product_list")}
-                  </h3>
-                  <div className="space-y-4">
-                    {products.map((product) => (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: product.id * 0.05 }}
-                        className="flex items-center justify-between pb-3 border-b border-[#e6effa]">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-16 h-16 rounded-lg object-cover shadow-sm"
-                          />
-                          <div>
-                            <p className="font-medium text-[#133e87]">
-                              {product.name}
-                            </p>
-                            <p className="text-xs text-[#608bc1]">JPG File</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-[#608bc1] mb-1">
-                            x{product.quantity}
-                          </p>
-                          <p className="font-semibold text-[#133e87]">
-                            {(product.price * product.quantity).toLocaleString(
-                              "vi-VN"
-                            )}
-                            đ
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Tổng tiền */}
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#d9eafd]">
-                  <p className="font-semibold text-[#133e87]">
-                    {t("adminOrder.modal.total")}
-                  </p>
-                  <p className="font-bold text-lg text-[#133e87]">
-                    {totalAmount.toLocaleString(
-                      i18n.language === "vi" ? "vi-VN" : "en-US"
-                    )}
-                    {t("adminOrder.currency_suffix")}
-                  </p>
-                </div>
-
-                {/* Chi tiết hóa đơn */}
-                <h3 className="text-sm font-semibold text-[#133e87] mb-4">
-                  {t("adminOrder.modal.order_detail")}
-                </h3>
-
-                <div className="flex justify-between">
-                  <span className="text-[#608bc1]">
-                    {t("adminOrder.modal.invoice_code")}
-                  </span>
-                  <span className="font-medium text-[#133e87]">
-                    {selectedOrder.invoiceCode}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-[#608bc1]">
-                    {t("adminOrder.modal.payment_method")}
-                  </span>
-                  <span className="font-medium text-[#133e87]">
-                    {selectedOrder.paymentMethod}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-[#608bc1]">
-                    {t("adminOrder.modal.paid_time")}
-                  </span>
-                  <span className="font-medium text-[#133e87]">
-                    26/7/2025 4:10PM
-                  </span>
-                </div>
-
-                {/* Nút hành động */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="flex justify-center gap-6 mt-10">
-                  <Button
-                    type="primary"
-                    shape="round"
-                    size="large"
-                    style={{
-                      backgroundColor: "#ff7383",
-                      borderColor: "#ff7383",
-                      width: 160,
-                    }}>
-                    {t("adminOrder.btn.delete_invoice")}
-                  </Button>
-
-                  <Button
-                    type="primary"
-                    shape="round"
-                    size="large"
-                    style={{
-                      backgroundColor: "#133e87",
-                      borderColor: "#133e87",
-                      width: 160,
-                    }}>
-                    {t("adminOrder.btn.print_invoice")}
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Modal>
+      <OrderIncompleteModal
+        t={t}
+        open={isIncompleteModalOpen}
+        onCancel={() => setIsIncompleteModalOpen(false)}
+        selectedOrder={selectedOrder}
+      />
     </motion.div>
   );
 }

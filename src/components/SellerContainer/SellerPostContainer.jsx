@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Input, Button, Table, Space, Pagination, Modal, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import AddPostModal from "../AdminModal/AddPostModal";
-import DetailPostModal from "../AdminModal/DetailPostModal";
 import { useTranslation } from "react-i18next";
+import AddPostModal from "./SellerPostComponent/AddPostModal";
+import DetailPostModal from "./SellerPostComponent/DetailPostModal";
 
 function SellerPostContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);

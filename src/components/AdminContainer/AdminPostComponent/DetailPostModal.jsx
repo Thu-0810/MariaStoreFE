@@ -49,7 +49,7 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
   };
 
   const handleUpdatePost = (updatedPost) => {
-    setPost(updatedPost); // 🔹 Cập nhật lại bài viết trong modal chi tiết
+    setPost(updatedPost);
     setIsEditModalOpen(false);
   };
 
@@ -61,7 +61,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
         <div className="relative bg-gradient-to-br from-[#d9eafd] via-[#cbdceb] to-[#ffecc8] min-h-[90vh] overflow-y-auto rounded-3xl">
           <div className="relative z-10 p-8">
             <div className="max-w-4xl mx-auto">
-              {/* Tiêu đề */}
               <h1 className="text-[#133e87] text-2xl font-bold italic text-center mb-4">
                 {post.title || t("adminPost.detailModal.fallback_title")}
               </h1>
@@ -76,7 +75,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                 </span>
               </p>
 
-              {/* Ảnh bài viết */}
               <div className="rounded-xl overflow-hidden mb-6">
                 <img
                   src={
@@ -91,7 +89,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                 />
               </div>
 
-              {/* Nội dung */}
               <div
                 className="text-[#133e87] space-y-3 leading-relaxed mb-8"
                 dangerouslySetInnerHTML={{
@@ -101,7 +98,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                 }}
               />
 
-              {/* Hai nút dưới cùng */}
               <div className="flex justify-between items-center mt-8">
                 <button
                   onClick={handleEditPost}
@@ -119,7 +115,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                 </button>
               </div>
 
-              {/* Khu vực bình luận */}
               {showComments && (
                 <div className="mt-6 bg-[#ffffff]/90 rounded-2xl p-6 shadow-inner">
                   <h2 className="text-[#133e87] font-semibold mb-4">
@@ -143,7 +138,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                     ))}
                   </div>
 
-                  {/* Ô nhập bình luận */}
                   <div className="flex items-center gap-2 mt-4">
                     <Input
                       placeholder={t(
@@ -167,7 +161,6 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
         </div>
       </Modal>
 
-      {/* Modal chỉnh sửa bài viết */}
       <EditPostModal
         open={isEditModalOpen}
         onCancel={() => setIsEditModalOpen(false)}
