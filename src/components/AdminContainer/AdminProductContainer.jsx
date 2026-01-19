@@ -24,6 +24,7 @@ import LockConfirmModal from "./AdminProductComponent/LockConfirmModal";
 import CreateProductModal from "./AdminProductComponent/CreateProductModal";
 import DetailProductModal from "./AdminProductComponent/DetailProductModal";
 import ProductsTable from "./AdminProductComponent/ProductsTable";
+import dayjs from "dayjs";
 
 function AdminProductContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -105,7 +106,11 @@ function AdminProductContainer() {
     },
     { title: t("adminProduct.table.product_name"), dataIndex: "name" },
     { title: t("adminProduct.table.quantity"), dataIndex: "quantity" },
-    { title: t("adminProduct.table.created_at"), dataIndex: "createdAt" },
+    {
+      title: t("adminProduct.table.created_at"),
+      dataIndex: "createdAt",
+      render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : ""),
+    },
     {
       title: t("adminProduct.table.price"),
       dataIndex: "price",

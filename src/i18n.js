@@ -414,6 +414,10 @@ const resources = {
         title_manage: "Quản lý {{category}}",
         title_manage_default: "khách hàng",
         search_placeholder: "Tìm kiếm...",
+        filter_status: "Tình Trạng",
+
+        status_active: "Hoạt động",
+        status_locked: "Đã khóa",
 
         btn_delete: "Xóa Tài Khoản",
         btn_lock: "Khóa Tài Khoản",
@@ -421,10 +425,12 @@ const resources = {
 
         confirm_delete: "Xác nhận muốn xóa tài khoản chứ?",
         confirm_lock: "Xác nhận muốn khóa tài khoản chứ?",
+        confirm_unlock: "Xác nhận muốn mở khóa tài khoản chứ?",
 
         btn_cancel: "Hủy",
         btn_delete_ok: "Xóa",
         btn_lock_ok: "Khóa",
+        btn_unlock_ok: "Mở khóa",
 
         toast: {
           update_success: "Cập nhật thông tin thành công!",
@@ -436,7 +442,7 @@ const resources = {
         table: {
           index: "STT",
           display_name: "Tên hiển thị",
-          username: "Tên người dùng",
+          birthday: "Ngày sinh",
           orders_count: "Số đơn đã mua",
           created_at: "Ngày tạo tài khoản",
           total_amount: "Tổng tiền",
@@ -452,11 +458,13 @@ const resources = {
           gender: "Giới Tính",
           birthday: "Ngày Sinh",
           email: "Email",
+          address: "Địa chỉ",
 
           gender_male: "Nam",
           gender_female: "Nữ",
           gender_other: "Khác",
 
+          no_orders: "Chưa có đơn hàng",
           orders_stats: "Thống kê đơn hàng:",
           order_table: {
             index: "STT",
@@ -1006,6 +1014,10 @@ const resources = {
         title_manage: "Manage {{category}}",
         title_manage_default: "customers",
         search_placeholder: "Search...",
+        filter_status: "Status",
+
+        status_active: "Active",
+        status_locked: "Locked",
 
         btn_delete: "Delete Account",
         btn_lock: "Lock Account",
@@ -1013,10 +1025,12 @@ const resources = {
 
         confirm_delete: "Are you sure you want to delete this account?",
         confirm_lock: "Are you sure you want to lock this account?",
+        confirm_unlock: "Are you sure you want to unlock this account?",
 
         btn_cancel: "Cancel",
         btn_delete_ok: "Delete",
         btn_lock_ok: "Lock",
+        btn_unlock_ok: "Unlock",
 
         toast: {
           update_success: "Updated successfully!",
@@ -1029,7 +1043,7 @@ const resources = {
         table: {
           index: "STT",
           display_name: "Display name",
-          username: "Username",
+          birthday: "Birthday",
           orders_count: "Orders",
           created_at: "Created at",
           total_amount: "Total",
@@ -1045,10 +1059,13 @@ const resources = {
           gender: "Gender",
           birthday: "Birthday",
           email: "Email",
+          address: "Address",
 
           gender_male: "Male",
           gender_female: "Female",
           gender_other: "Other",
+
+          no_orders: "No orders yet",
 
           orders_stats: "Order summary:",
           order_table: {

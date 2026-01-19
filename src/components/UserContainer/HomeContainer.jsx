@@ -4,9 +4,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoriesApi } from "../../api/categoryApi";
 import { toServerUrl } from "../../utils/url";
+import { getProductDetailApi, getProductsPagedApi } from "../../api/productApi";
 
 function HomeContainer() {
   const [categories, setCategories] = useState([]);
+  const [promoProducts, setPromoProducts] = useState([]);
+  const [promoSecondDetail, setPromoSecondDetail] = useState(null);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -22,6 +25,33 @@ function HomeContainer() {
     };
 
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchPromoProducts = async () => {
+      try {
+        const res = await getProductsPagedApi({
+          page: 0,
+          size: 2,
+          sort: "newest",
+          category: null,
+        });
+
+        const list = res?.data?.content || [];
+        setPromoProducts(list);
+
+        if (list[1]?.id) {
+          const detailRes = await getProductDetailApi(list[1].id);
+          setPromoSecondDetail(detailRes?.data || null);
+        } else {
+          setPromoSecondDetail(null);
+        }
+      } catch (err) {
+        console.error("Fetch promo products failed", err);
+      }
+    };
+
+    fetchPromoProducts();
   }, []);
 
   const slideInFromLeft = {
@@ -71,13 +101,58 @@ function HomeContainer() {
     },
   };
 
+  const formatVnd = (value) => {
+    if (value == null) return "";
+    const num = typeof value === "string" ? Number(value) : value;
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(num);
+  };
+
+  const formatDate = (iso) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.slice(0, 10).split("-");
+    return `${d}.${m}.${y}`;
+  };
+
+  const clampText = (text, max = 180) => {
+    if (!text) return "";
+    return text.length > max ? text.slice(0, max).trim() + "..." : text;
+  };
+
+  const heroProduct = promoProducts?.[0] || null;
+  const secondProduct = promoSecondDetail || promoProducts?.[1] || null;
+
+  const heroImg = heroProduct?.primaryImageUrl
+    ? toServerUrl(heroProduct.primaryImageUrl)
+    : "src/assets/img/Illustration309.jpg";
+
+  const secondImg =
+    (secondProduct?.images?.[0]?.imageUrl &&
+      toServerUrl(secondProduct.images[0].imageUrl)) ||
+    (secondProduct?.primaryImageUrl &&
+      toServerUrl(secondProduct.primaryImageUrl)) ||
+    "src/assets/img/Illustration287.jpg";
+
+  const heroCategory =
+    heroProduct?.categories && Array.isArray([...heroProduct.categories])
+      ? [...heroProduct.categories][0]
+      : heroProduct?.categories?.[0];
+
+  const secondCategory =
+    secondProduct?.categories && Array.isArray([...secondProduct.categories])
+      ? [...secondProduct.categories][0]
+      : secondProduct?.categories?.[0];
+
   return (
     <div className="min-h-screen bg-[#f6f6f6]">
       {/* Hero Section */}
       <section className="relative py-12 sm:py-16 px-4 sm:px-6 lg:px-8 flex items-center">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url(src/assets/img/Illustration309.jpg)" }}
+          style={{ backgroundImage: `url(${heroImg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50/95 via-purple-50/80 to-pink-50/70" />
 
@@ -92,28 +167,36 @@ function HomeContainer() {
               variants={slideInFromLeft}>
               <div className="inline-block border-b-4 border-[#163c87] pb-2 mb-4">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-900">
-                  "Trời Sao"
+                  {heroProduct?.name || "Đang tải..."}
                 </h1>
               </div>
-              <p className="text-gray-400 text-sm sm:text-md">24.02.2024</p>
+
+              <p className="text-gray-400 text-sm sm:text-md">
+                {formatDate(heroProduct?.createdAt)}
+              </p>
 
               <div className="space-y-3 text-blue-900 leading-relaxed text-base sm:text-lg lg:text-xl">
-                <p>Loại sản phẩm: Tranh chân dung</p>
                 <p>
-                  Giá tiền: <span className="font-bold">2,614,500đ</span>
+                  Loại sản phẩm:{" "}
+                  <span className="font-semibold">{heroCategory || "—"}</span>
                 </p>
                 <p>
-                  Mẫu tự: Bầu trời sao ở thế giới trong mơ với những vệt sáng
-                  lấp lánh như sao băng, tạo cảm giác mộng mơ, kỳ ảo.
+                  Giá tiền:{" "}
+                  <span className="font-bold">
+                    {heroProduct?.price != null
+                      ? formatVnd(heroProduct.price)
+                      : "—"}
+                  </span>
                 </p>
-                <p>
-                  Fanart nhân vật Firefly đến từ trò game Honkai: Star Rail.
-                </p>
+                <p>{clampText(heroProduct?.description || "")}</p>
               </div>
 
               <button
                 className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-medium rounded-lg transition-colors"
-                onClick={() => navigate("/detail")}>
+                onClick={() => {
+                  if (!heroProduct?.id) return;
+                  navigate(`/detail/${heroProduct.id}`);
+                }}>
                 {t("nav.more")} →
               </button>
             </motion.div>
@@ -127,8 +210,8 @@ function HomeContainer() {
               variants={slideInFromRight}>
               <div className="w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/30">
                 <img
-                  src="src/assets/img/Illustration309.jpg"
-                  alt="Trời Sao artwork - Firefly character"
+                  src={heroImg}
+                  alt={heroProduct?.name || "Artwork"}
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -214,7 +297,7 @@ function HomeContainer() {
       <section className="relative py-12 sm:py-16 bg-gradient-to-r from-[#d9eafd] to-[#f6f6f6] mt-12 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url(src/assets/img/Illustration287.jpg)" }}
+          style={{ backgroundImage: `url(${secondImg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50/95 via-purple-50/80 to-pink-50/70" />
 
@@ -228,8 +311,8 @@ function HomeContainer() {
               viewport={{ once: true, amount: 0.3 }}
               variants={slideInFromLeft}>
               <img
-                src="src/assets/img/Illustration287.jpg"
-                alt="Kỉ Niệm Ngày Sinh Nhật"
+                src={secondImg}
+                alt={secondProduct?.name || "Artwork"}
                 className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg shadow-lg"
               />
             </motion.div>
@@ -243,35 +326,48 @@ function HomeContainer() {
               variants={slideInFromRight}>
               <div className="inline-block border-b-4 border-[#163c87] pb-2 mb-4">
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-blue-900">
-                  Kỉ Niệm Ngày Sinh Nhật
+                  {secondProduct?.name || "Đang tải..."}
                 </h1>
               </div>
+
               <p className="text-gray-400 text-sm sm:text-md mb-2">
-                07.12.2023
+                {formatDate(secondProduct?.createdAt)}
               </p>
+
               <h3 className="text-lg sm:text-xl lg:text-3xl font-bold text-blue-900 mb-2">
-                Fanart Vtuber Maria Marionette đến từ Nijisanji.
+                {secondCategory ? `Danh mục: ${secondCategory}` : ""}
               </h3>
+
               <p className="text-gray-400 text-xs sm:text-sm mb-4">
-                Sản phẩm chỉ dùng để trưng bày, không sử dụng cho mục đích
-                thương mại
+                {secondProduct?.price != null
+                  ? `Giá: ${formatVnd(secondProduct.price)}`
+                  : ""}
               </p>
 
               <div className="space-y-2 mb-6 sm:mb-8">
                 <p className="text-[#133e87] text-base sm:text-xl font-bold">
-                  Loại Sản Phẩm: Tranh Chân Dung
+                  Loại Sản Phẩm: {secondCategory || "—"}
+                </p>
+
+                <p className="text-[#133e87] text-base sm:text-xl font-bold">
+                  Kích Thước: {secondProduct?.meta?.resolution || "—"}
                 </p>
                 <p className="text-[#133e87] text-base sm:text-xl font-bold">
-                  Kích Thước: 2100×3200
-                </p>
-                <p className="text-[#133e87] text-base sm:text-xl font-bold">
-                  Loại File: JPG
+                  Loại File: {secondProduct?.meta?.fileFormat || "—"}
                 </p>
               </div>
 
+              <p className="text-blue-900 leading-relaxed mb-6">
+                {clampText(secondProduct?.description || "", 220)}
+              </p>
+
               <button
                 className="border border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-medium rounded-lg transition-colors"
-                onClick={() => navigate("/detail")}>
+                onClick={() => {
+                  const id = secondProduct?.id;
+                  if (!id) return;
+                  navigate(`/detail/${id}`);
+                }}>
                 {t("nav.more")} →
               </button>
             </motion.div>

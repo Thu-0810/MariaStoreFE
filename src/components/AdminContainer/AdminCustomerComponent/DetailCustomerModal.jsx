@@ -1,6 +1,19 @@
-import { Modal, Button, Upload, Input, Select, DatePicker, Table } from "antd";
+
+import {
+  Modal,
+  Button,
+  Upload,
+  Input,
+  Select,
+  DatePicker,
+  Table,
+  message,
+} from "antd";
 import { DownOutlined, EditOutlined, RightOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { adminUploadUserAvatarApi } from "../../../api/adminUserApi";
+
+const BASE_BACKEND = "http://localhost:8080";
 
 export default function DetailCustomerModal({
   t,
@@ -15,6 +28,57 @@ export default function DetailCustomerModal({
   onOpenDelete,
   onChangeField,
 }) {
+  const displayName = selectedCustomer?.displayName ?? "";
+  const phone = selectedCustomer?.phone ?? "";
+  const gender = selectedCustomer?.gender ?? undefined;
+  const birthday = selectedCustomer?.birthday ?? null;
+  const email = selectedCustomer?.email ?? "";
+  const address = selectedCustomer?.address ?? "";
+  const ordersDetail = selectedCustomer?.ordersDetail ?? [];
+  const totalAmount = selectedCustomer?.totalAmount ?? "";
+  const isLocked = selectedCustomer?.status === "LOCKED";
+
+  const birthdayValue =
+    birthday && dayjs(birthday).isValid() ? dayjs(birthday) : null;
+
+  const resolvedAvatar =
+    avatarUrl ||
+    (selectedCustomer?.avatarUrl
+      ? selectedCustomer.avatarUrl.startsWith("http")
+        ? selectedCustomer.avatarUrl
+        : `${BASE_BACKEND}${selectedCustomer.avatarUrl}`
+      : null);
+
+  const handleUploadAvatar = async (file) => {
+    try {
+      if (!selectedCustomer?.id) {
+        message.error("Không tìm thấy userId để upload avatar.");
+        return false;
+      }
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => setAvatarUrl(reader.result);
+
+      const res = await adminUploadUserAvatarApi(selectedCustomer.id, file);
+      const newAvatarUrl = res.data?.avatarUrl;
+
+      if (newAvatarUrl) {
+        onChangeField("avatarUrl", newAvatarUrl);
+
+        setAvatarUrl(`${BASE_BACKEND}${newAvatarUrl}`);
+
+        message.success("Cập nhật avatar thành công!");
+      } else {
+        message.warning("Upload thành công nhưng không nhận được avatarUrl.");
+      }
+    } catch (err) {
+      message.error("Upload avatar thất bại. Kiểm tra quyền ADMIN hoặc API.");
+    }
+
+    return false;
+  };
+
   return (
     <Modal
       open={open}
@@ -26,14 +90,15 @@ export default function DetailCustomerModal({
       {selectedCustomer && (
         <main className="container mx-auto px-6 py-12">
           <div className="flex gap-6 max-w-7xl mx-auto">
+            {/* LEFT */}
             <div className="w-[280px] flex-shrink-0">
               <div className="bg-[#ffffff] backdrop-blur-md rounded-3xl p-6 shadow-lg">
                 <div className="flex flex-col items-center gap-6">
                   <div className="relative w-40 h-40 flex items-center justify-center">
                     <div className="w-36 h-36 rounded-full bg-[#f6f6f6] flex items-center justify-center overflow-hidden">
-                      {avatarUrl ? (
+                      {resolvedAvatar ? (
                         <img
-                          src={avatarUrl}
+                          src={resolvedAvatar}
                           alt="avatar"
                           className="w-full h-full object-cover rounded-full"
                         />
@@ -45,12 +110,8 @@ export default function DetailCustomerModal({
                     {isEditing && (
                       <Upload
                         showUploadList={false}
-                        beforeUpload={(file) => {
-                          const reader = new FileReader();
-                          reader.readAsDataURL(file);
-                          reader.onload = () => setAvatarUrl(reader.result);
-                          return false;
-                        }}
+                        beforeUpload={handleUploadAvatar}
+                        accept="image/png,image/jpeg,image/webp"
                         className="absolute bottom-4 right-8 translate-x-1/3 translate-y-1/3 cursor-pointer">
                         <Button
                           type="default"
@@ -79,12 +140,14 @@ export default function DetailCustomerModal({
                     <Button
                       type="primary"
                       style={{
-                        backgroundColor: "#133e87",
-                        borderColor: "#133e87",
+                        backgroundColor: isLocked ? "#22c55e" : "#133e87",
+                        borderColor: isLocked ? "#22c55e" : "#133e87",
                       }}
                       className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
                       onClick={onOpenLock}>
-                      {t("adminCustomer.btn_lock")}
+                      {isLocked
+                        ? t("adminCustomer.btn_unlock") || "Mở khóa"
+                        : t("adminCustomer.btn_lock") || "Khóa"}
                     </Button>
 
                     <Button
@@ -103,32 +166,34 @@ export default function DetailCustomerModal({
               </div>
             </div>
 
+            {/* RIGHT */}
             <div className="flex-1">
               <div className="bg-[#ffffff]/70 backdrop-blur-md rounded-3xl p-8 shadow-lg">
+                {/* Row 1 */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
                       {t("adminCustomer.detail.display_name")}
                     </label>
                     <Input
-                      value={selectedCustomer.displayName}
+                      value={displayName}
                       onChange={(e) =>
                         onChangeField("displayName", e.target.value)
                       }
                       disabled={!isEditing}
+                      placeholder=""
                     />
                   </div>
 
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                      {t("adminCustomer.detail.username")}
+                      {t("adminCustomer.detail.address") || "Địa chỉ"}
                     </label>
                     <Input
-                      value={selectedCustomer.username}
-                      onChange={(e) =>
-                        onChangeField("username", e.target.value)
-                      }
+                      value={address}
+                      onChange={(e) => onChangeField("address", e.target.value)}
                       disabled={!isEditing}
+                      placeholder=""
                     />
                   </div>
 
@@ -137,20 +202,22 @@ export default function DetailCustomerModal({
                       {t("adminCustomer.detail.phone")}
                     </label>
                     <Input
-                      value={selectedCustomer.phone}
+                      value={phone}
                       onChange={(e) => onChangeField("phone", e.target.value)}
                       disabled={!isEditing}
+                      placeholder=""
                     />
                   </div>
                 </div>
 
+                {/* Row 2 */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
                       {t("adminCustomer.detail.gender")}
                     </label>
                     <Select
-                      value={selectedCustomer.gender}
+                      value={gender}
                       onChange={(val) => onChangeField("gender", val)}
                       options={[
                         {
@@ -169,6 +236,8 @@ export default function DetailCustomerModal({
                       disabled={!isEditing}
                       className="w-full"
                       suffixIcon={<DownOutlined />}
+                      allowClear
+                      placeholder=""
                     />
                   </div>
 
@@ -177,11 +246,7 @@ export default function DetailCustomerModal({
                       {t("adminCustomer.detail.birthday")}{" "}
                     </label>
                     <DatePicker
-                      value={
-                        selectedCustomer.birthday
-                          ? dayjs(selectedCustomer.birthday)
-                          : null
-                      }
+                      value={birthdayValue}
                       onChange={(date) =>
                         onChangeField(
                           "birthday",
@@ -191,6 +256,8 @@ export default function DetailCustomerModal({
                       disabled={!isEditing}
                       format="DD/MM/YYYY"
                       className="w-full"
+                      placeholder=""
+                      allowClear
                     />
                   </div>
 
@@ -199,13 +266,15 @@ export default function DetailCustomerModal({
                       {t("adminCustomer.detail.email")}{" "}
                     </label>
                     <Input
-                      value={selectedCustomer.email}
+                      value={email}
                       onChange={(e) => onChangeField("email", e.target.value)}
                       disabled={!isEditing}
+                      placeholder=""
                     />
                   </div>
                 </div>
 
+                {/* Orders */}
                 <div className="mb-6">
                   <h3 className="text-[#133e87] font-semibold mb-4">
                     {t("adminCustomer.detail.orders_stats")}
@@ -237,9 +306,15 @@ export default function DetailCustomerModal({
                         key: "total",
                       },
                     ]}
-                    dataSource={selectedCustomer.ordersDetail || []}
+                    dataSource={Array.isArray(ordersDetail) ? ordersDetail : []}
                     pagination={false}
                     className="custom-table"
+                    locale={{
+                      emptyText: t("adminCustomer.detail.no_orders") || "",
+                    }}
+                    rowKey={(row) =>
+                      row?.key ?? row?.orderNumber ?? Math.random()
+                    }
                   />
 
                   <div className="flex justify-center items-center gap-2 mt-4">
@@ -259,12 +334,13 @@ export default function DetailCustomerModal({
                   </div>
                 </div>
 
+                {/* Total */}
                 <div className="flex justify-between items-center pt-4 border-t border-[#d1d1d1]">
                   <span className="text-[#133e87] font-semibold text-lg">
                     {t("adminCustomer.detail.total_value")}
                   </span>
                   <span className="text-[#133e87] font-bold text-2xl">
-                    {selectedCustomer.totalAmount}
+                    {totalAmount}
                   </span>
                 </div>
               </div>
