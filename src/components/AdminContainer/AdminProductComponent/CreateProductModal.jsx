@@ -123,9 +123,9 @@ export default function CreateProductModal({
                   <Select
                     size="large"
                     options={[
-                      { value: "Còn hàng", label: "Còn hàng" },
-                      { value: "Hết hàng", label: "Hết hàng" },
-                      { value: "Hàng trưng bày", label: "Hàng trưng bày" },
+                      { value: "ACTIVE", label: "Còn hàng" },
+                      { value: "OUT_OF_STOCK", label: "Hết hàng" },
+                      { value: "DISPLAY", label: "Hàng trưng bày" },
                     ]}
                   />
                 </Form.Item>

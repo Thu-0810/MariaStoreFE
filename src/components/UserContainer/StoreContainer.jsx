@@ -4,20 +4,24 @@ import {
   DownOutlined,
   ShoppingCartOutlined,
 } from "@ant-design/icons";
-import { Card, Dropdown, Pagination, Spin } from "antd";
+import { Card, Dropdown, message, Pagination, Spin } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getProductsPagedApi } from "../../api/productApi";
 import { getCategoriesApi } from "../../api/categoryApi";
 import { toServerUrl } from "../../utils/url";
+import { cartApi } from "../../api/cartApi";
+import { useTranslation } from "react-i18next";
 
 function StoreContainer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [addingId, setAddingId] = useState(null);
 
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -25,12 +29,15 @@ function StoreContainer() {
   const [sort, setSort] = useState("newest");
   const [loading, setLoading] = useState(false);
 
-  const sortMenuItems = [
-    { key: "newest", label: "Mới nhất" },
-    { key: "oldest", label: "Cũ nhất" },
-    { key: "a-z", label: "A-Z" },
-    { key: "z-a", label: "Z-A" },
-  ];
+  const sortMenuItems = useMemo(
+    () => [
+      { key: "newest", label: t("store.sort.newest") },
+      { key: "oldest", label: t("store.sort.oldest") },
+      { key: "a-z", label: t("store.sort.a_z") },
+      { key: "z-a", label: t("store.sort.z_a") },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -103,6 +110,20 @@ function StoreContainer() {
   const staggerItem = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 },
+  };
+
+  const handleAddToCart = async (productId) => {
+    try {
+      setAddingId(productId);
+      await cartApi.addToCart(productId, 1);
+      message.success(t("store.msg.add_success"));
+      window.dispatchEvent(new Event("cart:changed"));
+    } catch (err) {
+      const msg = err?.response?.data?.message || t("store.msg.add_failed");
+      message.error(msg);
+    } finally {
+      setAddingId(null);
+    }
   };
 
   return (
@@ -185,7 +206,7 @@ function StoreContainer() {
           whileInView="visible"
           viewport={{ once: true }}>
           <span className="text-[#133e87] font-semibold">
-            Sắp xếp theo:&nbsp;
+            {t("store.sort_by")}&nbsp;
           </span>
           <Dropdown
             menu={{
@@ -208,7 +229,7 @@ function StoreContainer() {
                 setPage(1);
               }}
               className="ml-4 cursor-pointer text-sm text-[#608bc1] hover:underline">
-              Bỏ lọc
+              {t("store.clear_filter")}
             </span>
           )}
         </motion.div>
@@ -241,10 +262,16 @@ function StoreContainer() {
                         />
                       ) : (
                         <div className="w-full h-70 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
-                          No image
+                          {t("store.misc.no_image")}
                         </div>
                       )}
-                      <button className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product.id);
+                        }}
+                        disabled={addingId === product.id}
+                        className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60">
                         <ShoppingCartOutlined className="text-white" />
                       </button>
                     </div>

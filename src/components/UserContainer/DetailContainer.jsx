@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, Rate, Progress, Spin } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+import { Card, Rate, Progress, Spin, message } from "antd";
 import { HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import QuantityControl from "../QuantityControl";
@@ -8,6 +8,7 @@ import { getProductDetailApi } from "../../api/productApi";
 import bgImage from "../../assets/img/Illustration299.jpg";
 import { useTranslation } from "react-i18next";
 import { toServerUrl } from "../../utils/url";
+import { cartApi } from "../../api/cartApi";
 const fallbackImage = "src/assets/img/Illustration309.jpg";
 
 function DetailContainer() {
@@ -19,6 +20,8 @@ function DetailContainer() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,11 +52,64 @@ function DetailContainer() {
 
     fetchDetail();
   }, [id]);
+
+  const handleAddToCart = async () => {
+    try {
+      if (isOutOfStock) {
+        message.warning(t("productDetail.msg_out_of_stock"));
+        return;
+      }
+
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        message.warning(t("productDetail.msg_need_login"));
+        navigate("/login");
+        return;
+      }
+
+      setAdding(true);
+      await cartApi.addToCart(Number(id), quantity);
+      message.success(t("productDetail.msg_add_success"));
+      window.dispatchEvent(new Event("cart:changed"));
+    } catch (err) {
+      const serverMsg = err?.response?.data?.message;
+      message.error(serverMsg || t("productDetail.msg_add_failed"));
+    } finally {
+      setAdding(false);
+    }
+  };
+
   const formatPrice = (price) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "VND",
     }).format(price);
+
+  const STATUS_UI = {
+    ACTIVE: {
+      label: t("productDetail.status_active"),
+      className: "bg-green-100 text-green-700",
+    },
+    OUT_OF_STOCK: {
+      label: t("productDetail.status_out_of_stock"),
+      className: "bg-red-100 text-red-700",
+    },
+    DISPLAY: {
+      label: t("productDetail.status_display"),
+      className: "bg-blue-100 text-blue-700",
+    },
+    LOCKED: {
+      label: t("productDetail.status_locked"),
+      className: "bg-gray-200 text-gray-700",
+    },
+  };
+
+  const statusKey = (product?.status || "").toUpperCase();
+  const statusUi = STATUS_UI[statusKey] || {
+    label: product?.status || "Đang cập nhật",
+    className: "bg-gray-100 text-gray-700",
+  };
 
   const slideInFromBottom = {
     hidden: { opacity: 0, y: 100 },
@@ -170,12 +226,21 @@ function DetailContainer() {
             </div>
 
             <div className="flex gap-4 mb-8">
-              <button className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
+              <button
+                type="button"
+                disabled={adding}
+                onClick={handleAddToCart}
+                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60">
                 <ShoppingCartOutlined className="text-lg" />
                 {t("productDetail.add_to_cart")}
               </button>
 
-              <button className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition">
+              <button
+                type="button"
+                onClick={async () => {
+                  await handleAddToCart();
+                }}
+                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition">
                 {t("productDetail.buy_now")}
               </button>
 
@@ -198,8 +263,12 @@ function DetailContainer() {
                 {t("productDetail.category")}:{" "}
                 {product.categories?.join(", ") || t("productDetail.updating")}
               </div>
-              <div>
-                {t("productDetail.status")}: {product.status}
+              <div className="flex items-center gap-2">
+                <span>{t("productDetail.status")}:</span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusUi.className}`}>
+                  {statusUi.label}
+                </span>
               </div>
             </div>
 

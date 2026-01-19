@@ -133,6 +133,55 @@ const resources = {
         currency: "đ",
       },
 
+      store: {
+        sort_by: "Sắp xếp theo",
+        clear_filter: "Bỏ lọc",
+
+        sort: {
+          newest: "Mới nhất",
+          oldest: "Cũ nhất",
+          a_z: "A-Z",
+          z_a: "Z-A",
+        },
+
+        msg: {
+          add_success: "Đã thêm vào giỏ hàng",
+          add_failed:
+            "Thêm vào giỏ thất bại (có thể bạn chưa đăng nhập hoặc sản phẩm hết hàng)",
+        },
+
+        misc: {
+          no_image: "No image",
+        },
+      },
+
+      cart: {
+        title: "Giỏ hàng của bạn",
+        empty: "Không có sản phẩm nào trong giỏ hàng của bạn",
+
+        table: {
+          product_info: "Thông tin sản phẩm",
+          quantity: "Số lượng",
+          unit_price: "Đơn giá",
+          subtotal: "Thành tiền",
+        },
+
+        total: "Tổng tiền",
+        checkout: "THANH TOÁN",
+        continue_shopping: "Tiếp tục mua sắm",
+
+        msg: {
+          fetch_failed: "Không lấy được giỏ hàng. Bạn đã đăng nhập chưa?",
+          qty_update_failed: "Cập nhật số lượng thất bại",
+          remove_failed: "Xóa sản phẩm thất bại",
+        },
+
+        misc: {
+          view_detail: "Xem chi tiết",
+          no_image: "No image",
+        },
+      },
+
       productDetail: {
         type: "Loại sản phẩm",
         updating: "Đang cập nhật",
@@ -154,6 +203,16 @@ const resources = {
         rating_suffix: "lượt",
 
         order_painting: "Đặt Tranh",
+
+        msg_out_of_stock: "Sản phẩm đã hết hàng",
+        msg_need_login: "Bạn cần đăng nhập để thêm vào giỏ",
+        msg_add_success: "Đã thêm vào giỏ hàng",
+        msg_add_failed: "Thêm vào giỏ thất bại",
+
+        status_active: "Còn hàng",
+        status_out_of_stock: "Hết hàng",
+        status_display: "Hàng trưng bày",
+        status_locked: "Đang khóa",
       },
 
       profile: {
@@ -664,6 +723,55 @@ const resources = {
         currency: "₫",
       },
 
+      cart: {
+        title: "Your cart",
+        empty: "There are no items in your cart",
+
+        table: {
+          product_info: "Product info",
+          quantity: "Quantity",
+          unit_price: "Unit price",
+          subtotal: "Subtotal",
+        },
+
+        total: "Total",
+        checkout: "CHECKOUT",
+        continue_shopping: "Continue shopping",
+
+        msg: {
+          fetch_failed: "Failed to load cart. Are you logged in?",
+          qty_update_failed: "Failed to update quantity",
+          remove_failed: "Failed to remove item",
+        },
+
+        misc: {
+          view_detail: "View details",
+          no_image: "No image",
+        },
+      },
+
+      store: {
+        sort_by: "Sort by:",
+        clear_filter: "Clear filter",
+
+        sort: {
+          newest: "Newest",
+          oldest: "Oldest",
+          a_z: "A-Z",
+          z_a: "Z-A",
+        },
+
+        msg: {
+          add_success: "Added to cart",
+          add_failed:
+            "Failed to add to cart (you may not be logged in or the item is out of stock)",
+        },
+
+        misc: {
+          no_image: "No image",
+        },
+      },
+
       productDetail: {
         type: "Product type",
         updating: "Updating",
@@ -685,6 +793,16 @@ const resources = {
         rating_suffix: "reviews",
 
         order_painting: "Order",
+
+        msg_out_of_stock: "Out of stock",
+        msg_need_login: "Please sign in to add to cart",
+        msg_add_success: "Added to cart",
+        msg_add_failed: "Failed to add to cart",
+
+        status_active: "In stock",
+        status_out_of_stock: "Out of stock",
+        status_display: "Display item",
+        status_locked: "Locked",
       },
 
       profile: {

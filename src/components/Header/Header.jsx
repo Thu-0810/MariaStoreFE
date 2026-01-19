@@ -9,11 +9,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/img/logo.png";
 import { useTranslation } from "react-i18next";
+import { cartApi } from "../../api/cartApi";
+import { Badge } from "antd";
 
 function Header() {
   const [currentUser, setCurrentUser] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(false);
   const [openLang, setOpenLang] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
   const navigate = useNavigate();
 
   const { t, i18n } = useTranslation();
@@ -25,7 +29,6 @@ function Header() {
     if (storedUser) setCurrentUser(JSON.parse(storedUser));
   }, []);
 
-  // đóng dropdown khi click ra ngoài
   useEffect(() => {
     const onClickOutside = (e) => {
       if (!wrapperRef.current) return;
@@ -37,6 +40,34 @@ function Header() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
+
+  const fetchCartCount = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token || !currentUser || currentUser.role !== "USER") {
+        setCartCount(0);
+        return;
+      }
+
+      const res = await cartApi.getCart();
+      const items = res.data?.items || [];
+      const count = items.reduce((sum, it) => sum + (it.quantity || 0), 0);
+      setCartCount(count);
+    } catch {
+      setCartCount(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartCount();
+  }, [currentUser]);
+
+  useEffect(() => {
+    const handler = () => fetchCartCount();
+
+    window.addEventListener("cart:changed", handler);
+    return () => window.removeEventListener("cart:changed", handler);
+  }, [currentUser]);
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
@@ -58,7 +89,6 @@ function Header() {
     <header className="bg-[#d9eafd] relative">
       <div className="max-w-7xl mx-auto px-4 py-3" ref={wrapperRef}>
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => {
@@ -84,7 +114,6 @@ function Header() {
             <span className="text-[#133e87] font-bold text-xl">MariaStore</span>
           </div>
 
-          {/* Search */}
           <div className="flex-1 max-w-2xl mx-8">
             <div className="relative flex items-center">
               <input
@@ -96,18 +125,34 @@ function Header() {
             </div>
           </div>
 
-          {/* User Actions */}
-          <div className="flex items-center gap-4 text-sm text-[#193a80] font-medium relative">
+          <div className="flex items-center gap-6 text-sm text-[#193a80] font-medium relative">
             {currentUser?.role === "USER" && (
               <div
-                className="flex items-center gap-1 cursor-pointer"
+                className="relative flex items-center gap-2 cursor-pointer"
                 onClick={() => navigate("/cart")}>
                 <ShoppingCartOutlined />
-                <span>{t("header.cart")}</span>
+
+                <span className="relative">
+                  {t("header.cart")}
+
+                  {cartCount > 0 && (
+                    <span
+                      className="
+                     absolute -top-2 -right-4
+                     min-w-[18px] h-[18px]
+                     px-1
+                     rounded-full
+                     bg-[#193a80] text-white
+                     text-[10px] leading-[18px]
+                     font-semibold text-center
+                   ">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </span>
               </div>
             )}
 
-            {/* Language switch */}
             <div className="relative">
               <div
                 className="flex items-center gap-1 cursor-pointer select-none"
