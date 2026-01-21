@@ -215,16 +215,36 @@ function Header() {
                             }}>
                             {t("header.account")}
                           </li>
-                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                          <li
+                            className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                            onClick={() => {
+                              navigate("/my-profile/requests");
+                              setOpenDropdown(false);
+                            }}>
                             {t("header.requests")}
                           </li>
-                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                          <li
+                            className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                            onClick={() => {
+                              navigate("/my-profile/orders");
+                              setOpenDropdown(false);
+                            }}>
                             {t("header.orders")}
                           </li>
-                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                          <li
+                            className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                            onClick={() => {
+                              navigate("/my-profile/favorites");
+                              setOpenDropdown(false);
+                            }}>
                             {t("header.saved_products")}
                           </li>
-                          <li className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer">
+                          <li
+                            className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"
+                            onClick={() => {
+                              navigate("/my-profile/posts");
+                              setOpenDropdown(false);
+                            }}>
                             {t("header.posts")}
                           </li>
                           <hr />

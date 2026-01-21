@@ -49,3 +49,7 @@ export const adminUploadUserAvatarApi = (userId, file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const getAdminUserOrdersApi = (id, params = {}) => {
+  return axiosClient.get(`/admin/users/${id}/orders`, { params });
+};

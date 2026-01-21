@@ -165,7 +165,9 @@ function StoreContainer() {
                 variants={staggerItem}>
                 <img
                   src={
-                    cat.thumbnailUrl ? toServerUrl(cat.thumbnailUrl) : fallback
+                    cat.thumbnailUrl
+                      ? toServerUrl(cat.thumbnailUrl)
+                      : "/placeholder.svg"
                   }
                   alt={cat.name}
                   className="

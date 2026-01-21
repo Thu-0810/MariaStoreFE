@@ -24,6 +24,10 @@ import Checkout from "./pages/Cart/Checkout";
 import Payment from "./pages/Cart/Payment";
 import QRPayment from "./pages/Cart/QRPayment";
 import PaymentSuccess from "./pages/Cart/PaymentSuccess";
+import ProfileRequestsPage from "./pages/UserPage/ProfilePage/ProfileRequestsPage";
+import ProfileOrdersPage from "./pages/UserPage/ProfilePage/ProfileOrdersPage";
+import ProfileFavoritesPage from "./pages/UserPage/ProfilePage/ProfileFavoritesPage";
+import ProfilePostsPage from "./pages/UserPage/ProfilePage/ProfilePostsPage";
 
 function App() {
   return (
@@ -45,8 +49,13 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* ProfilePage */}
-        <Route path="/my-profile" element={<ProfilePage />} />
-
+        <Route path="/my-profile" element={<ProfilePage />}>
+          <Route index element={<Navigate to="requests" replace />} />
+          <Route path="requests" element={<ProfileRequestsPage />} />
+          <Route path="orders" element={<ProfileOrdersPage />} />
+          <Route path="favorites" element={<ProfileFavoritesPage />} />
+          <Route path="posts" element={<ProfilePostsPage />} />
+        </Route>
         {/* DetailPage */}
         <Route path="/detail/:id" element={<DetailPage />} />
         <Route path="/detail-community" element={<DeatailCommunityPage />} />

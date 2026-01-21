@@ -1,13 +1,22 @@
 import { Input, Button, Space } from "antd";
 
-export default function OrderActionBar({ t, onOpenDelete, onEdit }) {
+export default function OrderActionBar({
+  t,
+  onOpenDelete,
+  onEdit,
+  searchValue,
+  onSearchChange,
+}) {
   return (
     <div className="flex items-center gap-4 mb-6">
       <div className="flex-1">
         <Input
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t("adminOrder.search_placeholder")}
           className="max-w-xs"
           style={{ borderColor: "#cbdceb" }}
+          allowClear
         />
       </div>
 

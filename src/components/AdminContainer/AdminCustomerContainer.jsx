@@ -17,6 +17,7 @@ import {
   lockAdminUserApi,
   unlockAdminUserApi,
   deleteAdminUserApi,
+  getAdminUserOrdersApi,
 } from "../../api/adminUserApi";
 const BASE_BACKEND = "http://localhost:8080";
 
@@ -42,8 +43,12 @@ const toCustomerUI = (u, stt) => {
     birthday: u.dateOfBirth ? dayjs(u.dateOfBirth).format("YYYY-MM-DD") : null,
     email: u.email || "",
 
-    orders: 0,
-    totalAmount: "",
+    orders: Number(u.ordersCount || 0),
+    totalAmount:
+      u.totalSpent != null
+        ? Number(u.totalSpent).toLocaleString("vi-VN") + "đ"
+        : "0đ",
+
     ordersDetail: [],
 
     createdAt,
@@ -158,16 +163,31 @@ function AdminCustomerContainer() {
     try {
       const res = await getAdminUserByIdApi(record.id);
       const u = res.data;
-
+      const ordersRes = await getAdminUserOrdersApi(record.id, {
+        page: 0,
+        size: 10,
+        sort: "createdAt,desc",
+      });
+      const orders = ordersRes.data?.content || [];
+      const ordersDetail = orders.map((o, idx) => ({
+        key: o.orderId,
+        stt: idx + 1,
+        orderNumber: o.orderCode,
+        date: o.createdAt ? dayjs(o.createdAt).format("DD/MM/YYYY") : "",
+        total:
+          o.totalAmount != null
+            ? Number(o.totalAmount).toLocaleString("vi-VN") + "đ"
+            : "0đ",
+      }));
       const ui = toCustomerUI(u, record.stt);
 
       setSelectedCustomer((prev) => ({
         ...(prev || record),
         ...ui,
 
-        orders: (prev || record)?.orders || 0,
-        totalAmount: (prev || record)?.totalAmount || "",
-        ordersDetail: (prev || record)?.ordersDetail || [],
+        orders: ui.orders,
+        totalAmount: ui.totalAmount,
+        ordersDetail,
       }));
 
       const full =

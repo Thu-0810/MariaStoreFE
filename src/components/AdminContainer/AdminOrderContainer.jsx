@@ -1,168 +1,198 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pagination, message, Tag } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+
+import {
+  deleteAdminOrdersApi,
+  getAdminOrderDetailApi,
+  getAdminOrdersPagedApi,
+  printAdminOrderInvoiceApi,
+} from "../../api/adminOrderApi";
+
 import OrderActionBar from "./AdminOrderComponent/OrderActionBar";
 import ConfirmDeleteOrderModal from "./AdminOrderComponent/ConfirmDeleteOrderModal";
 import OrderDetailModal from "./AdminOrderComponent/OrderDetailModal";
 import OrdersTable from "./AdminOrderComponent/OrdersTable";
 import OrderIncompleteModal from "./AdminOrderComponent/OrderIncompleteModal";
 
-const products = [
-  {
-    id: 1,
-    name: '"Trời sao"',
-    image: "src/assets/img/Illustration309.jpg",
-    price: 2614500,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Nhân dân ôm",
-    image: "src/assets/img/Illustration80.1.jpg",
-    price: 392850,
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "Fanart Shishigami Leona",
-    image: "src/assets/img/Illustration153.jpg",
-    price: 723800,
-    quantity: 1,
-  },
-  {
-    id: 4,
-    name: '"Chúc may mắn"',
-    image: "src/assets/img/Illustration314.jpg",
-    price: 1047600,
-    quantity: 1,
-  },
-];
-
 function AdminOrderContainer() {
+  const { t, i18n } = useTranslation();
+
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isIncompleteModalOpen, setIsIncompleteModalOpen] = useState(false);
 
-  const [selectedOrder, setSelectedOrder] = useState([]);
+  const [selectedOrderRow, setSelectedOrderRow] = useState(null);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
 
-  const { t, i18n } = useTranslation();
+  const [keyword, setKeyword] = useState("");
+  const [total, setTotal] = useState(0);
+  const [data, setData] = useState([]);
 
-  const isCompleted = (s) => s === "Hoàn thành" || s === "Completed";
+  const isCompleted = (statusEnum) => statusEnum === "COMPLETED";
 
-  const getStatusLabel = (s) =>
-    isCompleted(s)
+  const getStatusLabel = (statusEnum) =>
+    isCompleted(statusEnum)
       ? t("adminOrder.status.completed")
       : t("adminOrder.status.incomplete");
 
-  const [data, setData] = useState([
-    {
-      key: 1,
-      stt: 1,
-      orderCode: "#AA57069441",
-      invoiceCode: "HD6941",
-      paymentMethod: "Thanh toán qua ngân hàng",
-      totalAmount: "4.729.750đ",
-      status: "Hoàn thành",
-    },
-    {
-      key: 2,
-      stt: 2,
-      orderCode: "#AA14758242",
-      invoiceCode: "HD5240",
-      paymentMethod: "Thanh toán qua ngân hàng",
-      totalAmount: "886.000đ",
-      status: "Chưa hoàn thành",
-    },
-    {
-      key: 3,
-      stt: 3,
-      orderCode: "#AA23085762",
-      invoiceCode: "HD5872",
-      paymentMethod: "Thanh toán khi nhận hàng",
-      totalAmount: "1.720.000đ",
-      status: "Hoàn thành",
-    },
-  ]);
+  const formatMoneyShort = (value) => {
+    if (value == null) return "";
+    const locale = i18n.language === "vi" ? "vi-VN" : "en-US";
+    return (
+      new Intl.NumberFormat(locale).format(value) +
+      t("adminOrder.currency_suffix")
+    );
+  };
 
-  const totalAmount = products.reduce(
-    (sum, p) => sum + p.price * p.quantity,
-    0
+  const columns = useMemo(
+    () => [
+      {
+        title: t("adminOrder.table.index"),
+        dataIndex: "stt",
+        key: "stt",
+        width: 80,
+      },
+      {
+        title: t("adminOrder.table.order_code"),
+        dataIndex: "orderCode",
+        key: "orderCode",
+      },
+      {
+        title: t("adminOrder.table.invoice_code"),
+        dataIndex: "invoiceCode",
+        key: "invoiceCode",
+      },
+      {
+        title: t("adminOrder.table.payment_method"),
+        dataIndex: "paymentMethod",
+        key: "paymentMethod",
+      },
+      {
+        title: t("adminOrder.table.total_amount"),
+        dataIndex: "totalAmountText",
+        key: "totalAmountText",
+        width: 160,
+      },
+      {
+        title: t("adminOrder.table.status"),
+        dataIndex: "status",
+        key: "status",
+        width: 180,
+        render: (status) => (
+          <Tag
+            color={isCompleted(status) ? "green" : "volcano"}
+            className="font-medium px-3 py-1 rounded-full">
+            {getStatusLabel(status)}
+          </Tag>
+        ),
+      },
+    ],
+    [t, i18n.language]
   );
-
-  const columns = [
-    {
-      title: t("adminOrder.table.index"),
-      dataIndex: "stt",
-      key: "stt",
-      width: 80,
-    },
-    {
-      title: t("adminOrder.table.order_code"),
-      dataIndex: "orderCode",
-      key: "orderCode",
-    },
-    {
-      title: t("adminOrder.table.invoice_code"),
-      dataIndex: "invoiceCode",
-      key: "invoiceCode",
-    },
-    {
-      title: t("adminOrder.table.payment_method"),
-      dataIndex: "paymentMethod",
-      key: "paymentMethod",
-    },
-    {
-      title: t("adminOrder.table.total_amount"),
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      width: 160,
-    },
-    {
-      title: t("adminOrder.table.status"),
-      dataIndex: "status",
-      key: "status",
-      width: 180,
-      render: (status) => (
-        <Tag
-          color={isCompleted(status) ? "green" : "volcano"}
-          className="font-medium px-3 py-1 rounded-full">
-          {getStatusLabel(status)}
-        </Tag>
-      ),
-    },
-  ];
 
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
   };
 
-  // Khi click vào một dòng
-  const handleRowClick = (record) => {
-    setSelectedOrder(record);
-    if (record.status === "Hoàn thành") {
-      setIsDetailModalOpen(true);
-    } else {
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getAdminOrdersPagedApi({
+          page: currentPage,
+          size: pageSize,
+          sort: "createdAt,desc",
+          keyword: keyword?.trim() || null,
+          status: null,
+        });
+
+        const content = res.data?.content || [];
+        const mapped = content.map((x, idx) => ({
+          ...x,
+          stt: (currentPage - 1) * pageSize + idx + 1,
+          totalAmountText: formatMoneyShort(x.totalAmount),
+        }));
+
+        setData(mapped);
+        setTotal(res.data?.totalElements || 0);
+      } catch (e) {
+        message.error(
+          t("adminOrder.toast.load_failed") || "Load orders failed"
+        );
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [currentPage, keyword, i18n.language]);
+
+  const handleRowClick = async (record) => {
+    setSelectedOrderRow(record);
+
+    if (!isCompleted(record.status)) {
       setIsIncompleteModalOpen(true);
+      return;
+    }
+
+    try {
+      const res = await getAdminOrderDetailApi(record.id);
+      setSelectedOrderDetail(res.data);
+      setIsDetailModalOpen(true);
+    } catch (e) {
+      message.error(
+        t("adminOrder.toast.load_detail_failed") || "Load detail failed"
+      );
     }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedRowKeys.length === 0) {
       message.warning(t("adminOrder.toast.select_one_for_delete"));
       return;
     }
-    const updatedData = data.filter(
-      (item) => !selectedRowKeys.includes(item.key)
-    );
-    setData(updatedData);
-    setSelectedRowKeys([]);
-    setIsDeleteModalOpen(false);
-    message.success(t("adminOrder.toast.delete_success"));
+    try {
+      await deleteAdminOrdersApi(selectedRowKeys);
+      message.success(t("adminOrder.toast.delete_success"));
+
+      setSelectedRowKeys([]);
+      setIsDeleteModalOpen(false);
+
+      const res = await getAdminOrdersPagedApi({
+        page: currentPage,
+        size: pageSize,
+        sort: "createdAt,desc",
+        keyword: keyword?.trim() || null,
+        status: null,
+      });
+      const content = res.data?.content || [];
+      const mapped = content.map((x, idx) => ({
+        ...x,
+        stt: (currentPage - 1) * pageSize + idx + 1,
+        totalAmountText: formatMoneyShort(x.totalAmount),
+      }));
+      setData(mapped);
+      setTotal(res.data?.totalElements || 0);
+    } catch (e) {
+      message.error(t("adminOrder.toast.delete_failed") || "Delete failed");
+    }
+  };
+
+  const handlePrintInvoice = async () => {
+    if (!selectedOrderDetail?.id) return;
+    try {
+      const res = await printAdminOrderInvoiceApi(selectedOrderDetail.id);
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" })
+      );
+      window.open(url, "_blank");
+    } catch (e) {
+      message.error("Print invoice failed");
+    }
   };
 
   return (
@@ -171,7 +201,6 @@ function AdminOrderContainer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}>
-      {/* Background */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -197,6 +226,11 @@ function AdminOrderContainer() {
               t={t}
               onOpenDelete={() => setIsDeleteModalOpen(true)}
               onEdit={() => {}}
+              searchValue={keyword}
+              onSearchChange={(v) => {
+                setCurrentPage(1);
+                setKeyword(v);
+              }}
             />
 
             <ConfirmDeleteOrderModal
@@ -222,12 +256,11 @@ function AdminOrderContainer() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Pagination */}
             <div className="flex justify-center mt-8">
               <Pagination
                 current={currentPage}
-                total={100}
-                pageSize={10}
+                total={total}
+                pageSize={pageSize}
                 onChange={(page) => setCurrentPage(page)}
                 showSizeChanger={false}
                 className="custom-ant-pagination"
@@ -242,16 +275,18 @@ function AdminOrderContainer() {
         i18n={i18n}
         open={isDetailModalOpen}
         onCancel={() => setIsDetailModalOpen(false)}
-        selectedOrder={selectedOrder}
-        products={products}
-        totalAmount={totalAmount}
+        orderDetail={selectedOrderDetail}
+        onDeleteInvoice={() => {}}
+        onPrintInvoice={handlePrintInvoice}
       />
 
       <OrderIncompleteModal
         t={t}
         open={isIncompleteModalOpen}
         onCancel={() => setIsIncompleteModalOpen(false)}
-        selectedOrder={selectedOrder}
+        selectedOrder={{
+          orderCode: selectedOrderRow?.orderCode,
+        }}
       />
     </motion.div>
   );

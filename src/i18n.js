@@ -182,6 +182,60 @@ const resources = {
         },
       },
 
+      checkout: {
+        title: "Thông tin đơn hàng",
+        receiver_name: "Họ và tên",
+        receiver_phone: "Số điện thoại",
+        shipping_address: "Địa chỉ nhận hàng",
+
+        subtotal: "Tạm tính",
+        discount: "Giảm giá",
+        total: "Tổng tiền",
+
+        pay: "THANH TOÁN",
+        back: "Quay lại",
+
+        msg_cart_empty: "Giỏ hàng trống",
+        msg_missing_info: "Vui lòng nhập đầy đủ thông tin nhận hàng",
+        msg_cart_load_failed: "Không tải được giỏ hàng",
+        msg_checkout_failed: "Tạo đơn thất bại",
+      },
+
+      payment: {
+        choose_title: "Chọn phương thức thanh toán",
+        missing_order: "Thiếu thông tin đơn hàng, vui lòng checkout lại",
+        not_integrated: "Chưa tích hợp phương thức này",
+
+        methods: {
+          paypal: "Paypal",
+          vnpay: "VNPay",
+          bank: "Tài khoản ngân hàng",
+        },
+
+        alt: {
+          paypal: "Logo Paypal",
+          vnpay: "Logo VNPay",
+          bank: "Mã QR",
+        },
+      },
+
+      qrPayment: {
+        title: "Xác nhận thanh toán",
+        shipping_info: "Thông tin nhận hàng",
+
+        fetch_qr_failed: "Không lấy được QR",
+        confirm_failed: "Xác nhận thanh toán thất bại",
+
+        order_code: "Mã đơn hàng",
+        amount: "Số tiền thanh toán",
+        transaction_id: "Mã giao dịch",
+
+        confirm_btn: "Xác nhận",
+        back_btn: "Quay lại",
+
+        currency: "đ",
+      },
+
       productDetail: {
         type: "Loại sản phẩm",
         updating: "Đang cập nhật",
@@ -239,6 +293,22 @@ const resources = {
         empty_orders: "Danh sách đơn hàng của bạn",
         empty_favorites: "Các sản phẩm bạn đã yêu thích",
         empty_posts: "Bài viết của bạn sẽ xuất hiện ở đây",
+        order: {
+          sort_newest: "Gần nhất",
+          sort_oldest: "Cũ nhất",
+
+          orders_load_failed: "Tải danh sách đơn hàng thất bại",
+          download_failed: "Tải file thất bại",
+
+          empty_orders: "Danh sách đơn hàng của bạn",
+
+          order: "Đơn hàng",
+          order_completed: "Đơn hàng đã hoàn thành",
+          order_code: "Đơn Hàng",
+          order_total: "Tổng tiền",
+
+          download: "Tải Xuống File",
+        },
       },
 
       community: {
@@ -758,6 +828,60 @@ const resources = {
         },
       },
 
+      checkout: {
+        title: "Order information",
+        receiver_name: "Full name",
+        receiver_phone: "Phone number",
+        shipping_address: "Shipping address",
+
+        subtotal: "Subtotal",
+        discount: "Discount",
+        total: "Total",
+
+        pay: "PAY",
+        back: "Back",
+
+        msg_cart_empty: "Your cart is empty",
+        msg_missing_info: "Please fill in all shipping information",
+        msg_cart_load_failed: "Failed to load cart",
+        msg_checkout_failed: "Failed to create order",
+      },
+
+      payment: {
+        choose_title: "Choose a payment method",
+        missing_order: "Missing order information, please checkout again",
+        not_integrated: "This payment method is not integrated yet",
+
+        methods: {
+          paypal: "Paypal",
+          vnpay: "VNPay",
+          bank: "Bank account",
+        },
+
+        alt: {
+          paypal: "Paypal logo",
+          vnpay: "VNPay logo",
+          bank: "QR code",
+        },
+      },
+
+      qrPayment: {
+        title: "Confirm payment",
+        shipping_info: "Shipping information",
+
+        fetch_qr_failed: "Failed to load QR",
+        confirm_failed: "Payment confirmation failed",
+
+        order_code: "Order code",
+        amount: "Amount",
+        transaction_id: "Transaction ID",
+
+        confirm_btn: "Confirm",
+        back_btn: "Back",
+
+        currency: "₫",
+      },
+
       store: {
         sort_by: "Sort by:",
         clear_filter: "Clear filter",
@@ -837,6 +961,22 @@ const resources = {
         empty_orders: "Your orders will appear here",
         empty_favorites: "Your favorite products will appear here",
         empty_posts: "Your posts will appear here",
+        order: {
+          sort_newest: "Newest",
+          sort_oldest: "Oldest",
+
+          orders_load_failed: "Failed to load orders",
+          download_failed: "Download failed",
+
+          empty_orders: "Your orders will appear here",
+
+          order: "Order",
+          order_completed: "Order completed",
+          order_code: "Order",
+          order_total: "Total",
+
+          download: "Download File",
+        },
       },
 
       community: {

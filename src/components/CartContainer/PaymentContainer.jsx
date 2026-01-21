@@ -1,16 +1,11 @@
-import { Card } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Card, message } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const PaymentMethodCard = ({ title, src, altText, onClick }) => {
   return (
     <div onClick={onClick} className="group cursor-pointer flex justify-center">
-      <div
-        className="
-            p-4 rounded-2xl transition-all duration-300
-            bg-white border border-blue-100
-            hover:border-blue-400
-            hover:shadow-[0_0_25px_rgba(59,130,246,0.35)]
-          ">
+      <div className="p-4 rounded-2xl transition-all duration-300 bg-white border border-blue-100 hover:border-blue-400 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)]">
         <Card
           bordered={false}
           style={{ boxShadow: "none" }}
@@ -44,26 +39,46 @@ const PaymentMethodCard = ({ title, src, altText, onClick }) => {
 
 function PaymentContainer() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+
+  const orderId = location.state?.orderId;
+
   const methods = [
     {
-      title: "Paypal",
+      title: t("payment.methods.paypal"),
       src: "src/assets/payment/paypal.png",
-      altText: "Paypal logo",
+      altText: t("payment.alt.paypal"),
       type: "paypal",
     },
     {
-      title: "VNPay",
+      title: t("payment.methods.vnpay"),
       src: "src/assets/payment/vnpay.jpg",
-      altText: "VNPay logo",
+      altText: t("payment.alt.vnpay"),
       type: "vnpay",
     },
     {
-      title: "Tài khoản ngân hàng",
+      title: t("payment.methods.bank"),
       src: "src/assets/payment/qrcode.jpg",
-      altText: "QR Code",
+      altText: t("payment.alt.bank"),
       type: "bank",
     },
   ];
+
+  const handleChoose = (type) => {
+    if (!orderId) {
+      message.warning(t("payment.missing_order"));
+      navigate("/checkout");
+      return;
+    }
+
+    if (type === "bank") {
+      navigate("/payment/qr", { state: { orderId } });
+      return;
+    }
+
+    message.info(t("payment.not_integrated"));
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -79,21 +94,17 @@ function PaymentContainer() {
         <div className="w-full max-w-4xl">
           <div className="bg-[#1a3b70] text-white text-center py-3 rounded-xl shadow-md mb-10">
             <h1 className="text-base font-medium tracking-wide">
-              Chọn phương thức thanh toán
+              {t("payment.choose_title")}
             </h1>
           </div>
 
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl px-10 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {methods.map((method, index) => (
+              {methods.map((method) => (
                 <PaymentMethodCard
-                  key={index}
+                  key={method.type}
                   {...method}
-                  onClick={() => {
-                    if (method.type === "bank") {
-                      navigate("/payment/qr");
-                    }
-                  }}
+                  onClick={() => handleChoose(method.type)}
                 />
               ))}
             </div>

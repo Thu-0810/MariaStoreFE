@@ -11,6 +11,11 @@ export default function CreateProductModal({
   createImagePreview,
   onImageChange,
   onRemoveImage,
+
+  digitalFileName,
+  onDigitalChange,
+  onRemoveDigital,
+
   onSubmit,
 }) {
   return (
@@ -41,14 +46,14 @@ export default function CreateProductModal({
                       alt="preview"
                       className="rounded-2xl object-contain max-h-full"
                     />
-                    <Button
+                    {/* <Button
                       type="text"
                       danger
                       size="small"
                       className="!absolute top-2 right-2"
                       onClick={onRemoveImage}>
                       {t("adminProduct.image.remove")}
-                    </Button>
+                    </Button> */}
                   </div>
                 ) : (
                   <Upload
@@ -56,12 +61,12 @@ export default function CreateProductModal({
                     showUploadList={false}
                     beforeUpload={() => false}
                     onChange={onImageChange}>
-                    <Button
+                    {/* <Button
                       icon={<UploadOutlined />}
                       size="large"
                       className="bg-white/80 hover:bg-white text-[#608bc1] font-medium border-0">
                       {t("adminProduct.image.add")}
-                    </Button>
+                    </Button> */}
                   </Upload>
                 )}
               </div>
@@ -169,6 +174,39 @@ export default function CreateProductModal({
                   />
                 </Form.Item>
               </div>
+
+              <Form.Item
+                label={
+                  <span className="text-[#133e87] font-medium">
+                    File gốc (để khách tải sau khi mua)
+                  </span>
+                }
+                required>
+                <div className="flex items-center gap-3">
+                  <Upload
+                    showUploadList={false}
+                    beforeUpload={() => false}
+                    onChange={onDigitalChange}
+                    accept=".png,.jpg,.jpeg,.zip,.rar,.psd,.pdf">
+                    <Button icon={<UploadOutlined />}>Chọn file</Button>
+                  </Upload>
+
+                  {digitalFileName ? (
+                    <>
+                      <span className="text-sm text-gray-600 truncate max-w-[240px]">
+                        {digitalFileName}
+                      </span>
+                      <Button danger size="small" onClick={onRemoveDigital}>
+                        Xoá
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      Chưa chọn file
+                    </span>
+                  )}
+                </div>
+              </Form.Item>
 
               <Form.Item
                 name="description"

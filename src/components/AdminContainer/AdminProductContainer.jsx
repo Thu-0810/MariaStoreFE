@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pagination, Form, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 
 import { getCategoriesApi } from "../../api/categoryApi";
 import {
@@ -13,10 +14,14 @@ import {
   unlockProductsApi,
   updateProductApi,
 } from "../../api/productApi";
+
 import {
   deleteProductImageApi,
   uploadProductImageApi,
 } from "../../api/productMediaApi";
+
+import { uploadProductDigitalApi } from "../../api/productDigitalApi";
+
 import CategoryButtons from "./AdminProductComponent/CategoryButtons";
 import ActionBar from "./AdminProductComponent/ActionBar";
 import DeleteConfirmModal from "./AdminProductComponent/DeleteConfirmModal";
@@ -24,7 +29,6 @@ import LockConfirmModal from "./AdminProductComponent/LockConfirmModal";
 import CreateProductModal from "./AdminProductComponent/CreateProductModal";
 import DetailProductModal from "./AdminProductComponent/DetailProductModal";
 import ProductsTable from "./AdminProductComponent/ProductsTable";
-import dayjs from "dayjs";
 
 function AdminProductContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -57,6 +61,16 @@ function AdminProductContainer() {
   const [editImageFile, setEditImageFile] = useState(null);
   const [removedImageIds, setRemovedImageIds] = useState([]);
 
+  const [digitalFile, setDigitalFile] = useState(null);
+  const [digitalFileName, setDigitalFileName] = useState("");
+
+  const [editDigitalFile, setEditDigitalFile] = useState(null);
+  const [editDigitalFileName, setEditDigitalFileName] = useState("");
+
+  const previewFromDigitalRef = useRef(false);
+  const editPreviewFromDigitalRef = useRef(false);
+
+  const isImageFile = (file) => file?.type?.startsWith("image/");
   const { t } = useTranslation();
 
   const rowSelection = {
@@ -125,15 +139,130 @@ function AdminProductContainer() {
     description: values.description,
     status: values.status,
     categoryIds: [Number(values.category)],
+
     fileFormat: values.fileType,
     resolution: values.size,
     fileSize: values.fileSize,
+
     author: values.author,
     style: values.style,
     origin: values.origin,
     characterName: values.character,
     extraInfo: values.extraInfo,
   });
+
+  const handleImageUpload = (info, targetForm, setPreview, setFile) => {
+    const file = info.file?.originFileObj || info.file;
+    if (!file) return;
+
+    if (!file.type?.startsWith("image/")) {
+      message.error(t("adminProduct.toast.invalid_image"));
+      return;
+    }
+
+    setFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreview(e.target.result);
+
+      const img = new Image();
+      img.onload = () => {
+        targetForm.setFieldsValue({
+          size: `${img.width}x${img.height}`,
+          fileType: file.type.split("/")[1].toUpperCase(),
+          fileSize: file.size
+            ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
+            : "",
+        });
+      };
+      img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCreateImage = () => {
+    setCreateImagePreview(null);
+    setImageFile(null);
+    createForm.setFieldsValue({ size: "", fileType: "", fileSize: "" });
+  };
+
+  const handleRemoveEditImage = () => {
+    if (selectedProduct?.images?.[0]?.id) {
+      setRemovedImageIds([selectedProduct.images[0].id]);
+    }
+
+    setEditImagePreview(null);
+    setEditImageFile(null);
+    editForm.setFieldsValue({ size: "", fileType: "", fileSize: "" });
+  };
+
+  const handleDigitalChange = (info) => {
+    const file = info.file?.originFileObj || info.file;
+    if (!file) return;
+
+    setDigitalFile(file);
+    setDigitalFileName(file.name);
+
+    if (isImageFile(file)) {
+      previewFromDigitalRef.current = true;
+
+      handleImageUpload(info, createForm, setCreateImagePreview, setImageFile);
+      return;
+    }
+
+    previewFromDigitalRef.current = false;
+
+    createForm.setFieldsValue({
+      fileSize: file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "",
+    });
+  };
+
+  const handleRemoveDigital = () => {
+    setDigitalFile(null);
+    setDigitalFileName("");
+
+    if (previewFromDigitalRef.current) {
+      previewFromDigitalRef.current = false;
+      handleRemoveCreateImage();
+    }
+  };
+
+  const handleEditDigitalChange = (info) => {
+    const file = info.file?.originFileObj || info.file;
+    if (!file) return;
+
+    setEditDigitalFile(file);
+    setEditDigitalFileName(file.name);
+
+    if (isImageFile(file)) {
+      editPreviewFromDigitalRef.current = true;
+
+      const oldId = selectedProduct?.images?.[0]?.id;
+      if (oldId)
+        setRemovedImageIds((prev) => Array.from(new Set([...prev, oldId])));
+
+      handleImageUpload(file, editForm, setEditImagePreview, setEditImageFile);
+      return;
+    }
+
+    editPreviewFromDigitalRef.current = false;
+
+    editForm.setFieldsValue({
+      fileSize: file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "",
+    });
+  };
+
+  const handleRemoveEditDigital = () => {
+    setEditDigitalFile(null);
+    setEditDigitalFileName("");
+
+    if (editPreviewFromDigitalRef.current) {
+      editPreviewFromDigitalRef.current = false;
+      handleRemoveEditImage();
+    }
+  };
 
   const handleCreateSubmit = async (values) => {
     try {
@@ -146,9 +275,23 @@ function AdminProductContainer() {
         await uploadProductImageApi(productId, imageFile, true);
       }
 
+      if (!digitalFile) {
+        message.warning("Vui lòng chọn file gốc để khách tải sau khi mua.");
+        return;
+      }
+      await uploadProductDigitalApi(productId, digitalFile);
+
       message.success(t("adminProduct.toast.create_success"));
+
       setIsModalOpen(false);
       createForm.resetFields();
+
+      setCreateImagePreview(null);
+      setImageFile(null);
+
+      setDigitalFile(null);
+      setDigitalFileName("");
+
       fetchProducts();
     } catch (err) {
       console.error(err);
@@ -174,11 +317,18 @@ function AdminProductContainer() {
         await uploadProductImageApi(selectedProduct.id, editImageFile, true);
       }
 
+      if (editDigitalFile) {
+        await uploadProductDigitalApi(selectedProduct.id, editDigitalFile);
+      }
+
       message.success(t("adminProduct.toast.update_success"));
 
       setIsEditMode(false);
       setIsViewModalOpen(false);
       setSelectedProduct(null);
+
+      setEditDigitalFile(null);
+      setEditDigitalFileName("");
 
       fetchProducts();
     } catch (err) {
@@ -203,6 +353,9 @@ function AdminProductContainer() {
 
       setRemovedImageIds([]);
       setEditImageFile(null);
+
+      setEditDigitalFile(null);
+      setEditDigitalFileName(product.meta?.downloadName || "");
 
       if (product.images?.length > 0) {
         setEditImagePreview(
@@ -237,54 +390,14 @@ function AdminProductContainer() {
     }
   };
 
-  const handleImageUpload = (info, targetForm, setPreview, setFile) => {
-    const file = info.file.originFileObj || info.file;
-    if (!file) return;
-
-    if (!file.type?.startsWith("image/")) {
-      message.error(t("adminProduct.toast.invalid_image"));
-      return;
-    }
-
-    setFile(file);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target.result);
-
-      const img = new Image();
-      img.onload = () => {
-        targetForm.setFieldsValue({
-          size: `${img.width}x${img.height}`,
-          fileType: file.type.split("/")[1].toUpperCase(),
-        });
-      };
-      img.src = e.target.result;
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveCreateImage = () => {
-    setCreateImagePreview(null);
-    setImageFile(null);
-    createForm.setFieldsValue({ size: "", fileType: "" });
-  };
-
-  const handleRemoveEditImage = () => {
-    if (selectedProduct?.images?.[0]?.id) {
-      setRemovedImageIds([selectedProduct.images[0].id]);
-    }
-
-    setEditImagePreview(null);
-    setEditImageFile(null);
-    editForm.setFieldsValue({ size: "", fileType: "" });
-  };
-
   const handleCreateCancel = () => {
     createForm.resetFields();
     setCreateImagePreview(null);
     setImageFile(null);
+
+    setDigitalFile(null);
+    setDigitalFileName("");
+
     setIsModalOpen(false);
   };
 
@@ -367,7 +480,6 @@ function AdminProductContainer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}>
-      {/* Background */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -409,6 +521,11 @@ function AdminProductContainer() {
               onOpenCreate={() => {
                 createForm.resetFields();
                 setCreateImagePreview(null);
+                setImageFile(null);
+
+                setDigitalFile(null);
+                setDigitalFileName("");
+
                 setSelectedProduct(null);
                 setIsModalOpen(true);
               }}
@@ -437,15 +554,19 @@ function AdminProductContainer() {
               selectedCategory={selectedCategory}
               categories={categories}
               createImagePreview={createImagePreview}
-              onImageChange={(info) =>
+              onImageChange={(info) => {
+                previewFromDigitalRef.current = false;
                 handleImageUpload(
                   info,
                   createForm,
                   setCreateImagePreview,
                   setImageFile
-                )
-              }
+                );
+              }}
               onRemoveImage={handleRemoveCreateImage}
+              digitalFileName={digitalFileName}
+              onDigitalChange={handleDigitalChange}
+              onRemoveDigital={handleRemoveDigital}
               onSubmit={handleCreateSubmit}
             />
 
@@ -455,6 +576,9 @@ function AdminProductContainer() {
               onCancel={() => {
                 setIsViewModalOpen(false);
                 setSelectedProduct(null);
+
+                setEditDigitalFile(null);
+                setEditDigitalFileName("");
               }}
               editForm={editForm}
               categories={categories}
@@ -471,9 +595,15 @@ function AdminProductContainer() {
                   setEditImageFile
                 )
               }
+              editDigitalFileName={editDigitalFileName}
+              onEditDigitalChange={handleEditDigitalChange}
+              onRemoveEditDigital={handleRemoveEditDigital}
               onClose={() => {
                 setIsEditMode(false);
                 setIsViewModalOpen(false);
+
+                setEditDigitalFile(null);
+                setEditDigitalFileName("");
               }}
               onToggleEdit={() => setIsEditMode(true)}
               onSave={async () => {

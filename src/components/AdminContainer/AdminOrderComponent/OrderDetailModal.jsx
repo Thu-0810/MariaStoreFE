@@ -1,15 +1,33 @@
 import { Modal, Button } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
+import { toServerUrl } from "../../../utils/url";
 
 export default function OrderDetailModal({
   t,
   i18n,
   open,
   onCancel,
-  selectedOrder,
-  products,
-  totalAmount,
+  orderDetail,
+  onDeleteInvoice,
+  onPrintInvoice,
 }) {
+  const items = orderDetail?.items || [];
+
+  const formatMoney = (value) => {
+    if (value == null) return "";
+    const locale = i18n.language === "vi" ? "vi-VN" : "en-US";
+    return (
+      new Intl.NumberFormat(locale).format(value) +
+      t("adminOrder.currency_suffix")
+    );
+  };
+
+  const formatDateTime = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleString(i18n.language === "vi" ? "vi-VN" : "en-US");
+  };
+
   return (
     <Modal
       open={open}
@@ -43,8 +61,8 @@ export default function OrderDetailModal({
                   {t("adminOrder.modal.detail_title_done")}
                 </h2>
                 <p className="text-sm text-[#608bc1]">
-                  26.7.2025 • {t("adminOrder.table.order_code")}{" "}
-                  {selectedOrder?.orderCode}
+                  {formatDateTime(orderDetail?.createdAt)} •{" "}
+                  {t("adminOrder.table.order_code")} {orderDetail?.orderCode}
                 </p>
               </div>
 
@@ -52,36 +70,46 @@ export default function OrderDetailModal({
                 <h3 className="text-sm font-semibold text-[#133e87] mb-4">
                   {t("adminOrder.modal.product_list")}
                 </h3>
+
                 <div className="space-y-4">
-                  {products.map((product) => (
+                  {items.map((it, idx) => (
                     <motion.div
-                      key={product.id}
+                      key={it.productId ?? idx}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: product.id * 0.05 }}
+                      transition={{ duration: 0.3, delay: idx * 0.05 }}
                       className="flex items-center justify-between pb-3 border-b border-[#e6effa]">
                       <div className="flex items-center gap-4">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-16 h-16 rounded-lg object-cover shadow-sm"
-                        />
+                        {it.thumbnailUrl ? (
+                          <img
+                            src={toServerUrl(it.thumbnailUrl)}
+                            alt={it.productName}
+                            className="w-16 h-16 rounded-lg object-cover shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500">
+                            No image
+                          </div>
+                        )}
+
                         <div>
                           <p className="font-medium text-[#133e87]">
-                            {product.name}
+                            {it.productName}
                           </p>
-                          <p className="text-xs text-[#608bc1]">JPG File</p>
+                          <p className="text-xs text-[#608bc1]">
+                            {it.fileFormat ? `${it.fileFormat} File` : ""}
+                          </p>
                         </div>
                       </div>
+
                       <div className="text-right">
                         <p className="text-xs text-[#608bc1] mb-1">
-                          x{product.quantity}
+                          x{it.quantity}
                         </p>
                         <p className="font-semibold text-[#133e87]">
-                          {(product.price * product.quantity).toLocaleString(
-                            "vi-VN"
+                          {formatMoney(
+                            (it.unitPrice || 0) * (it.quantity || 0)
                           )}
-                          đ
                         </p>
                       </div>
                     </motion.div>
@@ -94,10 +122,7 @@ export default function OrderDetailModal({
                   {t("adminOrder.modal.total")}
                 </p>
                 <p className="font-bold text-lg text-[#133e87]">
-                  {totalAmount.toLocaleString(
-                    i18n.language === "vi" ? "vi-VN" : "en-US"
-                  )}
-                  {t("adminOrder.currency_suffix")}
+                  {formatMoney(orderDetail?.totalAmount)}
                 </p>
               </div>
 
@@ -110,7 +135,7 @@ export default function OrderDetailModal({
                   {t("adminOrder.modal.invoice_code")}
                 </span>
                 <span className="font-medium text-[#133e87]">
-                  {selectedOrder?.invoiceCode}
+                  {orderDetail?.invoiceCode}
                 </span>
               </div>
 
@@ -119,7 +144,7 @@ export default function OrderDetailModal({
                   {t("adminOrder.modal.payment_method")}
                 </span>
                 <span className="font-medium text-[#133e87]">
-                  {selectedOrder?.paymentMethod}
+                  {orderDetail?.paymentMethod}
                 </span>
               </div>
 
@@ -128,7 +153,7 @@ export default function OrderDetailModal({
                   {t("adminOrder.modal.paid_time")}
                 </span>
                 <span className="font-medium text-[#133e87]">
-                  26/7/2025 4:10PM
+                  {formatDateTime(orderDetail?.paidAt)}
                 </span>
               </div>
 
@@ -145,7 +170,8 @@ export default function OrderDetailModal({
                     backgroundColor: "#ff7383",
                     borderColor: "#ff7383",
                     width: 160,
-                  }}>
+                  }}
+                  onClick={onDeleteInvoice}>
                   {t("adminOrder.btn.delete_invoice")}
                 </Button>
 
@@ -157,7 +183,8 @@ export default function OrderDetailModal({
                     backgroundColor: "#133e87",
                     borderColor: "#133e87",
                     width: 160,
-                  }}>
+                  }}
+                  onClick={onPrintInvoice}>
                   {t("adminOrder.btn.print_invoice")}
                 </Button>
               </motion.div>

@@ -8,6 +8,7 @@ export default function OrdersTable({
 }) {
   return (
     <Table
+      rowKey="id"
       columns={columns}
       dataSource={dataSource}
       rowSelection={rowSelection}
