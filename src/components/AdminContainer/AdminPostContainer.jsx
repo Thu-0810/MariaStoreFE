@@ -1,46 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input, Button, Table, Space, Pagination, Modal, message } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import AddPostModal from "./AdminPostComponent/AddPostModal";
 import DetailPostModal from "./AdminPostComponent/DetailPostModal";
 import { useTranslation } from "react-i18next";
+import { adminPostApi } from "../../api/adminPostApi";
 
 function AdminPostContainer() {
+  const { t } = useTranslation();
+
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
   const [selectedPost, setSelectedPost] = useState(null);
 
-  const { t } = useTranslation();
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [data, setData] = useState([
-    {
-      key: 1,
-      stt: 1,
-      title: "Mua Tranh Tại Maria Store...",
-      author: "Meomeo",
-      username: "meomeo1234",
-      createdAt: "30/07/2024",
-    },
-    { key: 2, stt: 2 },
-    { key: 3, stt: 3 },
-    { key: 4, stt: 4 },
-    { key: 5, stt: 5 },
-    { key: 6, stt: 6 },
-    { key: 7, stt: 7 },
-    { key: 8, stt: 8 },
-    { key: 9, stt: 9 },
-    { key: 10, stt: 10 },
-  ]);
+  const [data, setData] = useState([]);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
+
+  const fetchPosts = async (page = currentPage, kw = keyword) => {
+    try {
+      setLoading(true);
+      const res = await adminPostApi.list({
+        page: page - 1,
+        keyword: kw,
+      });
+
+      const pageData = res.data;
+      setData(pageData.content || []);
+      setTotal(pageData.totalElements || 0);
+    } catch (e) {
+      message.error(
+        e?.response?.data?.message || t("adminPost.toast.load_posts_failed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts(1, "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const columns = [
     {
       title: t("adminPost.table.index"),
-      dataIndex: "stt",
       key: "stt",
       width: 80,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: t("adminPost.table.post_name"),
@@ -50,21 +65,16 @@ function AdminPostContainer() {
     },
     {
       title: t("adminPost.table.author"),
-      dataIndex: "author",
-      key: "author",
-      render: (text) => text || "",
-    },
-    {
-      title: t("adminPost.table.username"),
-      dataIndex: "username",
-      key: "username",
+      dataIndex: "authorName",
+      key: "authorName",
       render: (text) => text || "",
     },
     {
       title: t("adminPost.table.created_at"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (text) => text || "",
+      render: (text) =>
+        text ? new Date(text).toLocaleDateString("vi-VN") : "",
     },
   ];
 
@@ -73,13 +83,40 @@ function AdminPostContainer() {
     onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t("adminPost.toast.select_one_for_delete"));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await Promise.all(selectedRowKeys.map((id) => adminPostApi.remove(id)));
+      message.success(t("adminPost.toast.delete_success"));
+      setSelectedRowKeys([]);
+      setIsDeleteModalOpen(false);
+
+      const remaining = total - selectedRowKeys.length;
+      const lastPage = Math.max(1, Math.ceil(remaining / pageSize));
+      const nextPage = Math.min(currentPage, lastPage);
+
+      setCurrentPage(nextPage);
+      await fetchPosts(nextPage, keyword);
+    } catch (e) {
+      message.error(
+        e?.response?.data?.message || t("adminPost.toast.delete_failed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <motion.div
       className="min-h-screen relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}>
-      {/* Background */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -101,10 +138,15 @@ function AdminPostContainer() {
               {t("adminPost.title")}
             </h1>
 
-            {/* Thanh công cụ */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1">
                 <Input
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  onPressEnter={() => {
+                    setCurrentPage(1);
+                    fetchPosts(1, keyword);
+                  }}
                   placeholder={t("adminPost.search_placeholder")}
                   className="max-w-xs"
                   style={{ borderColor: "#cbdceb" }}
@@ -115,10 +157,7 @@ function AdminPostContainer() {
                 <Button
                   danger
                   type="primary"
-                  style={{
-                    backgroundColor: "#ff7383",
-                    borderColor: "#ff7383",
-                  }}
+                  style={{ backgroundColor: "#ff7383", borderColor: "#ff7383" }}
                   onClick={() => setIsDeleteModalOpen(true)}>
                   {t("adminPost.btn_delete")}
                 </Button>
@@ -132,7 +171,6 @@ function AdminPostContainer() {
               </Space>
             </div>
 
-            {/* Modal Xóa */}
             <Modal
               open={isDeleteModalOpen}
               onCancel={() => setIsDeleteModalOpen(false)}
@@ -149,38 +187,19 @@ function AdminPostContainer() {
                   type="primary"
                   danger
                   className="px-6 py-1 rounded-full text-white font-medium"
-                  style={{
-                    backgroundColor: "#ff7383",
-                    borderColor: "#ff7383",
-                  }}
-                  onClick={() => {
-                    if (selectedRowKeys.length === 0) {
-                      message.warning("Vui lòng chọn ít nhất một bài viết!");
-                      return;
-                    }
-                    const updatedData = data.filter(
-                      (item) => !selectedRowKeys.includes(item.key)
-                    );
-                    setData(updatedData);
-                    setSelectedRowKeys([]);
-                    setIsDeleteModalOpen(false);
-                    message.success("Xóa bài viết thành công!");
-                  }}>
+                  style={{ backgroundColor: "#ff7383", borderColor: "#ff7383" }}
+                  onClick={handleDeleteSelected}>
                   {t("adminPost.common.delete")}
                 </Button>
                 <Button
                   className="px-6 py-1 rounded-full font-medium"
-                  style={{
-                    borderColor: "#133e87",
-                    color: "#133e87",
-                  }}
+                  style={{ borderColor: "#133e87", color: "#133e87" }}
                   onClick={() => setIsDeleteModalOpen(false)}>
                   {t("adminPost.common.cancel")}
                 </Button>
               </div>
             </Modal>
 
-            {/* Bảng bài viết */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={"posts"}
@@ -189,12 +208,14 @@ function AdminPostContainer() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}>
                 <Table
+                  rowKey="id"
+                  loading={loading}
                   columns={columns}
                   dataSource={data}
                   rowSelection={rowSelection}
                   pagination={false}
                   onRow={(record) => ({
-                    onClick: () => {
+                    onClick: async () => {
                       setSelectedPost(record);
                       setIsDetailModalOpen(true);
                     },
@@ -204,13 +225,15 @@ function AdminPostContainer() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Phân trang */}
             <div className="flex justify-center mt-8">
               <Pagination
                 current={currentPage}
-                total={100}
-                pageSize={10}
-                onChange={(page) => setCurrentPage(page)}
+                total={total}
+                pageSize={pageSize}
+                onChange={(page) => {
+                  setCurrentPage(page);
+                  fetchPosts(page, keyword);
+                }}
                 showSizeChanger={false}
               />
             </div>
@@ -218,11 +241,10 @@ function AdminPostContainer() {
             <AddPostModal
               open={isAddModalOpen}
               onCancel={() => setIsAddModalOpen(false)}
-              onAdd={(newPost) => {
-                setData((prev) => [
-                  ...prev,
-                  { key: prev.length + 1, stt: prev.length + 1, ...newPost },
-                ]);
+              onAddSuccess={async () => {
+                setIsAddModalOpen(false);
+                setCurrentPage(1);
+                await fetchPosts(1, keyword);
               }}
             />
 
@@ -230,6 +252,9 @@ function AdminPostContainer() {
               open={isDetailModalOpen}
               onClose={() => setIsDetailModalOpen(false)}
               post={selectedPost}
+              onUpdated={async () => {
+                await fetchPosts(currentPage, keyword);
+              }}
             />
           </div>
         </motion.div>

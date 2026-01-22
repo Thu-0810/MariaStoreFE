@@ -320,6 +320,9 @@ const resources = {
         all_posts: "Tất Cả Bài Viết",
         other_posts: "Các Bài Viết Khác",
 
+        empty_posts: "Chưa có bài viết.",
+        load_failed: "Không tải được bài viết cộng đồng",
+
         post: {
           buy_at_mariastore: "Mua Tranh Tại Maria Store",
           emoji: "Biểu Tượng Cảm Xúc",
@@ -332,6 +335,17 @@ const resources = {
       },
 
       detailCommunity: {
+        fallback_title: "Tiêu đề bài viết",
+        written_by: "Được viết bởi:",
+        anonymous: "Ẩn danh",
+
+        loading: "Đang tải...",
+        toast_comment_added: "Đã thêm bình luận!",
+        need_login_to_comment: "Bạn cần đăng nhập để bình luận",
+        load_post_failed: "Không tải được bài viết",
+        load_comments_failed: "Không tải được bình luận",
+        add_comment_failed: "Thêm bình luận thất bại",
+
         show_comments: "Xem bình luận",
         hide_comments: "Ẩn bình luận",
         comments_title: "Bình luận",
@@ -616,6 +630,9 @@ const resources = {
         toast: {
           select_one_for_delete: "Vui lòng chọn ít nhất một bài viết!",
           delete_success: "Xóa bài viết thành công!",
+          load_posts_failed: "Không tải được danh sách bài viết",
+          add_failed: "Thêm bài viết thất bại",
+          update_failed: "Cập nhật bài viết thất bại",
         },
 
         common: {
@@ -658,6 +675,10 @@ const resources = {
 
           you: "Bạn",
           toast_comment_added: "Đã thêm bình luận!",
+
+          comment_search_placeholder: "Tìm bình luận...",
+          no_comments: "Chưa có bình luận.",
+          date_na: "N/A",
         },
 
         editModal: {
@@ -987,6 +1008,9 @@ const resources = {
         all_posts: "All Posts",
         other_posts: "Other Posts",
 
+        empty_posts: "No posts yet.",
+        load_failed: "Failed to load community posts",
+
         view_more: "VIEW MORE →",
 
         post: {
@@ -1001,6 +1025,17 @@ const resources = {
       },
 
       detailCommunity: {
+        fallback_title: "Post title",
+        written_by: "Written by:",
+        anonymous: "Anonymous",
+
+        loading: "Loading...",
+        toast_comment_added: "Comment added!",
+        need_login_to_comment: "Please sign in to comment",
+        load_post_failed: "Failed to load post",
+        load_comments_failed: "Failed to load comments",
+        add_comment_failed: "Failed to add comment",
+
         show_comments: "Show comments",
         hide_comments: "Hide comments",
         comments_title: "Comments",
@@ -1288,6 +1323,9 @@ const resources = {
         toast: {
           select_one_for_delete: "Please select at least one post!",
           delete_success: "Deleted successfully!",
+          load_posts_failed: "Failed to load posts",
+          add_failed: "Failed to add post",
+          update_failed: "Failed to update post",
         },
 
         common: {
@@ -1330,6 +1368,10 @@ const resources = {
 
           you: "You",
           toast_comment_added: "Comment added!",
+
+          comment_search_placeholder: "Search comments...",
+          no_comments: "No comments yet.",
+          date_na: "N/A",
         },
 
         editModal: {

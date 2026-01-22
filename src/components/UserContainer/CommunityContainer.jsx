@@ -1,11 +1,56 @@
-import { Card } from "antd";
+import { Card, Spin, message } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
+import { postApi } from "../../api/postApi";
+
+const API_HOST = "http://localhost:8080";
+
+const toCoverSrc = (post) => {
+  const path = post?.coverImage || post?.cover_image;
+  if (!path) return "src/assets/img/Illustration153.jpg";
+  return path.startsWith("http") ? path : `${API_HOST}${path}`;
+};
 
 function CommunityContainer() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const res = await postApi.list({ page: 0, size: 60 });
+      const content = res.data?.content || [];
+      content.sort((a, b) => {
+        const da = new Date(a.createdAt || 0).getTime();
+        const db = new Date(b.createdAt || 0).getTime();
+        if (db !== da) return db - da;
+        return (b.id || 0) - (a.id || 0);
+      });
+      setPosts(content);
+    } catch (e) {
+      message.error(e?.response?.data?.message || t("community.load_failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { featured, allPosts, otherPosts } = useMemo(() => {
+    return {
+      featured: posts.slice(0, 3),
+      allPosts: posts.slice(3, 9),
+      otherPosts: posts.slice(9, 15),
+    };
+  }, [posts]);
 
   return (
     <div
@@ -41,6 +86,12 @@ function CommunityContainer() {
             </motion.p>
           </motion.div>
 
+          {loading && (
+            <div className="flex justify-center py-6">
+              <Spin />
+            </div>
+          )}
+
           {/* FEATURED */}
           <motion.section
             className="mb-8 sm:mb-12"
@@ -66,91 +117,41 @@ function CommunityContainer() {
                 hidden: {},
                 visible: { transition: { staggerChildren: 0.2 } },
               }}>
-              {[
-                {
-                  src: "src/assets/img/Illustration153.jpg",
-                  titleKey: "community.post.buy_at_mariastore",
-                },
-                {
-                  src: "src/assets/img/Illustration212.jpg",
-                  titleKey: "community.post.emoji",
-                },
-                {
-                  src: "src/assets/img/Illustration122.jpg",
-                  titleKey: "community.post.emoji",
-                },
-              ].map((item, idx) => (
+              {featured.map((p) => (
                 <CardItem
-                  key={idx}
-                  item={{ ...item, title: t(item.titleKey) }}
-                  onClick={() => navigate(`/detail-community`)}
+                  key={p.id}
+                  item={{ src: toCoverSrc(p), title: p.title }}
+                  onClick={() => navigate(`/detail-community/${p.id}`)}
                 />
               ))}
+              {!loading && featured.length === 0 && (
+                <div className="text-[#608bc1]">
+                  {t("community.empty_posts")}
+                </div>
+              )}
             </motion.div>
           </motion.section>
 
           {/* ALL POSTS */}
           <ArticleSection
             title={t("community.all_posts")}
-            viewMoreText={t("community.view_more")}
-            items={[
-              {
-                src: "src/assets/img/Illustration164.jpg",
-                titleKey: "community.post.stickers",
-              },
-              {
-                src: "src/assets/img/Illustration173.jpg",
-                titleKey: "community.post.chibi",
-              },
-              {
-                src: "src/assets/img/Illustration161.jpg",
-                titleKey: "community.post.animation",
-              },
-              {
-                src: "src/assets/img/Illustration133.jpg",
-                titleKey: "community.post.emoji",
-              },
-              {
-                src: "src/assets/img/Illustration318.1.jpg",
-                titleKey: "community.post.portrait",
-              },
-              {
-                src: "src/assets/img/Illustration43.1.jpg",
-                titleKey: "community.post.avatars_2d",
-              },
-            ].map((it) => ({ ...it, title: t(it.titleKey) }))}
+            items={allPosts.map((p) => ({
+              id: p.id,
+              src: toCoverSrc(p),
+              title: p.title,
+            }))}
+            onItemClick={(id) => navigate(`/detail-community/${id}`)}
           />
 
           {/* OTHER POSTS */}
           <ArticleSection
             title={t("community.other_posts")}
-            viewMoreText={t("community.view_more")}
-            items={[
-              {
-                src: "src/assets/img/Illustration196.jpg",
-                titleKey: "community.post.stickers",
-              },
-              {
-                src: "src/assets/img/Illustration254.3.jpg",
-                titleKey: "community.post.chibi",
-              },
-              {
-                src: "src/assets/img/Illustration165.jpg",
-                titleKey: "community.post.animation",
-              },
-              {
-                src: "src/assets/img/Illustration192.jpg",
-                titleKey: "community.post.emoji",
-              },
-              {
-                src: "src/assets/img/Illustration200.jpg",
-                titleKey: "community.post.portrait",
-              },
-              {
-                src: "src/assets/img/Illustration187.jpg",
-                titleKey: "community.post.avatars_2d",
-              },
-            ].map((it) => ({ ...it, title: t(it.titleKey) }))}
+            items={otherPosts.map((p) => ({
+              id: p.id,
+              src: toCoverSrc(p),
+              title: p.title,
+            }))}
+            onItemClick={(id) => navigate(`/detail-community/${id}`)}
           />
         </Card>
       </main>
@@ -162,7 +163,9 @@ function CardItem({ item, onClick }) {
   return (
     <motion.div
       onClick={onClick}
-      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
+      className={`group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 ${
+        onClick ? "cursor-pointer" : ""
+      }`}
       variants={{
         hidden: { opacity: 0, y: 50, scale: 0.9 },
         visible: {
@@ -182,7 +185,7 @@ function CardItem({ item, onClick }) {
         <div className="absolute inset-0 bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300"></div>
       </div>
       <div className="absolute bottom-0 left-0 w-full p-3 sm:p-4 z-10">
-        <h3 className="font-semibold text-white text-sm sm:text-base">
+        <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2">
           {item.title}
         </h3>
       </div>
@@ -190,7 +193,7 @@ function CardItem({ item, onClick }) {
   );
 }
 
-function ArticleSection({ title, items }) {
+function ArticleSection({ title, items, onItemClick }) {
   const { t } = useTranslation();
 
   return (
@@ -208,6 +211,7 @@ function ArticleSection({ title, items }) {
         viewport={{ once: true }}>
         {title}
       </motion.h2>
+
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
         initial="hidden"
@@ -215,16 +219,20 @@ function ArticleSection({ title, items }) {
         viewport={{ once: true }}
         variants={{
           hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.15,
-            },
-          },
+          visible: { transition: { staggerChildren: 0.15 } },
         }}>
         {items.map((item, idx) => (
-          <CardItem key={idx} item={item} />
+          <CardItem
+            key={item.id ?? idx}
+            item={item}
+            onClick={item.id ? () => onItemClick?.(item.id) : undefined}
+          />
         ))}
+        {items.length === 0 && (
+          <div className="text-[#608bc1]">Chưa có bài viết.</div>
+        )}
       </motion.div>
+
       <motion.div
         className="text-center mt-6 sm:mt-8"
         initial={{ opacity: 0, y: 30 }}
@@ -235,7 +243,8 @@ function ArticleSection({ title, items }) {
           className="border border-[#CCCCCC] text-[#133e87] bg-white hover:bg-[#133e87] hover:text-white px-4 sm:px-6 py-2 text-sm sm:text-base"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.2 }}>
+          transition={{ duration: 0.2 }}
+          onClick={() => {}}>
           {t("nav.more")} →
         </motion.button>
       </motion.div>

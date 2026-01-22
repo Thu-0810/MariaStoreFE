@@ -58,7 +58,10 @@ function App() {
         </Route>
         {/* DetailPage */}
         <Route path="/detail/:id" element={<DetailPage />} />
-        <Route path="/detail-community" element={<DeatailCommunityPage />} />
+        <Route
+          path="/detail-community/:id"
+          element={<DeatailCommunityPage />}
+        />
 
         {/* Cart */}
         <Route path="/cart" element={<Cart />} />
