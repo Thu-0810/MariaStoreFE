@@ -17,63 +17,127 @@ function Navigation() {
         <div className="flex items-center justify-center py-3">
           {role === "ADMIN" ? (
             <>
-              <NavLink to="/admin-dashboard" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/admin-dashboard"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.home")}
               </NavLink>
 
-              <NavLink to="/admin-product" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/admin-product"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_product")}
               </NavLink>
 
-              <NavLink to="/admin-customer" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/admin-customer"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_customer")}
               </NavLink>
 
-              <NavLink to="/admin-order" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/admin-order"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_order")}
               </NavLink>
 
-              <NavLink to="/admin-post" className={({ isActive }) => `${linkBase} border-r ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/admin-post"
+                className={({ isActive }) =>
+                  `${linkBase} border-r ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_post")}
               </NavLink>
             </>
           ) : role === "SELLER" ? (
             <>
-              <NavLink to="/seller-dashboard" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/seller-dashboard"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.home")}
               </NavLink>
 
-              <NavLink to="/seller-product" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/seller-product"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_product")}
               </NavLink>
 
-              <NavLink to="/seller-order" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/seller-order"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_order")}
               </NavLink>
 
-              <NavLink to="/seller-post" className={({ isActive }) => `${linkBase} border-r ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/seller-commission"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
+                {t("nav.manage_commission")}
+              </NavLink>
+
+              <NavLink
+                to="/seller-post"
+                className={({ isActive }) =>
+                  `${linkBase} border-r ${isActive ? active : inactive}`
+                }>
                 {t("nav.manage_post")}
               </NavLink>
             </>
           ) : (
             <>
-              <NavLink to="/dashboard" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.home")}
               </NavLink>
 
-              <NavLink to="/order" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/order"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.order_painting")}
               </NavLink>
 
-              <NavLink to="/store" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/store"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.store")}
               </NavLink>
 
-              <NavLink to="/community" className={({ isActive }) => `${linkBase} ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/community"
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? active : inactive}`
+                }>
                 {t("nav.community")}
               </NavLink>
 
-              <NavLink to="/contact" className={({ isActive }) => `${linkBase} border-r ${isActive ? active : inactive}`}>
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  `${linkBase} border-r ${isActive ? active : inactive}`
+                }>
                 {t("nav.contact")}
               </NavLink>
             </>

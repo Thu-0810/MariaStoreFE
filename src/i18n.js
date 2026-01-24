@@ -40,6 +40,7 @@ const resources = {
         manage_product: "Quản Lý Sản Phẩm",
         manage_customer: "Quản Lý Khách Hàng",
         manage_order: "Quản Lý Đơn Hàng",
+        manage_commission: "Quản Lý Đặt Tranh",
         manage_post: "Quản Lý Bài Viết",
 
         more: "XEM THÊM",
@@ -100,6 +101,7 @@ const resources = {
         email: "Email",
 
         painting_1: "Tranh Số 1",
+        background: "Phần nền",
 
         style_1: "Phong cách 1: Tranh dạng tập trung nhiều vào đường nét",
         style_2: "Phong cách 2: Tranh dạng tập trung nhiều vào màu",
@@ -111,6 +113,8 @@ const resources = {
         draw_range: "Phạm vi vẽ trong tranh",
         bg_part: "Phần nền",
         unit_price: "Đơn giá",
+        pay_now: "Thanh toán ngay",
+        cancel: "Hủy",
 
         range: {
           dau: "Đầu",
@@ -128,7 +132,7 @@ const resources = {
         },
 
         total: "Tổng tiền",
-        order_btn: "Đặt Tranh",
+        order_btn: "Lưu Tranh",
         done_btn: "Hoàn thành",
         currency: "đ",
       },
@@ -293,6 +297,8 @@ const resources = {
         empty_orders: "Danh sách đơn hàng của bạn",
         empty_favorites: "Các sản phẩm bạn đã yêu thích",
         empty_posts: "Bài viết của bạn sẽ xuất hiện ở đây",
+        request: "Yêu cầu",
+        request_default_title: "Yêu cầu đặt tranh",
         order: {
           sort_newest: "Gần nhất",
           sort_oldest: "Cũ nhất",
@@ -332,6 +338,50 @@ const resources = {
           portrait: "Tranh Chân Dung",
           avatars_2d: "2D Avatars",
         },
+      },
+
+      commission: {
+        approve_title: "Duyệt yêu cầu đặt tranh",
+        review_before_approve: "Vui lòng kiểm tra kỹ yêu cầu trước khi duyệt",
+
+        approve: "Duyệt",
+        reject: "Từ chối",
+
+        enter_final_price: "Vui lòng nhập giá cuối cùng",
+        approve_success: "Duyệt yêu cầu thành công",
+        approve_fail: "Duyệt yêu cầu thất bại",
+        reject_success: "Đã từ chối yêu cầu",
+        reject_fail: "Từ chối yêu cầu thất bại",
+        status: {
+          draft: "Bản nháp",
+          submitted: "Đã gửi",
+          approved: "Đã duyệt",
+          confirmed: "Đã thanh toán",
+          rejected: "Từ chối",
+          cancelled: "Đã hủy",
+        },
+      },
+
+      sellerCommission: {
+        title: "Quản Lý Đặt Tranh",
+
+        table: {
+          code: "Mã đặt tranh",
+          contact: "Liên hệ",
+          total_price: "Tổng tiền",
+          status: "Trạng thái",
+        },
+
+        status: {
+          pending: "Đang chờ duyệt",
+        },
+
+        contact: {
+          email: "Email",
+          twitter: "Twitter",
+        },
+
+        load_failed: "Không tải được danh sách đặt tranh",
       },
 
       detailCommunity: {
@@ -731,6 +781,7 @@ const resources = {
         manage_product: "Manage Products",
         manage_customer: "Manage Customers",
         manage_order: "Manage Orders",
+        manage_commission: "Manage Commissions",
         manage_post: "Manage Posts",
 
         more: "LOAD MORE",
@@ -789,6 +840,7 @@ const resources = {
         email: "Email",
 
         painting_1: "Painting #1",
+        background: "Background",
 
         style_1: "Style 1: Line-focused illustration",
         style_2: "Style 2: Color-focused illustration",
@@ -800,6 +852,8 @@ const resources = {
         draw_range: "Drawing range",
         bg_part: "Background",
         unit_price: "Unit price",
+        pay_now: "Pay Now",
+        cancel: "Cancel",
 
         range: {
           dau: "Head",
@@ -817,7 +871,7 @@ const resources = {
         },
 
         total: "Total",
-        order_btn: "Order",
+        order_btn: "Save",
         done_btn: "Finish",
         currency: "₫",
       },
@@ -982,6 +1036,8 @@ const resources = {
         empty_orders: "Your orders will appear here",
         empty_favorites: "Your favorite products will appear here",
         empty_posts: "Your posts will appear here",
+        request: "Request",
+        request_default_title: "Request Commission",
         order: {
           sort_newest: "Newest",
           sort_oldest: "Oldest",
@@ -1046,6 +1102,51 @@ const resources = {
       contact: {
         title: "Contact us",
         subtitle: "Contact us via:",
+      },
+
+      commission: {
+        approve_title: "Approve commission request",
+        review_before_approve:
+          "Please review the request carefully before approving",
+
+        approve: "Approve",
+        reject: "Reject",
+
+        enter_final_price: "Please enter the final price",
+        approve_success: "Commission approved successfully",
+        approve_fail: "Failed to approve commission",
+        reject_success: "Commission rejected",
+        reject_fail: "Failed to reject commission",
+        status: {
+          draft: "DRAFT",
+          submitted: "SUBMITTED",
+          approved: "APPROVED",
+          confirmed: "CONFIRMED",
+          rejected: "REJECTED",
+          cancelled: "CANCELLED",
+        },
+      },
+
+      sellerCommission: {
+        title: "Commission Management",
+
+        table: {
+          code: "Commission code",
+          contact: "Contact",
+          total_price: "Total price",
+          status: "Status",
+        },
+
+        status: {
+          pending: "Pending approval",
+        },
+
+        contact: {
+          email: "Email",
+          twitter: "Twitter",
+        },
+
+        load_failed: "Failed to load commission list",
       },
 
       adminHome: {

@@ -28,6 +28,7 @@ import ProfileRequestsPage from "./pages/UserPage/ProfilePage/ProfileRequestsPag
 import ProfileOrdersPage from "./pages/UserPage/ProfilePage/ProfileOrdersPage";
 import ProfileFavoritesPage from "./pages/UserPage/ProfilePage/ProfileFavoritesPage";
 import ProfilePostsPage from "./pages/UserPage/ProfilePage/ProfilePostsPage";
+import SellerCommissionPage from "./pages/SellerPage/SellerCommissionPage";
 
 function App() {
   return (
@@ -136,6 +137,14 @@ function App() {
           element={
             <PrivateRoute requiredRole="SELLER">
               <SellerOrderPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller-commission"
+          element={
+            <PrivateRoute requiredRole="SELLER">
+              <SellerCommissionPage />
             </PrivateRoute>
           }
         />
