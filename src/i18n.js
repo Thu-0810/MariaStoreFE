@@ -17,6 +17,13 @@ const resources = {
         logout: "Đăng xuất",
         vietnamese: "Tiếng Việt",
         english: "English",
+        notifications: "Thông báo",
+        read_all: "Đánh dấu tất cả",
+        loading_notifications: "Đang tải thông báo...",
+        no_notifications: "Không có thông báo",
+        no_notifications_hint: "Bạn sẽ nhận được thông báo mới ở đây",
+        view_all_notifications: "Xem tất cả thông báo →",
+        unread_count: "{{count}} thông báo chưa đọc",
       },
       // footer
       footer: {
@@ -757,6 +764,13 @@ const resources = {
         logout: "Logout",
         vietnamese: "Vietnamese",
         english: "English",
+        notifications: "Notifications",
+        read_all: "Mark all as read",
+        loading_notifications: "Loading notifications...",
+        no_notifications: "No notifications",
+        no_notifications_hint: "New notifications will appear here",
+        view_all_notifications: "View all notifications →",
+        unread_count: "{{count}} unread notifications",
       },
 
       // footer
