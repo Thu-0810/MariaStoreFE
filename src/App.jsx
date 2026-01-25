@@ -29,6 +29,8 @@ import ProfileOrdersPage from "./pages/UserPage/ProfilePage/ProfileOrdersPage";
 import ProfileFavoritesPage from "./pages/UserPage/ProfilePage/ProfileFavoritesPage";
 import ProfilePostsPage from "./pages/UserPage/ProfilePage/ProfilePostsPage";
 import SellerCommissionPage from "./pages/SellerPage/SellerCommissionPage";
+import PaypalReturnPage from "./components/CartContainer/PaypalReturnPage";
+import PaypalCancelPage from "./components/CartContainer/PaypalCancelPage";
 
 function App() {
   return (
@@ -68,6 +70,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/payment/paypal/return" element={<PaypalReturnPage />} />
+        <Route path="/payment/paypal/cancel" element={<PaypalCancelPage />} />
         <Route path="/payment/qr" element={<QRPayment />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
 

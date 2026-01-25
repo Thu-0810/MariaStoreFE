@@ -84,12 +84,12 @@ const CheckoutContainer = () => {
         receiverName,
         receiverPhone,
         shippingAddress,
-        paymentMethod: "BANK",
+        paymentMethod: "BANK_QR",
       });
 
       const orderId = res.data?.orderId;
       if (!orderId) throw new Error("Missing orderId");
-
+      localStorage.setItem("pendingOrderId", String(orderId));
       navigate("/payment", { state: { orderId } });
     } catch (e) {
       message.error(t("checkout.msg_checkout_failed"));

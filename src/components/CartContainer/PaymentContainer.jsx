@@ -1,6 +1,7 @@
 import { Card, message } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { initPaypalApi, initVnpayApi } from "../../api/paymentApi";
 
 const PaymentMethodCard = ({ title, src, altText, onClick }) => {
   return (
@@ -42,7 +43,10 @@ function PaymentContainer() {
   const location = useLocation();
   const { t } = useTranslation();
 
-  const orderId = location.state?.orderId;
+  const stateOrderId = location.state?.orderId;
+  const storedOrderId = localStorage.getItem("pendingOrderId");
+  const resolvedOrderId =
+    stateOrderId ?? (storedOrderId ? Number(storedOrderId) : null);
 
   const methods = [
     {
@@ -65,19 +69,47 @@ function PaymentContainer() {
     },
   ];
 
-  const handleChoose = (type) => {
-    if (!orderId) {
+  const handleChoose = async (type) => {
+    if (!resolvedOrderId) {
       message.warning(t("payment.missing_order"));
       navigate("/checkout");
       return;
     }
 
     if (type === "bank") {
-      navigate("/payment/qr", { state: { orderId } });
+      navigate("/payment/qr", { state: { orderId: resolvedOrderId } });
       return;
     }
 
-    message.info(t("payment.not_integrated"));
+    try {
+      if (type === "paypal") {
+        const res = await initPaypalApi(resolvedOrderId);
+        const approveUrl = res?.data?.approveUrl;
+        if (!approveUrl) {
+          message.error("Không lấy được approveUrl từ PayPal.");
+          return;
+        }
+        localStorage.setItem("pendingPayPalOrderId", String(resolvedOrderId));
+        window.location.href = approveUrl;
+        return;
+      }
+
+      if (type === "vnpay") {
+        const res = await initVnpayApi(resolvedOrderId);
+        const paymentUrl = res?.data?.paymentUrl;
+        if (!paymentUrl) {
+          message.error("Không lấy được paymentUrl từ VNPay.");
+          return;
+        }
+        window.location.href = paymentUrl;
+        return;
+      }
+
+      message.info(t("payment.not_integrated"));
+    } catch (err) {
+      console.error(err);
+      message.error("Gọi thanh toán thất bại.");
+    }
   };
 
   return (
