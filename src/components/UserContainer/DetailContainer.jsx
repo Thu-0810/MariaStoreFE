@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Rate, Progress, Spin, message, Input } from "antd";
-import { HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import {
+  HeartOutlined,
+  MessageOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
 import { motion } from "framer-motion";
 import QuantityControl from "../QuantityControl";
 import { getProductDetailApi } from "../../api/productApi";
@@ -11,6 +15,8 @@ import { toServerUrl } from "../../utils/url";
 import { cartApi } from "../../api/cartApi";
 import { favoriteApi } from "../../api/favoriteApi";
 import { reviewApi } from "../../api/reviewApi";
+import { chatApi } from "../../api/chatApi";
+import { openChatWithConversation } from "../Chat/chatEvents";
 
 const fallbackImage = "src/assets/img/Illustration309.jpg";
 
@@ -186,7 +192,9 @@ function DetailContainer() {
     } catch (err) {
       const serverMsg = err?.response?.data?.message;
       message.error(
-        serverMsg || t("productDetail.msg_review_failed") || "Gửi đánh giá thất bại"
+        serverMsg ||
+          t("productDetail.msg_review_failed") ||
+          "Gửi đánh giá thất bại"
       );
     } finally {
       setSubmittingReview(false);
@@ -206,7 +214,9 @@ function DetailContainer() {
 
       await reviewApi.remove(productId);
 
-      message.success(t("productDetail.msg_review_deleted") || "Đã xóa đánh giá");
+      message.success(
+        t("productDetail.msg_review_deleted") || "Đã xóa đánh giá"
+      );
 
       setMyRating(0);
       setMyComment("");
@@ -218,6 +228,24 @@ function DetailContainer() {
       message.error(serverMsg || "Xóa đánh giá thất bại");
     } finally {
       setDeletingReview(false);
+    }
+  };
+
+  const handleChatSeller = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      message.warning(t("productDetail.msg_need_login"));
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const conv = await chatApi.getOrCreateDirect(4);
+
+      openChatWithConversation(conv.id);
+    } catch (err) {
+      console.error(err);
+      message.error("Không tạo được cuộc trò chuyện");
     }
   };
 
@@ -372,19 +400,25 @@ function DetailContainer() {
                 type="button"
                 disabled={adding}
                 onClick={handleAddToCart}
-                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60"
-              >
+                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60">
                 <ShoppingCartOutlined className="text-lg" />
                 {t("productDetail.add_to_cart")}
               </button>
-
+              {/* 
               <button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={adding}
-                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition disabled:opacity-60"
-              >
+                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition disabled:opacity-60">
                 {t("productDetail.buy_now")}
+              </button> */}
+
+              <button
+                type="button"
+                onClick={handleChatSeller}
+                className="flex items-center gap-2 border border-[#cbdeed] bg-white text-[#133e87] px-4 py-2 rounded-md font-medium hover:bg-[#eaf7ff] transition">
+                <MessageOutlined className="text-lg" />
+                Chat với seller
               </button>
 
               <button
@@ -398,8 +432,7 @@ function DetailContainer() {
                       : "border-transparent text-[#133e87] hover:border-[#133e87]"
                   }
                   ${favLoading ? "opacity-60" : ""}
-                `}
-              >
+                `}>
                 <HeartOutlined className="text-lg" />
               </button>
             </div>
@@ -423,8 +456,7 @@ function DetailContainer() {
               <div className="flex items-center gap-2">
                 <span>{t("productDetail.status")}:</span>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusUi.className}`}
-                >
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusUi.className}`}>
                   {statusUi.label}
                 </span>
               </div>
@@ -442,15 +474,15 @@ function DetailContainer() {
               <Rate disabled allowHalf value={avg} />
 
               <span className="text-sm text-[#133e87] ml-2">
-                {positivePercent}% {t("productDetail.rating_suffix")} ({safeTotal})
+                {positivePercent}% {t("productDetail.rating_suffix")} (
+                {safeTotal})
               </span>
             </div>
 
             {[5, 4, 3, 2, 1].map((star, i) => (
               <div
                 key={star}
-                className="flex items-center space-x-2 text-xs mb-1"
-              >
+                className="flex items-center space-x-2 text-xs mb-1">
                 <span className="w-2">{star}</span>
 
                 <Progress
@@ -474,7 +506,8 @@ function DetailContainer() {
 
               {!isLoggedIn ? (
                 <div className="text-sm text-[#133e87]">
-                  {t("productDetail.msg_need_login") || "Vui lòng đăng nhập để đánh giá."}
+                  {t("productDetail.msg_need_login") ||
+                    "Vui lòng đăng nhập để đánh giá."}
                 </div>
               ) : (
                 <>
@@ -511,8 +544,7 @@ function DetailContainer() {
                       type="button"
                       disabled={submittingReview || deletingReview}
                       onClick={handleSubmitReview}
-                      className="px-4 py-2 rounded-md bg-[#133e87] text-white font-medium hover:bg-[#173f5f] transition disabled:opacity-60"
-                    >
+                      className="px-4 py-2 rounded-md bg-[#133e87] text-white font-medium hover:bg-[#173f5f] transition disabled:opacity-60">
                       {submittingReview
                         ? t("productDetail.submitting") || "Đang gửi..."
                         : t("productDetail.submit_review") || "Gửi đánh giá"}
@@ -525,8 +557,7 @@ function DetailContainer() {
                         setMyRating(0);
                         setMyComment("");
                       }}
-                      className="px-4 py-2 rounded-md border border-[#133e87] text-[#133e87] font-medium hover:bg-[#eaf7ff] transition disabled:opacity-60"
-                    >
+                      className="px-4 py-2 rounded-md border border-[#133e87] text-[#133e87] font-medium hover:bg-[#eaf7ff] transition disabled:opacity-60">
                       {t("productDetail.clear") || "Xóa"}
                     </button>
 
@@ -534,9 +565,10 @@ function DetailContainer() {
                       type="button"
                       disabled={submittingReview || deletingReview}
                       onClick={handleDeleteReview}
-                      className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-60"
-                    >
-                      {deletingReview ? "Đang xóa..." : (t("productDetail.delete_review") || "Xóa đánh giá")}
+                      className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-60">
+                      {deletingReview
+                        ? "Đang xóa..."
+                        : t("productDetail.delete_review") || "Xóa đánh giá"}
                     </button>
                   </div>
                 </>
@@ -553,8 +585,7 @@ function DetailContainer() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
-            variants={slideInFromBottom}
-          >
+            variants={slideInFromBottom}>
             {t("productDetail.order_painting")}
           </motion.h2>
 
@@ -563,8 +594,7 @@ function DetailContainer() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-          >
+            variants={staggerContainer}>
             {[
               {
                 src: "src/assets/img/Illustration248.0.jpg",
@@ -585,8 +615,7 @@ function DetailContainer() {
               <motion.div
                 key={idx}
                 className="text-center"
-                variants={staggerItem}
-              >
+                variants={staggerItem}>
                 <img
                   src={item.src}
                   alt={item.title}

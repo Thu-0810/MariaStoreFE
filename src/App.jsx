@@ -31,6 +31,8 @@ import ProfilePostsPage from "./pages/UserPage/ProfilePage/ProfilePostsPage";
 import SellerCommissionPage from "./pages/SellerPage/SellerCommissionPage";
 import PaypalReturnPage from "./components/CartContainer/PaypalReturnPage";
 import PaypalCancelPage from "./components/CartContainer/PaypalCancelPage";
+import ChatPage from "./pages/ChatPage";
+import FloatingChat from "./components/Chat/FloatingChat";
 
 function App() {
   return (
@@ -40,6 +42,15 @@ function App() {
         {/* Dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<HomePage />} />
+
+        <Route
+          path="/messages"
+          element={
+            <PrivateRoute requiredRoles={["USER", "SELLER"]}>
+              <ChatPage />
+            </PrivateRoute>
+          }
+        />
 
         {/* MainPage */}
         <Route path="/order" element={<OrderPage />} />
@@ -161,6 +172,8 @@ function App() {
           }
         />
       </Routes>
+      <FloatingChat />
+
     </div>
   );
 }

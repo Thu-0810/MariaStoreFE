@@ -115,6 +115,15 @@ function Header() {
     }
   };
 
+  const parseNotiData = (n) => {
+    if (!n?.data) return null;
+    try {
+      return typeof n.data === "string" ? JSON.parse(n.data) : n.data;
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <header className="bg-[#d9eafd] relative">
       <div className="max-w-7xl mx-auto px-4 py-3" ref={wrapperRef}>
@@ -238,6 +247,24 @@ function Header() {
                                 }`}
                                 onClick={async () => {
                                   if (!n.read) await markNotiRead(n.id);
+
+                                  if (n.type === "CHAT_MESSAGE") {
+                                    const data = parseNotiData(n);
+                                    const convId = Number(data?.conversationId);
+
+                                    setOpenNoti(false);
+
+                                    if (Number.isFinite(convId) && convId > 0) {
+                                      window.dispatchEvent(
+                                        new CustomEvent("chat:open", {
+                                          detail: { conversationId: convId },
+                                        })
+                                      );
+                                      return;
+                                    }
+                                    return;
+                                  }
+
                                   setOpenNoti(false);
                                   navigate(resolveNotiRoute(n));
                                 }}>
@@ -405,7 +432,7 @@ function Header() {
                               navigate("/my-profile/favorites");
                               setOpenDropdown(false);
                             }}>
-                            {t("header.saved_products")}
+                            {t("header.favorite_products")}
                           </li>
                           <li
                             className="px-4 py-2 hover:bg-[#f0f4ff] cursor-pointer"

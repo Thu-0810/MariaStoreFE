@@ -1,9 +1,11 @@
+
 import { Navigate } from "react-router-dom";
 import { message } from "antd";
 
-function PrivateRoute({ children, requiredRole }) {
+function PrivateRoute({ children, requiredRole, requiredRoles }) {
   const token = localStorage.getItem("accessToken");
-  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const userRaw = localStorage.getItem("currentUser");
+  const user = userRaw ? JSON.parse(userRaw) : null;
 
   const role = user?.role;
 
@@ -12,7 +14,13 @@ function PrivateRoute({ children, requiredRole }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
+  const allowedRoles = Array.isArray(requiredRoles)
+    ? requiredRoles
+    : requiredRole
+    ? [requiredRole]
+    : null;
+
+  if (allowedRoles && (!role || !allowedRoles.includes(role))) {
     message.error("Bạn không có quyền truy cập trang này!");
 
     if (role === "ADMIN") return <Navigate to="/admin-dashboard" replace />;
@@ -23,6 +31,5 @@ function PrivateRoute({ children, requiredRole }) {
 
   return children;
 }
-
 
 export default PrivateRoute;
