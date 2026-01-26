@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, Rate, Progress, Spin, message } from "antd";
+import { Rate, Progress, Spin, message, Input } from "antd";
 import { HeartOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import QuantityControl from "../QuantityControl";
@@ -9,10 +9,14 @@ import bgImage from "../../assets/img/Illustration299.jpg";
 import { useTranslation } from "react-i18next";
 import { toServerUrl } from "../../utils/url";
 import { cartApi } from "../../api/cartApi";
+import { favoriteApi } from "../../api/favoriteApi";
+import { reviewApi } from "../../api/reviewApi";
+
 const fallbackImage = "src/assets/img/Illustration309.jpg";
 
 function DetailContainer() {
   const { id } = useParams();
+  const productId = Number(id);
 
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "en" ? "en-US" : "vi-VN";
@@ -20,7 +24,18 @@ function DetailContainer() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+
   const [adding, setAdding] = useState(false);
+
+  const [ratingSummary, setRatingSummary] = useState(null);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+
+  const [myRating, setMyRating] = useState(0);
+  const [myComment, setMyComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [deletingReview, setDeletingReview] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +46,7 @@ function DetailContainer() {
     const fetchDetail = async () => {
       try {
         setLoading(true);
-        const res = await getProductDetailApi(id);
+        const res = await getProductDetailApi(productId);
         const data = res.data;
 
         const primary =
@@ -40,7 +55,7 @@ function DetailContainer() {
 
         setProduct({
           ...data,
-          primaryImage: toServerUrl(primary),
+          primaryImage: primary ? toServerUrl(primary) : null,
           imageUrls: (data.images || []).map((x) => toServerUrl(x.imageUrl)),
         });
       } catch (err) {
@@ -50,18 +65,50 @@ function DetailContainer() {
       }
     };
 
+    if (!Number.isFinite(productId)) return;
     fetchDetail();
-  }, [id]);
+  }, [productId]);
+
+  useEffect(() => {
+    if (!Number.isFinite(productId)) return;
+
+    reviewApi
+      .getSummary(productId)
+      .then((res) => setRatingSummary(res.data))
+      .catch(() => setRatingSummary(null));
+
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      setIsFavorited(false);
+      setMyRating(0);
+      setMyComment("");
+      return;
+    }
+
+    favoriteApi
+      .getMyFavorites()
+      .then((res) => {
+        const liked = (res.data || []).some(
+          (x) => Number(x.productId) === productId
+        );
+        setIsFavorited(liked);
+      })
+      .catch(() => {});
+
+    reviewApi
+      .getMyReview(productId)
+      .then((res) => {
+        if (!res?.data) return;
+        setMyRating(Number(res.data.rating || 0));
+        setMyComment(res.data.comment || "");
+      })
+      .catch(() => {});
+  }, [productId]);
 
   const handleAddToCart = async () => {
     try {
-      if (isOutOfStock) {
-        message.warning(t("productDetail.msg_out_of_stock"));
-        return;
-      }
-
       const token = localStorage.getItem("accessToken");
-
       if (!token) {
         message.warning(t("productDetail.msg_need_login"));
         navigate("/login");
@@ -69,7 +116,7 @@ function DetailContainer() {
       }
 
       setAdding(true);
-      await cartApi.addToCart(Number(id), quantity);
+      await cartApi.addToCart(productId, quantity);
       message.success(t("productDetail.msg_add_success"));
       window.dispatchEvent(new Event("cart:changed"));
     } catch (err) {
@@ -80,11 +127,105 @@ function DetailContainer() {
     }
   };
 
+  const handleToggleFavorite = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      message.warning(t("productDetail.msg_need_login"));
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setFavLoading(true);
+      if (isFavorited) {
+        await favoriteApi.unlike(productId);
+        setIsFavorited(false);
+        message.success(t("productDetail.msg_unliked") || "Đã bỏ thích");
+      } else {
+        await favoriteApi.like(productId);
+        setIsFavorited(true);
+        message.success(t("productDetail.msg_liked") || "Đã thích");
+      }
+    } catch (err) {
+      const serverMsg = err?.response?.data?.message;
+      message.error(serverMsg || "Thao tác thất bại");
+    } finally {
+      setFavLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      message.warning(t("productDetail.msg_need_login"));
+      navigate("/login");
+      return;
+    }
+
+    if (!myRating || myRating < 1 || myRating > 5) {
+      message.warning(
+        t("productDetail.msg_choose_star") || "Vui lòng chọn số sao"
+      );
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+
+      await reviewApi.create(productId, {
+        rating: myRating,
+        comment: myComment,
+      });
+
+      message.success(
+        t("productDetail.msg_review_success") || "Đã gửi đánh giá"
+      );
+
+      const sumRes = await reviewApi.getSummary(productId);
+      setRatingSummary(sumRes.data);
+    } catch (err) {
+      const serverMsg = err?.response?.data?.message;
+      message.error(
+        serverMsg || t("productDetail.msg_review_failed") || "Gửi đánh giá thất bại"
+      );
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      message.warning(t("productDetail.msg_need_login"));
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setDeletingReview(true);
+
+      await reviewApi.remove(productId);
+
+      message.success(t("productDetail.msg_review_deleted") || "Đã xóa đánh giá");
+
+      setMyRating(0);
+      setMyComment("");
+
+      const sumRes = await reviewApi.getSummary(productId);
+      setRatingSummary(sumRes.data);
+    } catch (err) {
+      const serverMsg = err?.response?.data?.message;
+      message.error(serverMsg || "Xóa đánh giá thất bại");
+    } finally {
+      setDeletingReview(false);
+    }
+  };
+
   const formatPrice = (price) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "VND",
-    }).format(price);
+    }).format(Number(price || 0));
 
   const STATUS_UI = {
     ACTIVE: {
@@ -105,12 +246,6 @@ function DetailContainer() {
     },
   };
 
-  const statusKey = (product?.status || "").toUpperCase();
-  const statusUi = STATUS_UI[statusKey] || {
-    label: product?.status || "Đang cập nhật",
-    className: "bg-gray-100 text-gray-700",
-  };
-
   const slideInFromBottom = {
     hidden: { opacity: 0, y: 100 },
     visible: {
@@ -124,10 +259,7 @@ function DetailContainer() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.2, delayChildren: 0.1 },
     },
   };
 
@@ -148,7 +280,13 @@ function DetailContainer() {
     );
   }
 
-  const rating = product?.rating || {};
+  const statusKey = (product?.status || "").toUpperCase();
+  const statusUi = STATUS_UI[statusKey] || {
+    label: product?.status || t("productDetail.updating") || "Đang cập nhật",
+    className: "bg-gray-100 text-gray-700",
+  };
+
+  const rating = ratingSummary || product?.rating || {};
   const avg = Number(rating.averageRating ?? 0);
   const total = Number(rating.totalReviews ?? 0);
 
@@ -178,6 +316,8 @@ function DetailContainer() {
       ? Math.round(((starCounts[5] + starCounts[4]) / safeTotal) * 100)
       : 0;
 
+  const isLoggedIn = !!localStorage.getItem("accessToken");
+
   return (
     <div className="min-h-screen pb-20 relative">
       <div
@@ -202,7 +342,9 @@ function DetailContainer() {
 
             <p className="text-[#133e87]">
               <b>{t("productDetail.type")}: </b>
-              {product.categories?.join(", ") || "Đang cập nhật"}
+              {product.categories?.join(", ") ||
+                t("productDetail.updating") ||
+                "Đang cập nhật"}
             </p>
 
             <p className="text-[#133e87] mt-4">
@@ -230,21 +372,34 @@ function DetailContainer() {
                 type="button"
                 disabled={adding}
                 onClick={handleAddToCart}
-                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60">
+                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60"
+              >
                 <ShoppingCartOutlined className="text-lg" />
                 {t("productDetail.add_to_cart")}
               </button>
 
               <button
                 type="button"
-                onClick={async () => {
-                  await handleAddToCart();
-                }}
-                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition">
+                onClick={handleAddToCart}
+                disabled={adding}
+                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition disabled:opacity-60"
+              >
                 {t("productDetail.buy_now")}
               </button>
 
-              <button className="w-10 h-10 flex items-center justify-center text-[#133e87] border border-transparent hover:border-[#133e87] rounded-full transition">
+              <button
+                type="button"
+                disabled={favLoading}
+                onClick={handleToggleFavorite}
+                className={`w-10 h-10 flex items-center justify-center rounded-full transition border
+                  ${
+                    isFavorited
+                      ? "border-[#133e87] bg-[#133e87] text-white"
+                      : "border-transparent text-[#133e87] hover:border-[#133e87]"
+                  }
+                  ${favLoading ? "opacity-60" : ""}
+                `}
+              >
                 <HeartOutlined className="text-lg" />
               </button>
             </div>
@@ -257,16 +412,19 @@ function DetailContainer() {
                 {t("productDetail.art_type")}: {product.categories}
               </div>
               <div>
-                {t("productDetail.file_format")}: {product.meta.fileFormat}
+                {t("productDetail.file_format")}: {product.meta?.fileFormat}
               </div>
               <div>
                 {t("productDetail.category")}:{" "}
-                {product.categories?.join(", ") || t("productDetail.updating")}
+                {product.categories?.join(", ") ||
+                  t("productDetail.updating") ||
+                  "Đang cập nhật"}
               </div>
               <div className="flex items-center gap-2">
                 <span>{t("productDetail.status")}:</span>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusUi.className}`}>
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${statusUi.className}`}
+                >
                   {statusUi.label}
                 </span>
               </div>
@@ -284,15 +442,15 @@ function DetailContainer() {
               <Rate disabled allowHalf value={avg} />
 
               <span className="text-sm text-[#133e87] ml-2">
-                {positivePercent}% {t("productDetail.rating_suffix")} (
-                {safeTotal})
+                {positivePercent}% {t("productDetail.rating_suffix")} ({safeTotal})
               </span>
             </div>
 
             {[5, 4, 3, 2, 1].map((star, i) => (
               <div
                 key={star}
-                className="flex items-center space-x-2 text-xs mb-1">
+                className="flex items-center space-x-2 text-xs mb-1"
+              >
                 <span className="w-2">{star}</span>
 
                 <Progress
@@ -308,6 +466,82 @@ function DetailContainer() {
                 </span>
               </div>
             ))}
+
+            <div className="mt-6 p-4 rounded-xl bg-white/70 border border-[#cbdeed]">
+              <h4 className="text-base font-semibold text-[#133e87] mb-3">
+                {t("productDetail.write_review") || "Đánh giá của bạn"}
+              </h4>
+
+              {!isLoggedIn ? (
+                <div className="text-sm text-[#133e87]">
+                  {t("productDetail.msg_need_login") || "Vui lòng đăng nhập để đánh giá."}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-sm text-[#133e87] font-medium">
+                      {t("productDetail.your_rating") || "Số sao"}:
+                    </span>
+
+                    <Rate
+                      value={myRating}
+                      onChange={(v) => setMyRating(v)}
+                      allowClear
+                    />
+
+                    {myRating > 0 && (
+                      <span className="text-sm text-[#133e87]">
+                        {myRating}/5
+                      </span>
+                    )}
+                  </div>
+
+                  <Input.TextArea
+                    value={myComment}
+                    onChange={(e) => setMyComment(e.target.value)}
+                    placeholder={
+                      t("productDetail.review_placeholder") ||
+                      "Viết cảm nhận của bạn..."
+                    }
+                    rows={4}
+                  />
+
+                  <div className="flex gap-3 mt-3">
+                    <button
+                      type="button"
+                      disabled={submittingReview || deletingReview}
+                      onClick={handleSubmitReview}
+                      className="px-4 py-2 rounded-md bg-[#133e87] text-white font-medium hover:bg-[#173f5f] transition disabled:opacity-60"
+                    >
+                      {submittingReview
+                        ? t("productDetail.submitting") || "Đang gửi..."
+                        : t("productDetail.submit_review") || "Gửi đánh giá"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={submittingReview || deletingReview}
+                      onClick={() => {
+                        setMyRating(0);
+                        setMyComment("");
+                      }}
+                      className="px-4 py-2 rounded-md border border-[#133e87] text-[#133e87] font-medium hover:bg-[#eaf7ff] transition disabled:opacity-60"
+                    >
+                      {t("productDetail.clear") || "Xóa"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={submittingReview || deletingReview}
+                      onClick={handleDeleteReview}
+                      className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-60"
+                    >
+                      {deletingReview ? "Đang xóa..." : (t("productDetail.delete_review") || "Xóa đánh giá")}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -319,7 +553,8 @@ function DetailContainer() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
-            variants={slideInFromBottom}>
+            variants={slideInFromBottom}
+          >
             {t("productDetail.order_painting")}
           </motion.h2>
 
@@ -328,7 +563,8 @@ function DetailContainer() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}>
+            variants={staggerContainer}
+          >
             {[
               {
                 src: "src/assets/img/Illustration248.0.jpg",
@@ -349,7 +585,8 @@ function DetailContainer() {
               <motion.div
                 key={idx}
                 className="text-center"
-                variants={staggerItem}>
+                variants={staggerItem}
+              >
                 <img
                   src={item.src}
                   alt={item.title}

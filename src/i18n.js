@@ -278,6 +278,23 @@ const resources = {
         status_out_of_stock: "Hết hàng",
         status_display: "Hàng trưng bày",
         status_locked: "Đang khóa",
+
+        msg_liked: "Đã thích",
+        msg_unliked: "Đã bỏ thích",
+      
+        write_review: "Đánh giá của bạn",
+        your_rating: "Số sao",
+        review_placeholder: "Viết cảm nhận của bạn...",
+        submit_review: "Gửi đánh giá",
+        submitting: "Đang gửi...",
+        clear: "Xóa",
+      
+        msg_choose_star: "Vui lòng chọn số sao",
+        msg_review_success: "Đã gửi đánh giá",
+        msg_review_failed: "Gửi đánh giá thất bại",
+      
+        delete_review: "Xóa đánh giá",
+        msg_review_deleted: "Đã xóa đánh giá",
       },
 
       profile: {
@@ -1024,6 +1041,23 @@ const resources = {
         status_out_of_stock: "Out of stock",
         status_display: "Display item",
         status_locked: "Locked",
+
+        msg_liked: "Liked",
+        msg_unliked: "Unliked",
+      
+        write_review: "Your review",
+        your_rating: "Stars",
+        review_placeholder: "Write your feedback...",
+        submit_review: "Submit review",
+        submitting: "Submitting...",
+        clear: "Clear",
+      
+        msg_choose_star: "Please choose a star rating",
+        msg_review_success: "Review submitted",
+        msg_review_failed: "Failed to submit review",
+      
+        delete_review: "Delete review",
+        msg_review_deleted: "Review deleted",
       },
 
       profile: {

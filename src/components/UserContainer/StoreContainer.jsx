@@ -1,10 +1,5 @@
-import {
-  StarFilled,
-  StarOutlined,
-  DownOutlined,
-  ShoppingCartOutlined,
-} from "@ant-design/icons";
-import { Card, Dropdown, message, Pagination, Spin } from "antd";
+import { DownOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { Card, Dropdown, message, Pagination, Rate, Spin } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
@@ -43,7 +38,7 @@ function StoreContainer() {
     const fetchCategories = async () => {
       try {
         const res = await getCategoriesApi();
-        setCategories(res.data);
+        setCategories(res.data || []);
       } catch (err) {
         console.error("Fetch categories failed", err);
       }
@@ -56,6 +51,7 @@ function StoreContainer() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+
         const res = await getProductsPagedApi({
           page: page - 1,
           size: pageSize,
@@ -63,19 +59,8 @@ function StoreContainer() {
           category: selectedCategory,
         });
 
-        const mapped = (res.data.content || []).map((p) => {
-          const primary =
-            p.images?.find((x) => x.isPrimary)?.imageUrl ||
-            p.images?.[0]?.imageUrl;
-
-          return {
-            ...p,
-            primaryImage: primary ? toServerUrl(primary) : null,
-          };
-        });
-
-        setProducts(mapped);
-        setTotal(res.data.totalElements);
+        setProducts(res.data.content || []);
+        setTotal(res.data.totalElements || 0);
       } catch (err) {
         console.error("Fetch products failed", err);
       } finally {
@@ -84,10 +69,10 @@ function StoreContainer() {
     };
 
     fetchProducts();
-  }, [page, sort, selectedCategory]);
+  }, [page, sort, selectedCategory, pageSize]);
 
   const formatPrice = (price) =>
-    new Intl.NumberFormat("vi-VN").format(price) + "đ";
+    new Intl.NumberFormat("vi-VN").format(Number(price || 0)) + "đ";
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 60 },
@@ -101,10 +86,7 @@ function StoreContainer() {
 
   const staggerContainer = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
   const staggerItem = {
@@ -158,10 +140,10 @@ function StoreContainer() {
                   setPage(1);
                 }}
                 className="
-              group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm
-              hover:shadow-2xl transition-all duration-300 flex-shrink-0
-              cursor-pointer
-            "
+                  group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm
+                  hover:shadow-2xl transition-all duration-300 flex-shrink-0
+                  cursor-pointer
+                "
                 variants={staggerItem}>
                 <img
                   src={
@@ -171,21 +153,21 @@ function StoreContainer() {
                   }
                   alt={cat.name}
                   className="
-                w-full h-full object-cover
-                transition-transform duration-500
-                group-hover:scale-110
-              "
+                    w-full h-full object-cover
+                    transition-transform duration-500
+                    group-hover:scale-110
+                  "
                 />
 
                 <div
                   className={`
-                absolute inset-0 transition-opacity duration-300
-                ${
-                  selectedCategory === cat.name
-                    ? "bg-black/0"
-                    : "bg-black/30 group-hover:bg-black/0"
-                }
-              `}
+                    absolute inset-0 transition-opacity duration-300
+                    ${
+                      selectedCategory === cat.name
+                        ? "bg-black/0"
+                        : "bg-black/30 group-hover:bg-black/0"
+                    }
+                  `}
                 />
 
                 <div className="absolute bottom-0 left-0 w-full p-3 z-10">
@@ -247,56 +229,72 @@ function StoreContainer() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}>
-            {products.map((product) => (
-              <motion.div
-                key={product.id}
-                variants={staggerItem}
-                whileHover={{ y: -5 }}>
-                <Card
-                  bodyStyle={{ padding: "8px" }}
-                  cover={
-                    <div className="relative">
-                      {product.primaryImageUrl ? (
-                        <img
-                          src={toServerUrl(product.primaryImageUrl)}
-                          alt={product.name}
-                          className="w-full h-70 object-cover"
+            {products.map((product) => {
+              const avg = Number(
+                product.ratingAvg ?? product?.rating?.averageRating ?? 0
+              );
+              const count = Number(
+                product.ratingCount ?? product?.rating?.totalReviews ?? 0
+              );
+
+              return (
+                <motion.div
+                  key={product.id}
+                  variants={staggerItem}
+                  whileHover={{ y: -5 }}>
+                  <Card
+                    bodyStyle={{ padding: "8px" }}
+                    cover={
+                      <div className="relative">
+                        {product.primaryImageUrl ? (
+                          <img
+                            src={toServerUrl(product.primaryImageUrl)}
+                            alt={product.name}
+                            className="w-full h-70 object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-70 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+                            {t("store.misc.no_image")}
+                          </div>
+                        )}
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(product.id);
+                          }}
+                          disabled={addingId === product.id}
+                          className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60">
+                          <ShoppingCartOutlined className="text-white" />
+                        </button>
+                      </div>
+                    }
+                    onClick={() => navigate(`/detail/${product.id}`)}>
+                    <h4 className="text-sm font-medium text-[#133e87] line-clamp-2">
+                      {product.name}
+                    </h4>
+
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-sm font-bold text-[#133e87]">
+                        {formatPrice(product.price)}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <Rate
+                          allowHalf
+                          disabled
+                          value={avg}
+                          style={{ fontSize: 14 }}
                         />
-                      ) : (
-                        <div className="w-full h-70 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
-                          {t("store.misc.no_image")}
-                        </div>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(product.id);
-                        }}
-                        disabled={addingId === product.id}
-                        className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60">
-                        <ShoppingCartOutlined className="text-white" />
-                      </button>
+                        <span className="text-xs text-[#133e87]">
+                          ({count})
+                        </span>
+                      </div>
                     </div>
-                  }
-                  onClick={() => navigate(`/detail/${product.id}`)}>
-                  <h4 className="text-sm font-medium text-[#133e87] line-clamp-2">
-                    {product.name}
-                  </h4>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm font-bold text-[#133e87]">
-                      {formatPrice(product.price)}
-                    </span>
-                    <div className="flex text-xs">
-                      <StarFilled className="text-yellow-400" />
-                      <StarFilled className="text-yellow-400" />
-                      <StarFilled className="text-yellow-400" />
-                      <StarFilled className="text-yellow-400" />
-                      <StarOutlined className="text-[#d1d1d1]" />
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                  </Card>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
 
