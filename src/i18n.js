@@ -281,18 +281,18 @@ const resources = {
 
         msg_liked: "Đã thích",
         msg_unliked: "Đã bỏ thích",
-      
+
         write_review: "Đánh giá của bạn",
         your_rating: "Số sao",
         review_placeholder: "Viết cảm nhận của bạn...",
         submit_review: "Gửi đánh giá",
         submitting: "Đang gửi...",
         clear: "Xóa",
-      
+
         msg_choose_star: "Vui lòng chọn số sao",
         msg_review_success: "Đã gửi đánh giá",
         msg_review_failed: "Gửi đánh giá thất bại",
-      
+
         delete_review: "Xóa đánh giá",
         msg_review_deleted: "Đã xóa đánh giá",
       },
@@ -323,6 +323,33 @@ const resources = {
         empty_posts: "Bài viết của bạn sẽ xuất hiện ở đây",
         request: "Yêu cầu",
         request_default_title: "Yêu cầu đặt tranh",
+        full_name: "Họ và tên",
+        full_name_ph: "Nhập họ và tên",
+
+        phone: "Số điện thoại",
+        phone_ph: "Nhập số điện thoại",
+
+        gender: "Giới tính",
+        gender_ph: "Chọn giới tính",
+        gender_male: "Nam",
+        gender_female: "Nữ",
+        gender_other: "Khác",
+
+        dob: "Ngày sinh",
+        dob_ph: "Chọn ngày sinh",
+
+        address: "Địa chỉ",
+        address_ph: "Nhập địa chỉ",
+
+        saving: "Đang lưu...",
+        saved_success: "Lưu thông tin thành công",
+        saved_failed: "Lưu thất bại, thử lại sau",
+
+        avatar_updated: "Cập nhật avatar thành công",
+        avatar_update_failed: "Upload avatar thất bại",
+        posts_search_ph: "Tìm bài viết...",
+        create_post: "Tạo bài viết",
+        by: "Bởi",
         order: {
           sort_newest: "Gần nhất",
           sort_oldest: "Cũ nhất",
@@ -710,7 +737,9 @@ const resources = {
         },
 
         common: {
-          delete: "Xóa",
+          search: "Tìm",
+          deleted: "Đã xoá",
+          delete: "Xoá",
           cancel: "Hủy",
         },
 
@@ -1044,18 +1073,18 @@ const resources = {
 
         msg_liked: "Liked",
         msg_unliked: "Unliked",
-      
+
         write_review: "Your review",
         your_rating: "Stars",
         review_placeholder: "Write your feedback...",
         submit_review: "Submit review",
         submitting: "Submitting...",
         clear: "Clear",
-      
+
         msg_choose_star: "Please choose a star rating",
         msg_review_success: "Review submitted",
         msg_review_failed: "Failed to submit review",
-      
+
         delete_review: "Delete review",
         msg_review_deleted: "Review deleted",
       },
@@ -1086,6 +1115,33 @@ const resources = {
         empty_posts: "Your posts will appear here",
         request: "Request",
         request_default_title: "Request Commission",
+        full_name: "Full name",
+        full_name_ph: "Enter full name",
+
+        phone: "Phone number",
+        phone_ph: "Enter phone number",
+
+        gender: "Gender",
+        gender_ph: "Select gender",
+        gender_male: "Male",
+        gender_female: "Female",
+        gender_other: "Other",
+
+        dob: "Date of birth",
+        dob_ph: "Select date of birth",
+
+        address: "Address",
+        address_ph: "Enter address",
+
+        saving: "Saving...",
+        saved_success: "Profile updated successfully",
+        saved_failed: "Update failed, please try again",
+
+        avatar_updated: "Avatar updated successfully",
+        avatar_update_failed: "Avatar upload failed",
+        posts_search_ph: "Search posts...",
+        create_post: "Create post",
+        by: "By",
         order: {
           sort_newest: "Newest",
           sort_oldest: "Oldest",
@@ -1478,6 +1534,8 @@ const resources = {
         },
 
         common: {
+          search: "Search",
+          deleted: "Deleted",
           delete: "Delete",
           cancel: "Cancel",
         },

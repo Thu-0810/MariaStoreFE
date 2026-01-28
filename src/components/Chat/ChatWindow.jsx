@@ -10,9 +10,16 @@ function formatTime(ts) {
   }
 }
 
+const toAvatarSrc = (url, fallback = null) => {
+  if (!url) return fallback;
+  if (String(url).startsWith("http")) return url;
+  return `http://localhost:8080${url}`;
+};
+
 export default function ChatWindow({
   chat,
   meId,
+  meAvatarUrl,
   messagesAsc,
   onSendMessage,
 }) {
@@ -71,21 +78,39 @@ export default function ChatWindow({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3">
         {messagesAsc.map((m) => {
-          const isMine = meId != null && m.senderUserId != null && Number(m.senderUserId) === Number(meId);
+          const isMine =
+            meId != null &&
+            m.senderUserId != null &&
+            Number(m.senderUserId) === Number(meId);
+
+          const avatar = isMine
+            ? toAvatarSrc(meAvatarUrl, null)
+            : toAvatarSrc(chat?.avatar, null);
+
           return (
-            <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+            <div
+              key={m.id}
+              className={`flex items-end gap-2 ${
+                isMine ? "justify-end" : "justify-start"
+              }`}>
+              {!isMine && <Avatar src={avatar} size={32} />}
+
               <div
                 className={`max-w-[80%] lg:max-w-[65%] px-4 py-2 rounded-lg ${
                   isMine
                     ? "bg-blue-600 text-white rounded-br-none"
                     : "bg-gray-200 text-gray-800 rounded-bl-none"
-                }`}
-              >
+                }`}>
                 <p className="break-words whitespace-pre-wrap">{m.content}</p>
-                <p className={`text-xs mt-1 ${isMine ? "text-blue-100" : "text-gray-500"}`}>
+                <p
+                  className={`text-xs mt-1 ${
+                    isMine ? "text-blue-100" : "text-gray-500"
+                  }`}>
                   {formatTime(m.createdAt)}
                 </p>
               </div>
+
+              {isMine && <Avatar src={avatar} size={32} />}
             </div>
           );
         })}
@@ -108,8 +133,7 @@ export default function ChatWindow({
             size="large"
             onClick={handleSend}
             className="rounded-lg"
-            icon={<SendOutlined />}
-          >
+            icon={<SendOutlined />}>
             Gửi
           </Button>
         </div>

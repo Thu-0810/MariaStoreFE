@@ -17,6 +17,17 @@ function buildChatName(conv, meId) {
   return conv.title || `${conv.type} #${conv.id}`;
 }
 
+const API_BASE = String(axiosClient.defaults.baseURL || ""); // http://localhost:8080/api
+const ORIGIN = API_BASE.replace(/\/api\/?$/, ""); // http://localhost:8080
+
+const resolveAvatarUrl = (url) => {
+  if (!url) return null;
+  const s = String(url);
+  if (s.startsWith("http")) return s;
+  if (s.startsWith("/")) return `${ORIGIN}${s}`; // /uploads/.. => http://localhost:8080/uploads/..
+  return `${ORIGIN}/${s}`;
+};
+
 export default function ChatDrawer({ onAnyNewMessage, initialConversationId }) {
   const rt = useChatRealtime();
   const [me, setMe] = useState(null);
@@ -46,7 +57,10 @@ export default function ChatDrawer({ onAnyNewMessage, initialConversationId }) {
   };
 
   const loadMessages = async (conversationId, p) => {
-    const res = await chatApi.getMessages(conversationId, { page: p, size: 30 });
+    const res = await chatApi.getMessages(conversationId, {
+      page: p,
+      size: 30,
+    });
     const content = res.content || [];
 
     setMessagesDesc((prev) => (p === 0 ? content : [...prev, ...content]));
@@ -101,18 +115,22 @@ export default function ChatDrawer({ onAnyNewMessage, initialConversationId }) {
     conversations.forEach((c) => rt.unsubscribe(`topic-conv-${c.id}`));
 
     if (rt.connected) {
-      rt.subscribe(`topic-conv-${activeConvId}`, `/topic/conversations/${activeConvId}`, (evt) => {
-        if (evt?.type === "MESSAGE_CREATED") {
-          const msg = evt.data;
-          setMessagesDesc((prev) => [msg, ...prev]);
-          onAnyNewMessage?.();
+      rt.subscribe(
+        `topic-conv-${activeConvId}`,
+        `/topic/conversations/${activeConvId}`,
+        (evt) => {
+          if (evt?.type === "MESSAGE_CREATED") {
+            const msg = evt.data;
+            setMessagesDesc((prev) => [msg, ...prev]);
+            onAnyNewMessage?.();
 
-          rt.publish("/app/chat.read", {
-            conversationId: activeConvId,
-            lastReadMessageId: msg.id,
-          });
+            rt.publish("/app/chat.read", {
+              conversationId: activeConvId,
+              lastReadMessageId: msg.id,
+            });
+          }
         }
-      });
+      );
     }
 
     loadMessages(activeConvId, 0).catch(() => {});
@@ -123,21 +141,23 @@ export default function ChatDrawer({ onAnyNewMessage, initialConversationId }) {
     return (conversations || []).map((c) => ({
       id: c.id,
       name: c.otherFullName || `User #${c.otherUserId || "?"}`,
-      avatar: c.otherAvatarUrl || null,
+      avatar: resolveAvatarUrl(c.otherAvatarUrl), // ✅ convert
       lastMessage: c.lastMessagePreview || "Chưa có tin nhắn",
       unreadCount: Number(c.unreadCount || 0),
       subTitle: c.type === "DIRECT" ? "Direct" : c.type,
       raw: c,
     }));
   }, [conversations]);
-  
 
   const activeChat = useMemo(
     () => chats.find((x) => x.id === activeConvId) || null,
     [chats, activeConvId]
   );
 
-  const messagesAsc = useMemo(() => [...messagesDesc].reverse(), [messagesDesc]);
+  const messagesAsc = useMemo(
+    () => [...messagesDesc].reverse(),
+    [messagesDesc]
+  );
 
   const onSend = (text) => {
     if (!activeConvId) return;
@@ -165,7 +185,13 @@ export default function ChatDrawer({ onAnyNewMessage, initialConversationId }) {
 
       {/* Window */}
       <div className="flex-1">
-        <ChatWindow chat={activeChat} meId={me?.id} messagesAsc={messagesAsc} onSendMessage={onSend} />
+        <ChatWindow
+          chat={activeChat}
+          meId={me?.id}
+          meAvatarUrl={resolveAvatarUrl(me?.avatarUrl)}
+          messagesAsc={messagesAsc}
+          onSendMessage={onSend}
+        />
       </div>
     </div>
   );

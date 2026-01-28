@@ -8,10 +8,19 @@ import { commentApi } from "../../../api/commentApi";
 
 const API_HOST = "http://localhost:8080";
 
+function resolveMediaUrl(raw, fallback) {
+  if (!raw) return fallback;
+  const s = String(raw);
+  if (s.startsWith("http")) return s;
+  if (s.startsWith("/")) return `${API_HOST}${s}`;
+  return `${API_HOST}/${s}`;
+}
+
 function buildCoverSrc(post) {
-  const coverPath = post?.coverImage || post?.cover_image;
-  if (!coverPath) return "src/assets/img/Illustration153.jpg";
-  return coverPath.startsWith("http") ? coverPath : `${API_HOST}${coverPath}`;
+  return resolveMediaUrl(
+    post?.coverImage || post?.cover_image,
+    "src/assets/img/Illustration153.jpg"
+  );
 }
 
 function buildAvatarSrc(c) {
@@ -22,14 +31,15 @@ function buildAvatarSrc(c) {
     c?.avatar_url ||
     c?.userAvatar;
 
-  if (!raw) return "https://i.pravatar.cc/50?img=1";
-  if (raw.startsWith("http")) return raw;
-  if (raw.startsWith("/")) return `${API_HOST}${raw}`;
-  return `${API_HOST}/${raw}`;
+  return resolveMediaUrl(raw, "https://i.pravatar.cc/50?img=1");
 }
 
 function DetailPostModal({ open, onClose, post: initialPost }) {
-  const [post, setPost] = useState(initialPost || {});
+  const { t } = useTranslation();
+
+  const [post, setPost] = useState(initialPost || null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [showComments, setShowComments] = useState(false);
@@ -38,23 +48,31 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
 
   const [keyword, setKeyword] = useState("");
 
-  const { t } = useTranslation();
-
   useEffect(() => {
-    setPost(initialPost || {});
+    if (!open) return;
+    setPost(initialPost || null);
+    setShowComments(false);
+    setComments([]);
+    setKeyword("");
   }, [initialPost, open]);
 
   useEffect(() => {
     const run = async () => {
-      if (open && initialPost?.id) {
-        try {
-          const res = await adminPostApi.detail(initialPost.id);
-          setPost(res.data);
-        } catch {}
+      if (!open || !initialPost?.id) return;
+      try {
+        setLoadingDetail(true);
+        const res = await adminPostApi.detail(initialPost.id);
+        setPost(res.data);
+      } catch (e) {
+        message.error(
+          e?.response?.data?.message || "Không tải được chi tiết bài viết"
+        );
+      } finally {
+        setLoadingDetail(false);
       }
     };
     run();
-  }, [open, initialPost]);
+  }, [open, initialPost?.id]);
 
   useEffect(() => {
     const run = async () => {
@@ -84,14 +102,15 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
     });
   }, [comments, keyword]);
 
+  const authorLabel =
+    post?.fullName || post?.authorName || t("adminPost.detailModal.anonymous");
+
   const handleEditPost = () => setIsEditModalOpen(true);
 
   const handleUpdatePost = (updatedPost) => {
-    setPost(updatedPost);
+    if (updatedPost) setPost(updatedPost);
     setIsEditModalOpen(false);
   };
-
-  if (!post) return null;
 
   return (
     <>
@@ -100,56 +119,64 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
           <div className="relative z-10 p-8">
             <div className="max-w-4xl mx-auto">
               <h1 className="text-[#133e87] text-2xl font-bold italic text-center mb-4">
-                {post.title || t("adminPost.detailModal.fallback_title")}
+                {post?.title || t("adminPost.detailModal.fallback_title")}
               </h1>
 
               <p className="text-[#608bc1] text-sm text-center mb-1">
                 {t("adminPost.detailModal.date_prefix")}{" "}
-                {post.createdAt
+                {post?.createdAt
                   ? new Date(post.createdAt).toLocaleDateString("vi-VN")
                   : t("adminPost.detailModal.date_na")}
               </p>
 
               <p className="text-[#608bc1] text-sm text-center mb-6">
                 {t("adminPost.detailModal.written_by")}{" "}
-                <span className="font-semibold">
-                  {post.authorName ||
-                    post.author ||
-                    t("adminPost.detailModal.anonymous")}
-                </span>
+                <span className="font-semibold">{authorLabel}</span>
               </p>
 
-              <div className="rounded-xl overflow-hidden mb-6">
-                <img
-                  src={coverSrc}
-                  alt="preview"
-                  className="w-full h-[400px] object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "src/assets/img/Illustration153.jpg";
-                  }}
-                />
-              </div>
+              {loadingDetail ? (
+                <div className="flex justify-center py-8">
+                  <Spin />
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-xl overflow-hidden mb-6">
+                    <img
+                      src={coverSrc}
+                      alt="preview"
+                      className="w-full h-[400px] object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "src/assets/img/Illustration153.jpg";
+                      }}
+                    />
+                  </div>
 
-              <div
-                className="text-[#133e87] space-y-3 leading-relaxed mb-8"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    post.content ||
-                    `<p>Đây là phần nội dung chi tiết của bài viết <b>${post.title}</b>.</p>`,
-                }}
-              />
+                  <div
+                    className="text-[#133e87] space-y-3 leading-relaxed mb-8"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        post?.content ||
+                        `<p>Đây là phần nội dung chi tiết của bài viết <b>${post?.title || ""}</b>.</p>`,
+                    }}
+                  />
+                </>
+              )}
 
               <div className="flex justify-between items-center mt-8">
                 <button
                   onClick={handleEditPost}
-                  className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
+                  disabled={loadingDetail || !post?.id}
+                  className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
                   <EditOutlined />
                   {t("adminPost.detailModal.edit_post")}
                 </button>
 
                 <button
                   onClick={() => setShowComments(!showComments)}
-                  className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition">
+                  disabled={loadingDetail || !post?.id}
+                  className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
                   {showComments
                     ? t("adminPost.detailModal.hide_comments")
                     : t("adminPost.detailModal.show_comments")}
@@ -166,9 +193,10 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                     <Input
                       value={keyword}
                       onChange={(e) => setKeyword(e.target.value)}
-                      placeholder={t(
-                        "adminPost.detailModal.comment_search_placeholder"
-                      )}
+                      placeholder={
+                        t("adminPost.detailModal.comment_search_placeholder") ||
+                        "Tìm bình luận..."
+                      }
                       className="max-w-xs"
                     />
                   </div>
@@ -180,7 +208,7 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                       </div>
                     ) : filteredComments.length === 0 ? (
                       <p className="text-[#608bc1]">
-                        {t("adminPost.detailModal.no_comments")}
+                        {t("adminPost.detailModal.no_comments") || "Chưa có bình luận"}
                       </p>
                     ) : (
                       filteredComments.map((c) => (
@@ -190,20 +218,17 @@ function DetailPostModal({ open, onClose, post: initialPost }) {
                             alt={c.userFullName || "user"}
                             className="w-10 h-10 rounded-full"
                             onError={(e) => {
-                              e.currentTarget.src =
-                                "https://i.pravatar.cc/50?img=1";
+                              e.currentTarget.src = "https://i.pravatar.cc/50?img=1";
                             }}
                           />
                           <div className="bg-white rounded-lg p-3 shadow-sm w-full">
                             <div className="flex items-center justify-between gap-2">
                               <p className="font-semibold text-[#133e87]">
-                                {c.userFullName || "User"}
+                                {c.userFullName || c.fullName || "User"}
                               </p>
                               {c.createdAt && (
                                 <p className="text-xs text-[#9bb3d1]">
-                                  {new Date(c.createdAt).toLocaleString(
-                                    "vi-VN"
-                                  )}
+                                  {new Date(c.createdAt).toLocaleString("vi-VN")}
                                 </p>
                               )}
                             </div>

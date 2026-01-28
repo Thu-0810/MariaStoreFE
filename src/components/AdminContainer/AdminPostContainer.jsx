@@ -28,22 +28,23 @@ function AdminPostContainer() {
   const fetchPosts = async (page = currentPage, kw = keyword) => {
     try {
       setLoading(true);
-      const res = await adminPostApi.list({
-        page: page - 1,
-        keyword: kw,
-      });
+  
+      const res = await adminPostApi.list({ page: page - 1, keyword: kw, size: pageSize });
 
-      const pageData = res.data;
-      setData(pageData.content || []);
-      setTotal(pageData.totalElements || 0);
+      console.log("res:", res);
+      console.log("res.data:", res?.data);
+      const pageData = res?.data ?? res;
+      console.log("pageData:", pageData);
+      console.log("content:", pageData?.content);
+      setData(Array.isArray(pageData?.content) ? pageData.content : []);
+      setTotal(Number(pageData?.totalElements ?? 0));
     } catch (e) {
-      message.error(
-        e?.response?.data?.message || t("adminPost.toast.load_posts_failed")
-      );
+      message.error(e?.response?.data?.message || t("adminPost.toast.load_posts_failed"));
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchPosts(1, "");

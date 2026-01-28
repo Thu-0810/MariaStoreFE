@@ -12,7 +12,9 @@ const API_HOST = "http://localhost:8080";
 function buildCoverSrc(post) {
   const path = post?.coverImage || post?.cover_image;
   if (!path) return "src/assets/img/Illustration153.jpg";
-  return path.startsWith("http") ? path : `${API_HOST}${path}`;
+  if (path.startsWith("http")) return path;
+  if (path.startsWith("/")) return `${API_HOST}${path}`;
+  return `${API_HOST}/${path}`;
 }
 
 function buildMediaSrc(raw, fallback) {
@@ -157,7 +159,8 @@ function DetailCommunityContainer() {
                 <p className="text-[#608bc1] text-sm text-center">
                   {t("detailCommunity.written_by") || "Được viết bởi:"}{" "}
                   <span className="font-semibold">
-                    {post?.authorName ||
+                    {post?.fullName ||
+                      post?.authorName ||
                       t("detailCommunity.anonymous") ||
                       "Ẩn danh"}
                   </span>
