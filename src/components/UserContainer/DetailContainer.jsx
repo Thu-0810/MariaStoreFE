@@ -240,7 +240,7 @@ function DetailContainer() {
     }
 
     try {
-      const conv = await chatApi.getOrCreateDirect(4);
+      const conv = await chatApi.getOrCreateDirect(2);
 
       openChatWithConversation(conv.id);
     } catch (err) {

@@ -303,20 +303,6 @@ function Header() {
                           </div>
                         )}
                       </div>
-
-                      {/* Footer */}
-                      {notifications.length > 0 && (
-                        <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 text-center">
-                          <button
-                            className="text-sm font-semibold text-[#0052cc] hover:text-[#003a99] transition-colors"
-                            onClick={() => {
-                              setOpenNoti(false);
-                              navigate("/my-profile/notifications");
-                            }}>
-                            {t("header.view_all_notifications")}
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

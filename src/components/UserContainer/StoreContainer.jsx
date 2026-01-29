@@ -1,6 +1,5 @@
 import { DownOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 import { Card, Dropdown, message, Pagination, Rate, Spin } from "antd";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { getProductsPagedApi } from "../../api/productApi";
@@ -24,6 +23,8 @@ function StoreContainer() {
   const [sort, setSort] = useState("newest");
   const [loading, setLoading] = useState(false);
 
+  const [catLoading, setCatLoading] = useState(false);
+
   const sortMenuItems = useMemo(
     () => [
       { key: "newest", label: t("store.sort.newest") },
@@ -37,10 +38,13 @@ function StoreContainer() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setCatLoading(true);
         const res = await getCategoriesApi();
         setCategories(res.data || []);
       } catch (err) {
         console.error("Fetch categories failed", err);
+      } finally {
+        setCatLoading(false);
       }
     };
 
@@ -74,26 +78,6 @@ function StoreContainer() {
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN").format(Number(price || 0)) + "đ";
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 60 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const fadeInRight = {
-    hidden: { opacity: 0, x: 60 },
-    visible: { opacity: 1, x: 0 },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-
-  const staggerItem = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  };
-
   const handleAddToCart = async (productId) => {
     try {
       setAddingId(productId);
@@ -110,13 +94,7 @@ function StoreContainer() {
 
   return (
     <div className="min-h-screen bg-[#f6f6f6]">
-      <motion.section
-        className="relative h-150 bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeInUp}
-        transition={{ duration: 0.8 }}>
+      <section className="relative h-[420px] sm:h-[520px] lg:h-[620px] bg-gradient-to-r from-[#d9eafd] to-[#cbdceb] overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="src/assets/img/Illustration251.jpg"
@@ -127,71 +105,70 @@ function StoreContainer() {
 
         {/* CATEGORY OVERLAY (DYNAMIC) */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full px-2">
-          <motion.div
-            className="flex gap-4 overflow-x-auto no-scrollbar justify-center"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible">
-            {categories.map((cat) => (
-              <motion.div
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.name);
-                  setPage(1);
-                }}
-                className="
-                  group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm
-                  hover:shadow-2xl transition-all duration-300 flex-shrink-0
-                  cursor-pointer
-                "
-                variants={staggerItem}>
-                <img
-                  src={
-                    cat.thumbnailUrl
-                      ? toServerUrl(cat.thumbnailUrl)
-                      : "/placeholder.svg"
-                  }
-                  alt={cat.name}
-                  className="
-                    w-full h-full object-cover
-                    transition-transform duration-500
-                    group-hover:scale-110
-                  "
-                />
+          <div className="flex gap-4 overflow-x-auto no-scrollbar justify-center">
+            {catLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-48 h-28 rounded-2xl bg-black/10 animate-pulse flex-shrink-0"
+                  />
+                ))
+              : categories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.name);
+                      setPage(1);
+                    }}
+                    className="
+                      group relative w-48 h-28 rounded-2xl overflow-hidden shadow-sm
+                      hover:shadow-2xl transition-all duration-300 flex-shrink-0
+                      cursor-pointer hover:-translate-y-1
+                    "
+                  >
+                    <img
+                      src={
+                        cat.thumbnailUrl
+                          ? toServerUrl(cat.thumbnailUrl)
+                          : "/placeholder.svg"
+                      }
+                      alt={cat.name}
+                      className="
+                        w-full h-full object-cover
+                        transition-transform duration-500
+                        group-hover:scale-110
+                      "
+                    />
 
-                <div
-                  className={`
-                    absolute inset-0 transition-opacity duration-300
-                    ${
-                      selectedCategory === cat.name
-                        ? "bg-black/0"
-                        : "bg-black/30 group-hover:bg-black/0"
-                    }
-                  `}
-                />
+                    <div
+                      className={`
+                        absolute inset-0 transition-opacity duration-300
+                        ${
+                          selectedCategory === cat.name
+                            ? "bg-black/0"
+                            : "bg-black/30 group-hover:bg-black/0"
+                        }
+                      `}
+                    />
 
-                <div className="absolute bottom-0 left-0 w-full p-3 z-10">
-                  <h3 className="font-semibold text-white text-left">
-                    {cat.name}
-                  </h3>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                    <div className="absolute bottom-0 left-0 w-full p-3 z-10">
+                      <h3 className="font-semibold text-white text-left">
+                        {cat.name}
+                      </h3>
+                    </div>
+                  </div>
+                ))}
+          </div>
         </div>
-      </motion.section>
+      </section>
 
       <div className="container mx-auto px-36 py-6">
         {/* SORT */}
-        <motion.div
-          className="flex justify-end mb-6"
-          variants={fadeInRight}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}>
+        <div className="flex justify-end mb-6">
           <span className="text-[#133e87] font-semibold">
             {t("store.sort_by")}&nbsp;
           </span>
+
           <Dropdown
             menu={{
               items: sortMenuItems,
@@ -199,7 +176,8 @@ function StoreContainer() {
                 setSort(key);
                 setPage(1);
               },
-            }}>
+            }}
+          >
             <span className="cursor-pointer text-[#133e87] font-semibold flex items-center gap-1 hover:text-[#608bc1]">
               {sortMenuItems.find((i) => i.key === sort)?.label}
               <DownOutlined className="text-[#608bc1]" />
@@ -212,23 +190,19 @@ function StoreContainer() {
                 setSelectedCategory(null);
                 setPage(1);
               }}
-              className="ml-4 cursor-pointer text-sm text-[#608bc1] hover:underline">
+              className="ml-4 cursor-pointer text-sm text-[#608bc1] hover:underline"
+            >
               {t("store.clear_filter")}
             </span>
           )}
-        </motion.div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
             <Spin size="large" />
           </div>
         ) : (
-          <motion.div
-            className="grid grid-cols-4 gap-4"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}>
+          <div className="grid grid-cols-4 gap-4">
             {products.map((product) => {
               const avg = Number(
                 product.ratingAvg ?? product?.rating?.averageRating ?? 0
@@ -238,10 +212,10 @@ function StoreContainer() {
               );
 
               return (
-                <motion.div
+                <div
                   key={product.id}
-                  variants={staggerItem}
-                  whileHover={{ y: -5 }}>
+                  className="transition-transform duration-200 hover:-translate-y-1"
+                >
                   <Card
                     bodyStyle={{ padding: "8px" }}
                     cover={
@@ -264,12 +238,14 @@ function StoreContainer() {
                             handleAddToCart(product.id);
                           }}
                           disabled={addingId === product.id}
-                          className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60">
+                          className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60 transition-colors"
+                        >
                           <ShoppingCartOutlined className="text-white" />
                         </button>
                       </div>
                     }
-                    onClick={() => navigate(`/detail/${product.id}`)}>
+                    onClick={() => navigate(`/detail/${product.id}`)}
+                  >
                     <h4 className="text-sm font-medium text-[#133e87] line-clamp-2">
                       {product.name}
                     </h4>
@@ -286,16 +262,14 @@ function StoreContainer() {
                           value={avg}
                           style={{ fontSize: 14 }}
                         />
-                        <span className="text-xs text-[#133e87]">
-                          ({count})
-                        </span>
+                        <span className="text-xs text-[#133e87]">({count})</span>
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               );
             })}
-          </motion.div>
+          </div>
         )}
 
         <div className="flex justify-center mt-10">

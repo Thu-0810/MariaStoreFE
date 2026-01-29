@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { postApi } from "../../api/postApi";
 import { commentApi } from "../../api/commentApi";
 import { getCurrentUserApi } from "../../api/authApi";
+import bg from "../../assets/img/Illustration311.jpg";
 
 const API_HOST = "http://localhost:8080";
 
@@ -133,12 +134,10 @@ function DetailCommunityContainer() {
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('src/assets/img/Illustration311.jpg')" }}>
-      <div className="absolute inset-0 backdrop-blur-sm"></div>
+      style={{ backgroundImage: `url(${bg})` }}>
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
 
-      <main className="flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d9eafd] via-[#cbdceb] to-[#ffecc8] opacity-60" />
-
+      <main className="relative z-10 flex-1 overflow-hidden">
         <div className="relative container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="backdrop-blur-sm rounded-3xl p-6">

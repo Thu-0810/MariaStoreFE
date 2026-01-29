@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Badge, Button } from "antd";
 import { MessageOutlined, CloseOutlined, MinusOutlined } from "@ant-design/icons";
@@ -26,11 +25,20 @@ export default function FloatingChat() {
 
   const loadUnread = async () => {
     try {
-      const res = await axiosClient.get("/notifications/unread-count");
-      setUnreadCount(Number(res.data || 0));
+      const res = await axiosClient.get("/chat/conversations");
+  
+      const list = Array.isArray(res.data) ? res.data : [];
+      const total = list.reduce(
+        (sum, c) => sum + Number(c?.unreadCount || 0),
+        0
+      );
+  
+      setUnreadCount(total);
     } catch {
+      setUnreadCount(0);
     }
   };
+  
 
   useEffect(() => {
     loadUnread();
