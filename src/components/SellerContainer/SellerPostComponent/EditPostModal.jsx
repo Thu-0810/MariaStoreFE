@@ -3,6 +3,7 @@ import { Modal, Input, Button, Upload, Select, message } from "antd";
 import { motion } from "framer-motion";
 import { Editor } from "@tinymce/tinymce-react";
 import { useTranslation } from "react-i18next";
+import { adminPostApi } from "../../../api/adminPostApi";
 
 const { Option } = Select;
 
@@ -18,42 +19,54 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
   useEffect(() => {
     if (open && post) {
       setTitle(post.title || "");
-      setAuthor(post.author || "");
+      setAuthor(post.authorName || post.author || "");
       setHashtag(post.hashtag || "");
-      setCoverImage(post.coverImage || null);
+      setCoverImage(post.coverImage || post.cover_image || null); // <-- FIX
       setContent(post.content || "");
     }
   }, [open, post]);
 
-  const handleUpdate = () => {
-    if (!title || !author || !hashtag) {
+  const handleUpdate = async () => {
+    if (!title || !author) {
       message.warning(t("adminPost.editModal.toast_required"));
       return;
     }
-    const updatedPost = {
-      ...post,
-      title,
-      author,
-      hashtag,
-      coverImage,
-      content,
-    };
-    onUpdate(updatedPost);
-    message.success(t("adminPost.editModal.toast_success"));
-    onCancel();
-  };
 
+    try {
+      const res = await adminPostApi.update(post.id, {
+        title,
+        authorName: author,
+        content,
+        coverFile: coverImage instanceof File ? coverImage : null,
+      });
+
+      onUpdate(res.data);
+      message.success(t("adminPost.editModal.toast_success"));
+      onCancel();
+    } catch (e) {
+      message.error(
+        e?.response?.data?.message || t("adminPost.toast.update_failed")
+      );
+    }
+  };
   const uploadProps = {
     beforeUpload: (file) => {
-      if (file.size > 3 * 1024 * 1024) {
-        message.error(t("adminPost.addModal.image_too_large"));
-        return false;
-      }
       setCoverImage(file);
       return false;
     },
     onRemove: () => setCoverImage(null),
   };
+
+  const API_HOST = "http://localhost:8080";
+
+  let coverPreview = null;
+  if (coverImage instanceof File) {
+    coverPreview = URL.createObjectURL(coverImage);
+  } else if (typeof coverImage === "string" && coverImage.length > 0) {
+    coverPreview = coverImage.startsWith("http")
+      ? coverImage
+      : `${API_HOST}${coverImage}`;
+  }
 
   return (
     <Modal
@@ -113,13 +126,9 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                 {...uploadProps}
                 showUploadList={false}
                 className="w-full h-full">
-                {coverImage ? (
+                {coverPreview ? (
                   <img
-                    src={
-                      coverImage instanceof File
-                        ? URL.createObjectURL(coverImage)
-                        : coverImage
-                    }
+                    src={coverPreview}
                     alt="Cover"
                     className="w-full h-full object-cover"
                   />
@@ -156,7 +165,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
                   {t("adminPost.addModal.hashtag_label")}{" "}
                 </label>
@@ -174,7 +183,7 @@ function EditPostModal({ open, onCancel, onUpdate, post }) {
                     {t("adminPost.addModal.hashtag.review")}
                   </Option>
                 </Select>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-start gap-4 mt-6">

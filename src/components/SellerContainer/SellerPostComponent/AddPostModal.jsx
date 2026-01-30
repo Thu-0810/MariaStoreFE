@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { PlusOutlined } from "@ant-design/icons";
 import { Editor } from "@tinymce/tinymce-react";
 import { useTranslation } from "react-i18next";
+import { adminPostApi } from "../../../api/adminPostApi";
 
 const { Option } = Select;
 
-function AddPostModal({ open, onCancel, onAdd }) {
+function AddPostModal({ open, onCancel, onAddSuccess }) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [hashtag, setHashtag] = useState("");
@@ -26,16 +27,28 @@ function AddPostModal({ open, onCancel, onAdd }) {
     }
   }, [open]);
 
-  const handleAdd = () => {
-    if (!title || !author || !hashtag) {
+  const handleAdd = async () => {
+    if (!title || !author) {
       message.warning(t("adminPost.addModal.toast_required"));
       return;
     }
-    onAdd({ title, author, hashtag, coverImage, content });
-    message.success(t("adminPost.addModal.toast_success"));
-    onCancel();
-  };
 
+    try {
+      await adminPostApi.create({
+        title,
+        authorName: author,
+        content,
+        coverFile: coverImage,
+      });
+
+      message.success(t("adminPost.addModal.toast_success"));
+      onAddSuccess?.();
+    } catch (e) {
+      message.error(
+        e?.response?.data?.message || t("adminPost.toast.add_failed")
+      );
+    }
+  };
   const uploadProps = {
     beforeUpload: (file) => {
       if (file.size > 3 * 1024 * 1024) {
@@ -145,7 +158,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="text-sm font-medium text-gray-600 mb-1 block">
                   {t("adminPost.addModal.hashtag_label")}{" "}
                 </label>
@@ -163,7 +176,7 @@ function AddPostModal({ open, onCancel, onAdd }) {
                     {t("adminPost.addModal.hashtag.review")}
                   </Option>
                 </Select>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-start gap-4 mt-6">
