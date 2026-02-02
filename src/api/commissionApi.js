@@ -34,3 +34,7 @@ export const checkoutCommissionApi = (id) => {
 export const cancelCommissionApi = (id) => {
   return axiosClient.post(`/commission-requests/${id}/cancel`);
 };
+
+export const getCommissionDeliverablesApi = (id) => {
+  return axiosClient.get(`/commission-requests/${id}/deliverables`);
+};

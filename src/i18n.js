@@ -4,6 +4,12 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   vi: {
     translation: {
+      common: {
+        search: "Tìm",
+        deleted: "Đã xoá",
+        delete: "Xoá",
+        cancel: "Hủy",
+      },
       header: {
         search_placeholder: "Tìm kiếm",
         cart: "Giỏ Hàng",
@@ -403,6 +409,14 @@ const resources = {
         approve_fail: "Duyệt yêu cầu thất bại",
         reject_success: "Đã từ chối yêu cầu",
         reject_fail: "Từ chối yêu cầu thất bại",
+        deliverables_title:"Ảnh từ người bán",
+        upload_image: "Thêm ảnh",
+        upload_now:"Xác nhận thêm ảnh",
+        upload_success:"Thêm ảnh thành công", 
+        upload_failed:"Thêm ảnh thất bại",
+        delete_success: "Xóa ảnh thành công",
+        delete_failed: "Xóa ảnh thất bại",
+        no_deliverables_yet: "Chưa có dữ liệu",
         status: {
           draft: "Bản nháp",
           submitted: "Đã gửi",
@@ -796,7 +810,12 @@ const resources = {
 
   en: {
     translation: {
-      // header
+      common: {
+        search: "Search",
+        deleted: "Deleted",
+        delete: "Delete",
+        cancel: "Cancel",
+      },
       header: {
         search_placeholder: "Search",
         cart: "Cart",
@@ -1221,6 +1240,14 @@ const resources = {
         approve_fail: "Failed to approve commission",
         reject_success: "Commission rejected",
         reject_fail: "Failed to reject commission",
+        deliverables_title:"Deliverables",
+        upload_image: "Upload",
+        upload_now:"Confirm",
+        upload_success:"Upload Success", 
+        upload_failed:"Upload Failed",
+        delete_success: "Delete Success",
+        delete_failed: "Delete Failed",
+        no_deliverables_yet: "No Data",
         status: {
           draft: "DRAFT",
           submitted: "SUBMITTED",
