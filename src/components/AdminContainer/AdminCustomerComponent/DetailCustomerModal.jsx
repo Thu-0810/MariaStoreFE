@@ -1,4 +1,4 @@
-
+import { useMemo } from "react";
 import {
   Modal,
   Button,
@@ -7,9 +7,10 @@ import {
   Select,
   DatePicker,
   Table,
+  Pagination,
   message,
 } from "antd";
-import { DownOutlined, EditOutlined, RightOutlined } from "@ant-design/icons";
+import { DownOutlined, EditOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { adminUploadUserAvatarApi } from "../../../api/adminUserApi";
 
@@ -27,6 +28,12 @@ export default function DetailCustomerModal({
   onOpenLock,
   onOpenDelete,
   onChangeField,
+
+  ordersPage = 1,
+  ordersTotal = 0,
+  ordersPageSize = 10,
+  onOrdersPageChange,
+  ordersLoading = false,
 }) {
   const displayName = selectedCustomer?.displayName ?? "";
   const phone = selectedCustomer?.phone ?? "";
@@ -37,6 +44,13 @@ export default function DetailCustomerModal({
   const ordersDetail = selectedCustomer?.ordersDetail ?? [];
   const totalAmount = selectedCustomer?.totalAmount ?? "";
   const isLocked = selectedCustomer?.status === "LOCKED";
+
+  const roles = selectedCustomer?.roles ?? [];
+  const isUserRole = useMemo(() => {
+    if (!roles) return false;
+    if (Array.isArray(roles)) return roles.includes("USER");
+    return String(roles).includes("USER");
+  }, [roles]);
 
   const birthdayValue =
     birthday && dayjs(birthday).isValid() ? dayjs(birthday) : null;
@@ -52,7 +66,7 @@ export default function DetailCustomerModal({
   const handleUploadAvatar = async (file) => {
     try {
       if (!selectedCustomer?.id) {
-        message.error("Không tìm thấy userId để upload avatar.");
+        message.error(t("adminCustomer.toast.missing_user_id"));
         return false;
       }
 
@@ -65,15 +79,13 @@ export default function DetailCustomerModal({
 
       if (newAvatarUrl) {
         onChangeField("avatarUrl", newAvatarUrl);
-
         setAvatarUrl(`${BASE_BACKEND}${newAvatarUrl}`);
-
-        message.success("Cập nhật avatar thành công!");
+        message.success(t("adminCustomer.toast.avatar_upload_success"));
       } else {
-        message.warning("Upload thành công nhưng không nhận được avatarUrl.");
+        message.warning(t("adminCustomer.toast.avatar_upload_no_url"));
       }
     } catch (err) {
-      message.error("Upload avatar thất bại. Kiểm tra quyền ADMIN hoặc API.");
+      message.error(t("adminCustomer.toast.avatar_upload_failed"));
     }
 
     return false;
@@ -86,7 +98,9 @@ export default function DetailCustomerModal({
       footer={null}
       width={1200}
       centered
-      className="rounded-3xl overflow-hidden custom-colored-modal">
+      className="rounded-3xl overflow-hidden custom-colored-modal"
+      destroyOnClose
+    >
       {selectedCustomer && (
         <main className="container mx-auto px-6 py-12">
           <div className="flex gap-6 max-w-7xl mx-auto">
@@ -99,7 +113,7 @@ export default function DetailCustomerModal({
                       {resolvedAvatar ? (
                         <img
                           src={resolvedAvatar}
-                          alt="avatar"
+                          alt={t("adminCustomer.detail.avatar_alt")}
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : (
@@ -112,12 +126,14 @@ export default function DetailCustomerModal({
                         showUploadList={false}
                         beforeUpload={handleUploadAvatar}
                         accept="image/png,image/jpeg,image/webp"
-                        className="absolute bottom-4 right-8 translate-x-1/3 translate-y-1/3 cursor-pointer">
+                        className="absolute bottom-4 right-8 translate-x-1/3 translate-y-1/3 cursor-pointer"
+                      >
                         <Button
                           type="default"
                           shape="circle"
                           icon={<EditOutlined />}
                           className="bg-white/80 hover:bg-white text-blue-700 border border-blue-400 shadow-md"
+                          aria-label={t("adminCustomer.detail.upload_avatar")}
                         />
                       </Upload>
                     )}
@@ -131,7 +147,8 @@ export default function DetailCustomerModal({
                         borderColor: "#133e87",
                       }}
                       className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
-                      onClick={onToggleEditOrSave}>
+                      onClick={onToggleEditOrSave}
+                    >
                       {isEditing
                         ? t("adminCustomer.detail.btn_save")
                         : t("adminCustomer.detail.btn_edit")}
@@ -144,10 +161,11 @@ export default function DetailCustomerModal({
                         borderColor: isLocked ? "#22c55e" : "#133e87",
                       }}
                       className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
-                      onClick={onOpenLock}>
+                      onClick={onOpenLock}
+                    >
                       {isLocked
-                        ? t("adminCustomer.btn_unlock") || "Mở khóa"
-                        : t("adminCustomer.btn_lock") || "Khóa"}
+                        ? t("adminCustomer.btn_unlock")
+                        : t("adminCustomer.btn_lock")}
                     </Button>
 
                     <Button
@@ -158,7 +176,8 @@ export default function DetailCustomerModal({
                         borderColor: "#ff7383",
                       }}
                       className="w-full rounded-lg text-white font-medium hover:opacity-90 transition"
-                      onClick={onOpenDelete}>
+                      onClick={onOpenDelete}
+                    >
                       {t("adminCustomer.btn_delete")}
                     </Button>
                   </div>
@@ -181,19 +200,19 @@ export default function DetailCustomerModal({
                         onChangeField("displayName", e.target.value)
                       }
                       disabled={!isEditing}
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.display_name")}
                     />
                   </div>
 
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                      {t("adminCustomer.detail.address") || "Địa chỉ"}
+                      {t("adminCustomer.detail.address")}
                     </label>
                     <Input
                       value={address}
                       onChange={(e) => onChangeField("address", e.target.value)}
                       disabled={!isEditing}
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.address")}
                     />
                   </div>
 
@@ -205,7 +224,7 @@ export default function DetailCustomerModal({
                       value={phone}
                       onChange={(e) => onChangeField("phone", e.target.value)}
                       disabled={!isEditing}
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.phone")}
                     />
                   </div>
                 </div>
@@ -237,13 +256,13 @@ export default function DetailCustomerModal({
                       className="w-full"
                       suffixIcon={<DownOutlined />}
                       allowClear
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.gender_ph")}
                     />
                   </div>
 
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                      {t("adminCustomer.detail.birthday")}{" "}
+                      {t("adminCustomer.detail.birthday")}
                     </label>
                     <DatePicker
                       value={birthdayValue}
@@ -256,93 +275,93 @@ export default function DetailCustomerModal({
                       disabled={!isEditing}
                       format="DD/MM/YYYY"
                       className="w-full"
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.birthday_ph")}
                       allowClear
                     />
                   </div>
 
                   <div>
                     <label className="text-[#133e87] text-sm font-medium mb-2 block">
-                      {t("adminCustomer.detail.email")}{" "}
+                      {t("adminCustomer.detail.email")}
                     </label>
                     <Input
                       value={email}
                       onChange={(e) => onChangeField("email", e.target.value)}
                       disabled={!isEditing}
-                      placeholder=""
+                      placeholder={t("adminCustomer.detail.email")}
                     />
                   </div>
                 </div>
 
-                {/* Orders */}
-                <div className="mb-6">
-                  <h3 className="text-[#133e87] font-semibold mb-4">
-                    {t("adminCustomer.detail.orders_stats")}
-                  </h3>
+                {/* Orders + Total: chỉ hiện với role USER */}
+                {isUserRole && (
+                  <>
+                    <div className="mb-6">
+                      <h3 className="text-[#133e87] font-semibold mb-4">
+                        {t("adminCustomer.detail.orders_stats")}
+                      </h3>
 
-                  <Table
-                    columns={[
-                      {
-                        title: t("adminCustomer.detail.order_table.index"),
-                        dataIndex: "stt",
-                        key: "stt",
-                        width: 80,
-                      },
-                      {
-                        title: t(
-                          "adminCustomer.detail.order_table.order_number"
-                        ),
-                        dataIndex: "orderNumber",
-                        key: "orderNumber",
-                      },
-                      {
-                        title: t("adminCustomer.detail.order_table.order_date"),
-                        dataIndex: "date",
-                        key: "date",
-                      },
-                      {
-                        title: t("adminCustomer.detail.order_table.total"),
-                        dataIndex: "total",
-                        key: "total",
-                      },
-                    ]}
-                    dataSource={Array.isArray(ordersDetail) ? ordersDetail : []}
-                    pagination={false}
-                    className="custom-table"
-                    locale={{
-                      emptyText: t("adminCustomer.detail.no_orders") || "",
-                    }}
-                    rowKey={(row) =>
-                      row?.key ?? row?.orderNumber ?? Math.random()
-                    }
-                  />
+                      <Table
+                        loading={ordersLoading}
+                        columns={[
+                          {
+                            title: t("adminCustomer.detail.order_table.index"),
+                            dataIndex: "stt",
+                            key: "stt",
+                            width: 80,
+                          },
+                          {
+                            title: t(
+                              "adminCustomer.detail.order_table.order_number"
+                            ),
+                            dataIndex: "orderNumber",
+                            key: "orderNumber",
+                          },
+                          {
+                            title: t(
+                              "adminCustomer.detail.order_table.order_date"
+                            ),
+                            dataIndex: "date",
+                            key: "date",
+                          },
+                          {
+                            title: t("adminCustomer.detail.order_table.total"),
+                            dataIndex: "total",
+                            key: "total",
+                          },
+                        ]}
+                        dataSource={Array.isArray(ordersDetail) ? ordersDetail : []}
+                        pagination={false}
+                        className="custom-table"
+                        locale={{
+                          emptyText: t("adminCustomer.detail.no_orders"),
+                        }}
+                        rowKey={(row) => row?.key ?? row?.orderNumber}
+                      />
 
-                  <div className="flex justify-center items-center gap-2 mt-4">
-                    <Button
-                      type="text"
-                      className="text-[#133e87] font-semibold">
-                      1
-                    </Button>
-                    <Button type="text" className="text-[#608bc1]">
-                      2
-                    </Button>
-                    <Button
-                      type="default"
-                      className="border-[#133e87] text-[#133e87]"
-                      icon={<RightOutlined />}
-                    />
-                  </div>
-                </div>
+                      {typeof onOrdersPageChange === "function" && (
+                        <div className="flex justify-center items-center mt-4">
+                          <Pagination
+                            current={ordersPage}
+                            total={ordersTotal}
+                            pageSize={ordersPageSize}
+                            onChange={onOrdersPageChange}
+                            showSizeChanger={false}
+                          />
+                        </div>
+                      )}
+                    </div>
 
-                {/* Total */}
-                <div className="flex justify-between items-center pt-4 border-t border-[#d1d1d1]">
-                  <span className="text-[#133e87] font-semibold text-lg">
-                    {t("adminCustomer.detail.total_value")}
-                  </span>
-                  <span className="text-[#133e87] font-bold text-2xl">
-                    {totalAmount}
-                  </span>
-                </div>
+                    <div className="flex justify-between items-center pt-4 border-t border-[#d1d1d1]">
+                      <span className="text-[#133e87] font-semibold text-lg">
+                        {t("adminCustomer.detail.total_value")}
+                      </span>
+                      <span className="text-[#133e87] font-bold text-2xl">
+                        {totalAmount}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

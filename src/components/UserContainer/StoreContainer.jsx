@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 function StoreContainer() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -43,13 +43,14 @@ function StoreContainer() {
         setCategories(res.data || []);
       } catch (err) {
         console.error("Fetch categories failed", err);
+        message.error(t("store.msg.load_categories_failed"));
       } finally {
         setCatLoading(false);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -67,19 +68,32 @@ function StoreContainer() {
         setTotal(res.data.totalElements || 0);
       } catch (err) {
         console.error("Fetch products failed", err);
+        message.error(t("store.msg.load_products_failed"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [page, sort, selectedCategory, pageSize]);
+  }, [page, sort, selectedCategory, pageSize, t]);
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("vi-VN").format(Number(price || 0)) + "đ";
+  const formatPrice = (price) => {
+    const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "VND",
+    }).format(Number(price || 0));
+  };
 
   const handleAddToCart = async (productId) => {
     try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        message.warning(t("productDetail.msg_need_login"));
+        navigate("/login");
+        return;
+      }
+
       setAddingId(productId);
       await cartApi.addToCart(productId, 1);
       message.success(t("store.msg.add_success"));
@@ -98,7 +112,7 @@ function StoreContainer() {
         <div className="absolute inset-0">
           <img
             src="src/assets/img/Illustration251.jpg"
-            alt="Hero"
+            alt={t("store.hero_alt")}
             className="w-full h-full object-cover"
           />
         </div>
@@ -111,6 +125,7 @@ function StoreContainer() {
                   <div
                     key={i}
                     className="w-48 h-28 rounded-2xl bg-black/10 animate-pulse flex-shrink-0"
+                    aria-label={t("common.loading")}
                   />
                 ))
               : categories.map((cat) => (
@@ -125,6 +140,15 @@ function StoreContainer() {
                       hover:shadow-2xl transition-all duration-300 flex-shrink-0
                       cursor-pointer hover:-translate-y-1
                     "
+                    role="button"
+                    tabIndex={0}
+                    title={t("store.category_filter_title", { category: cat.name })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setSelectedCategory(cat.name);
+                        setPage(1);
+                      }
+                    }}
                   >
                     <img
                       src={
@@ -132,7 +156,7 @@ function StoreContainer() {
                           ? toServerUrl(cat.thumbnailUrl)
                           : "/placeholder.svg"
                       }
-                      alt={cat.name}
+                      alt={cat.name || t("store.category_alt")}
                       className="
                         w-full h-full object-cover
                         transition-transform duration-500
@@ -191,6 +215,7 @@ function StoreContainer() {
                 setPage(1);
               }}
               className="ml-4 cursor-pointer text-sm text-[#608bc1] hover:underline"
+              title={t("store.clear_filter")}
             >
               {t("store.clear_filter")}
             </span>
@@ -200,6 +225,10 @@ function StoreContainer() {
         {loading ? (
           <div className="flex justify-center py-20">
             <Spin size="large" />
+          </div>
+        ) : products.length === 0 ? (
+          <div className="flex justify-center py-20 text-[#133e87]">
+            {t("store.misc.no_products")}
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-4">
@@ -219,25 +248,28 @@ function StoreContainer() {
                   <Card
                     bodyStyle={{ padding: "8px" }}
                     cover={
-                      <div className="relative">
+                      <div className="relative overflow-hidden aspect-[4/5] bg-gray-100">
                         {product.primaryImageUrl ? (
                           <img
                             src={toServerUrl(product.primaryImageUrl)}
-                            alt={product.name}
-                            className="w-full h-70 object-cover"
+                            alt={product.name || t("store.product_alt")}
+                            className="w-full h-full object-cover object-top"
+                            loading="lazy"
                           />
                         ) : (
-                          <div className="w-full h-70 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+                          <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
                             {t("store.misc.no_image")}
                           </div>
                         )}
 
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAddToCart(product.id);
                           }}
                           disabled={addingId === product.id}
+                          title={t("store.add_to_cart")}
                           className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center disabled:opacity-60 transition-colors"
                         >
                           <ShoppingCartOutlined className="text-white" />
@@ -262,7 +294,9 @@ function StoreContainer() {
                           value={avg}
                           style={{ fontSize: 14 }}
                         />
-                        <span className="text-xs text-[#133e87]">({count})</span>
+                        <span className="text-xs text-[#133e87]">
+                          ({count})
+                        </span>
                       </div>
                     </div>
                   </Card>

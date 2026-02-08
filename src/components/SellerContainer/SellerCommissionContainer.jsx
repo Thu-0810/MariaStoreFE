@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { Pagination, message, Tag } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import CommissionActionBar from "./SellerCommissionComponent/CommissionActionBar";
 import CommissionTable from "./SellerCommissionComponent/CommissionTable";
-import { getPendingCommissionsApi } from "../../api/sellerCommissionApi";
+import { getSellerCommissionsApi } from "../../api/sellerCommissionApi";
 import ApproveCommissionModal from "../ApproveCommissionModal";
-
-const COMMISSION_STATUS = {
-  PENDING: "PENDING",
-};
 
 function SellerCommissionContainer() {
   const { t, i18n } = useTranslation();
@@ -23,6 +20,32 @@ function SellerCommissionContainer() {
 
   const [approveOpen, setApproveOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+
+  const pageSize = 10;
+
+  const statusColor = useMemo(
+    () => ({
+      SUBMITTED: "volcano",
+      APPROVED: "cyan",
+      REJECTED: "red",
+      PAID: "green",
+      CONFIRMED: "blue",
+      DRAFT: "default",
+      CANCELLED: "orange",
+    }),
+    []
+  );
+
+  const renderStatusTag = (status) => {
+    const key = String(status || "").toUpperCase();
+    const color = statusColor[key] || "default";
+
+    return (
+      <Tag color={color} className="font-medium px-3 py-1 rounded-full">
+        {t(`commission.status.${key.toLowerCase()}`)}
+      </Tag>
+    );
+  };
 
   const columns = [
     {
@@ -45,12 +68,9 @@ function SellerCommissionContainer() {
     },
     {
       title: t("sellerCommission.table.status"),
+      dataIndex: "raw",
       width: 180,
-      render: () => (
-        <Tag color="volcano" className="font-medium px-3 py-1 rounded-full">
-          {t("sellerCommission.status.pending")}
-        </Tag>
-      ),
+      render: (raw) => renderStatusTag(raw?.status),
     },
   ];
 
@@ -60,39 +80,59 @@ function SellerCommissionContainer() {
   };
 
   const handleRowClick = (record) => {
-    setSelectedRequest(record.raw);
-    setApproveOpen(true);
-  };
+    const raw = record?.raw;
+    if (!raw) return;
 
-  useEffect(() => {
-    fetchCommissions();
-  }, []);
+    if (raw.status === "SUBMITTED") {
+      setSelectedRequest(raw);
+      setApproveOpen(true);
+      return;
+    }
+
+    message.info(t("sellerCommission.only_submitted_can_approve"));
+  };
 
   const fetchCommissions = async () => {
     try {
       setLoading(true);
-      const res = await getPendingCommissionsApi();
+      const res = await getSellerCommissionsApi();
+      const list = Array.isArray(res?.data) ? res.data : [];
 
-      const mapped = res.data.map((c, index) => ({
+      const mapped = list.map((c, index) => ({
         key: c.id,
         stt: index + 1,
-        code: c.code || `CM-${c.id}`,
+        code: c.code || t("sellerCommission.code_fallback", { id: c.id }),
         contact:
           c.contactMethod === "EMAIL"
             ? t("sellerCommission.contact.email")
             : t("sellerCommission.contact.twitter"),
-        totalPrice: c.totalPrice ? money(c.totalPrice) : "-",
-        status: COMMISSION_STATUS.PENDING,
+        totalPrice:
+          c.totalPrice != null
+            ? money(c.totalPrice)
+            : t("common.na"),
         raw: c,
       }));
 
       setData(mapped);
-    } catch {
+      setCurrentPage(1);
+    } catch (e) {
+      console.error(e);
       message.error(t("sellerCommission.load_failed"));
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCommissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const pagedData = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return data.slice(start, end);
+  }, [data, currentPage]);
 
   return (
     <motion.div className="min-h-screen relative overflow-hidden">
@@ -113,11 +153,7 @@ function SellerCommissionContainer() {
               {t("sellerCommission.title")}
             </h1>
 
-            <CommissionActionBar
-              t={t}
-              onOpenDelete={() => {}}
-              onEdit={() => {}}
-            />
+            <CommissionActionBar t={t} onOpenDelete={() => {}} onEdit={() => {}} />
 
             <ApproveCommissionModal
               open={approveOpen}
@@ -129,7 +165,7 @@ function SellerCommissionContainer() {
             <AnimatePresence mode="wait">
               <CommissionTable
                 columns={columns}
-                dataSource={data}
+                dataSource={pagedData}
                 rowSelection={rowSelection}
                 onRowClick={handleRowClick}
                 loading={loading}
@@ -140,7 +176,7 @@ function SellerCommissionContainer() {
               <Pagination
                 current={currentPage}
                 total={data.length}
-                pageSize={10}
+                pageSize={pageSize}
                 onChange={setCurrentPage}
                 showSizeChanger={false}
               />

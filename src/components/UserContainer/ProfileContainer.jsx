@@ -11,6 +11,7 @@ import {
   getMyProfileApi,
   updateMyProfileApi,
   uploadMyAvatarApi,
+  changeMyPasswordApi,
 } from "../../api/userApi";
 
 function ProfileContainer() {
@@ -21,7 +22,7 @@ function ProfileContainer() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const [backgroundImage, setBackgroundImage] = useState(bgDefault);
+  const [backgroundImage] = useState(bgDefault);
 
   const [profile, setProfile] = useState(null);
 
@@ -33,6 +34,13 @@ function ProfileContainer() {
     address: "",
   });
 
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
+
   const avatarSrc = useMemo(() => {
     const url = profile?.avatarUrl;
     if (!url) return avatarDefault;
@@ -41,15 +49,22 @@ function ProfileContainer() {
   }, [profile]);
 
   const showModal = () => setIsModalOpen(true);
-  const handleCancel = () => setIsModalOpen(false);
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBackgroundChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) setBackgroundImage(URL.createObjectURL(file));
+  const handlePasswordChange = (field, value) => {
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
   };
 
   const fetchProfile = async () => {
@@ -68,7 +83,7 @@ function ProfileContainer() {
         address: data?.address || "",
       });
     } catch {
-      message.error("Không lấy được thông tin user. Vui lòng đăng nhập lại.");
+      message.error(t("profile.load_failed"));
     } finally {
       setLoadingProfile(false);
     }
@@ -93,12 +108,47 @@ function ProfileContainer() {
       const res = await updateMyProfileApi(payload);
       const data = res.data;
       setProfile(data);
-      message.success(t("profile.saved_success") || "Lưu thông tin thành công");
+
+      message.success(t("profile.saved_success"));
       setIsModalOpen(false);
     } catch {
-      message.error(t("profile.saved_failed") || "Lưu thất bại, thử lại sau");
+      message.error(t("profile.saved_failed"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      setChangingPassword(true);
+
+      const payload = {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmNewPassword: passwordData.confirmNewPassword,
+      };
+
+      const res = await changeMyPasswordApi(payload);
+      const data = res.data;
+
+      if (data?.token) {
+        localStorage.setItem("accessToken", data.token);
+      }
+      if (data?.profile) setProfile(data.profile);
+
+      message.success(t("profile.password_changed_success"));
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message || t("profile.password_changed_failed");
+      message.error(msg);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -116,21 +166,14 @@ function ProfileContainer() {
         avatarUrl: avatarUrl || prev?.avatarUrl,
       }));
 
-      message.success(t("profile.avatar_updated") || "Cập nhật avatar thành công");
+      message.success(t("profile.avatar_updated"));
     } catch {
-      message.error(t("profile.avatar_update_failed") || "Upload avatar thất bại");
+      message.error(t("profile.avatar_update_failed"));
     } finally {
       setUploadingAvatar(false);
       e.target.value = "";
     }
   };
-
-  const tabClass = ({ isActive }) =>
-    `pb-3 font-medium transition-colors ${
-      isActive
-        ? "text-[#133e87] border-b-2 border-[#133e87]"
-        : "text-[#6b7280] hover:text-[#608bc1]"
-    }`;
 
   if (loadingProfile) {
     return (
@@ -173,7 +216,7 @@ function ProfileContainer() {
       <div className="relative h-96 bg-gradient-to-br from-[#133e87] via-[#608bc1] to-[#d9eafd] overflow-hidden">
         <img
           src={backgroundImage}
-          alt="bg"
+          alt={t("profile.background_alt")}
           className="absolute inset-0 w-full h-full object-cover"
         />
       </div>
@@ -185,7 +228,7 @@ function ProfileContainer() {
               <div className="w-48 h-48 mx-auto mb-4 rounded-full overflow-hidden bg-[#f6f6f6] relative">
                 <img
                   src={avatarSrc}
-                  alt="Profile avatar"
+                  alt={t("profile.avatar_alt")}
                   className="w-full h-full object-cover"
                 />
 
@@ -212,7 +255,9 @@ function ProfileContainer() {
               </div>
               <div className="text-xs text-gray-500 mb-1">{profile?.email}</div>
               <div className="text-xs text-gray-500">
-                {profile?.phone ? `${t("profile.phone") || "SĐT"}: ${profile.phone}` : ""}
+                {profile?.phone
+                  ? `${t("profile.phone")}: ${profile.phone}`
+                  : ""}
               </div>
             </div>
           </Card>
@@ -222,7 +267,7 @@ function ProfileContainer() {
           open={isModalOpen}
           onCancel={handleCancel}
           footer={null}
-          width={520}
+          width={860}
           centered
           closeIcon={
             <div className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-700">
@@ -238,47 +283,30 @@ function ProfileContainer() {
           <div className="bg-white rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-center text-[#193a80] font-medium text-base">
-                {t("profile.modal_title") || "Chỉnh sửa thông tin hồ sơ"}
+                {t("profile.modal_title")}
               </h2>
             </div>
 
-            <div className="relative aspect-[16/9] w-full overflow-hidden">
-              <img
-                src={backgroundImage}
-                alt="bg"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <label
-                htmlFor="bg-upload"
-                className="absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer
-                bg-white/85 text-gray-700 border border-white/60 shadow-lg
-                hover:bg-white hover:text-gray-900 transition-colors z-20"
-                title="Đổi ảnh bìa (local)"
-              >
-                <input
-                  id="bg-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBackgroundChange}
-                  className="hidden"
-                />
-                ✎
-              </label>
-            </div>
-
-            <div className="px-6 pt-4">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+            <div className="px-6 pt-6 flex flex-col items-center">
+              <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full overflow-hidden border-4 border-white shadow-lg bg-[#f6f6f6]">
                 <img
                   src={avatarSrc}
-                  alt="Profile avatar"
+                  alt={t("profile.avatar_alt")}
                   className="w-full h-full object-cover"
                 />
+
+                {uploadingAvatar ? (
+                  <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                    <Spin />
+                  </div>
+                ) : null}
+
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-1 right-0 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer
-                  bg-white/85 text-gray-700 border border-white/60 shadow
+                  className="absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer
+                  bg-white/90 text-gray-700 border border-white/60 shadow
                   hover:bg-white hover:text-gray-900 transition-colors"
-                  title="Đổi avatar"
+                  title={t("profile.avatar_change_btn")}
                 >
                   <input
                     id="avatar-upload"
@@ -290,103 +318,224 @@ function ProfileContainer() {
                   ✎
                 </label>
               </div>
+
+              <div className="mt-3 text-sm text-gray-500 text-center">
+                {t("profile.avatar_hint")}
+              </div>
             </div>
 
-            <div className="px-6 py-6 pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    {t("profile.full_name") || "Họ và tên"}
-                  </label>
-                  <Input
-                    placeholder={t("profile.full_name_ph") || "Nhập họ và tên"}
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
-                    className="w-full h-12 rounded-lg"
-                    style={{
-                      backgroundColor: "#cbddec",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  />
+            <div className="px-6 py-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="rounded-2xl border border-gray-100 p-4">
+                  <h3 className="text-sm font-semibold text-[#193a80] mb-4">
+                    {t("profile.info_title")}
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.full_name")}
+                      </label>
+                      <Input
+                        placeholder={t("profile.full_name_ph")}
+                        value={formData.fullName}
+                        onChange={(e) =>
+                          handleInputChange("fullName", e.target.value)
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.phone")}
+                      </label>
+                      <Input
+                        placeholder={t("profile.phone_ph")}
+                        value={formData.phone}
+                        onChange={(e) =>
+                          handleInputChange("phone", e.target.value)
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.gender")}
+                      </label>
+                      <Select
+                        value={formData.gender || undefined}
+                        onChange={(v) => handleInputChange("gender", v)}
+                        placeholder={t("profile.gender_ph")}
+                        className="w-full profile-input"
+                        size="large"
+                        options={[
+                          { value: "MALE", label: t("profile.gender_male") },
+                          { value: "FEMALE", label: t("profile.gender_female") },
+                          { value: "OTHER", label: t("profile.gender_other") },
+                        ]}
+                        allowClear
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.dob")}
+                      </label>
+                      <DatePicker
+                        value={
+                          formData.dateOfBirth
+                            ? dayjs(formData.dateOfBirth)
+                            : null
+                        }
+                        onChange={(d) =>
+                          handleInputChange(
+                            "dateOfBirth",
+                            d ? d.format("YYYY-MM-DD") : ""
+                          )
+                        }
+                        className="w-full profile-input"
+                        size="large"
+                        placeholder={t("profile.dob_ph")}
+                        format="YYYY-MM-DD"
+                        allowClear
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.address")}
+                      </label>
+                      <Input
+                        placeholder={t("profile.address_ph")}
+                        value={formData.address}
+                        onChange={(e) =>
+                          handleInputChange("address", e.target.value)
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
+
+                    <div className="md:col-span-2 flex justify-center mt-2">
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={saving}
+                        className="px-8 py-2 text-sm font-medium text-[#193a80] hover:text-white
+                        bg-[#d9eafc] border border-[#d9eafc]
+                        rounded-3xl hover:bg-[#133e87] hover:border-[#133e87]
+                        transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {saving ? t("common.processing") : t("profile.save")}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    {t("profile.phone") || "Số điện thoại"}
-                  </label>
-                  <Input
-                    placeholder={t("profile.phone_ph") || "Nhập số điện thoại"}
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="w-full h-12 rounded-lg"
-                    style={{
-                      backgroundColor: "#cbddec",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  />
-                </div>
+                <div className="rounded-2xl border border-gray-100 p-4">
+                  <h3 className="text-sm font-semibold text-[#193a80] mb-4">
+                    {t("profile.change_password_title")}
+                  </h3>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    {t("profile.gender") || "Giới tính"}
-                  </label>
-                  <Select
-                    value={formData.gender || undefined}
-                    onChange={(v) => handleInputChange("gender", v)}
-                    placeholder={t("profile.gender_ph") || "Chọn giới tính"}
-                    className="w-full profile-input"
-                    size="large"
-                    options={[
-                      { value: "MALE", label: t("profile.gender_male") || "Nam" },
-                      { value: "FEMALE", label: t("profile.gender_female") || "Nữ" },
-                      { value: "OTHER", label: t("profile.gender_other") || "Khác" },
-                    ]}
-                  />
-                </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.current_password")}
+                      </label>
+                      <Input.Password
+                        placeholder={t("profile.current_password_ph")}
+                        value={passwordData.currentPassword}
+                        onChange={(e) =>
+                          handlePasswordChange(
+                            "currentPassword",
+                            e.target.value
+                          )
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    {t("profile.dob") || "Ngày sinh"}
-                  </label>
-                  <DatePicker
-                    value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
-                    onChange={(d) =>
-                      handleInputChange("dateOfBirth", d ? d.format("YYYY-MM-DD") : "")
-                    }
-                    className="w-full profile-input"
-                    size="large"
-                    placeholder={t("profile.dob_ph") || "Chọn ngày sinh"}
-                    format="YYYY-MM-DD"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.new_password")}
+                      </label>
+                      <Input.Password
+                        placeholder={t("profile.new_password_ph")}
+                        value={passwordData.newPassword}
+                        onChange={(e) =>
+                          handlePasswordChange("newPassword", e.target.value)
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-[#193a80] mb-2">
-                    {t("profile.address") || "Địa chỉ"}
-                  </label>
-                  <Input
-                    placeholder={t("profile.address_ph") || "Nhập địa chỉ"}
-                    value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    className="w-full h-12 rounded-lg"
-                    style={{
-                      backgroundColor: "#cbddec",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  />
+                    <div>
+                      <label className="block text-sm font-medium text-[#193a80] mb-2">
+                        {t("profile.confirm_new_password")}
+                      </label>
+                      <Input.Password
+                        placeholder={t("profile.confirm_new_password_ph")}
+                        value={passwordData.confirmNewPassword}
+                        onChange={(e) =>
+                          handlePasswordChange(
+                            "confirmNewPassword",
+                            e.target.value
+                          )
+                        }
+                        className="w-full h-12 rounded-lg"
+                        style={{
+                          backgroundColor: "#cbddec",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex justify-center pt-2">
+                      <button
+                        onClick={handleChangePassword}
+                        disabled={changingPassword}
+                        className="px-8 py-2 text-sm font-medium text-[#193a80] hover:text-white
+                        bg-[#d9eafc] border border-[#d9eafc]
+                        rounded-3xl hover:bg-[#133e87] hover:border-[#133e87]
+                        transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {changingPassword
+                          ? t("common.processing")
+                          : t("profile.change_password_btn")}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-6">
                 <button
-                  onClick={handleSaveProfile}
-                  disabled={saving}
-                  className="px-8 py-2 text-sm font-medium text-[#193a80] hover:text-white
-                  bg-[#d9eafc] border border-[#d9eafc]
-                  rounded-3xl hover:bg-[#133e87] hover:border-[#133e87]
-                  transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={handleCancel}
+                  className="px-6 py-2 text-sm font-medium text-gray-600 hover:text-gray-900
+                  bg-white border border-gray-200 rounded-3xl hover:border-gray-300
+                  transition-colors"
                 >
-                  {saving ? t("profile.saving") || "Đang lưu..." : t("profile.save") || "Lưu"}
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -399,16 +548,55 @@ function ProfileContainer() {
             <div className="flex-1">
               <div className="border-b border-[#d9d9d9] mb-6">
                 <nav className="flex gap-8">
-                  <NavLink to="requests" className={tabClass}>
+                  <NavLink
+                    to="requests"
+                    className={({ isActive }) =>
+                      `pb-3 font-medium transition-colors ${
+                        isActive
+                          ? "text-[#133e87] border-b-2 border-[#133e87]"
+                          : "text-[#6b7280] hover:text-[#608bc1]"
+                      }`
+                    }
+                  >
                     {t("profile.tab_request")}
                   </NavLink>
-                  <NavLink to="orders" className={tabClass}>
+
+                  <NavLink
+                    to="orders"
+                    className={({ isActive }) =>
+                      `pb-3 font-medium transition-colors ${
+                        isActive
+                          ? "text-[#133e87] border-b-2 border-[#133e87]"
+                          : "text-[#6b7280] hover:text-[#608bc1]"
+                      }`
+                    }
+                  >
                     {t("profile.tab_orders")}
                   </NavLink>
-                  <NavLink to="favorites" className={tabClass}>
+
+                  <NavLink
+                    to="favorites"
+                    className={({ isActive }) =>
+                      `pb-3 font-medium transition-colors ${
+                        isActive
+                          ? "text-[#133e87] border-b-2 border-[#133e87]"
+                          : "text-[#6b7280] hover:text-[#608bc1]"
+                      }`
+                    }
+                  >
                     {t("profile.tab_favorites")}
                   </NavLink>
-                  <NavLink to="posts" className={tabClass}>
+
+                  <NavLink
+                    to="posts"
+                    className={({ isActive }) =>
+                      `pb-3 font-medium transition-colors ${
+                        isActive
+                          ? "text-[#133e87] border-b-2 border-[#133e87]"
+                          : "text-[#6b7280] hover:text-[#608bc1]"
+                      }`
+                    }
+                  >
                     {t("profile.tab_posts")}
                   </NavLink>
                 </nav>

@@ -5,10 +5,8 @@ import { message } from "antd";
 import { useTranslation } from "react-i18next";
 import FormActions from "../common/FormActions";
 import PaintingOrderForm from "../common/PaintingForm";
-import {
-  createCommissionApi,
-  submitCommissionApi,
-} from "../../api/commissionApi";
+import { createCommissionApi, submitCommissionApi } from "../../api/commissionApi";
+
 function OrderContainer() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "en" ? "en-US" : "vi-VN";
@@ -17,6 +15,7 @@ function OrderContainer() {
   const [forms, setForms] = useState([
     {
       orderInfo: "",
+      orderDetail: "",
       twitterHandle: "",
       useTwitter: false,
       useEmail: true,
@@ -52,6 +51,7 @@ function OrderContainer() {
         ...prev,
         {
           orderInfo: "",
+          orderDetail: "",
           twitterHandle: "",
           useTwitter: false,
           useEmail: true,
@@ -69,7 +69,7 @@ function OrderContainer() {
           ? {
               ...f,
               characters: [
-                ...f.characters,
+                ...(f.characters || []),
                 { id: Date.now(), range: "dau", background: "don-gian" },
               ],
             }
@@ -84,7 +84,7 @@ function OrderContainer() {
         i === formIdx
           ? {
               ...f,
-              characters: f.characters.map((ch) =>
+              characters: (f.characters || []).map((ch) =>
                 ch.id === charId ? { ...ch, ...updates } : ch
               ),
             }
@@ -111,14 +111,17 @@ function OrderContainer() {
     setForms((prev) =>
       prev.map((f, i) =>
         i === formIdx
-          ? { ...f, characters: f.characters.filter((ch) => ch.id !== charId) }
+          ? {
+              ...f,
+              characters: (f.characters || []).filter((ch) => ch.id !== charId),
+            }
           : f
       )
     );
   };
 
   const calculateTotalPrice = (form) => {
-    return form.characters.reduce((total, char) => {
+    return (form.characters || []).reduce((total, char) => {
       return (
         total +
         (RANGE_PRICE[char.range] || 0) +
@@ -127,19 +130,50 @@ function OrderContainer() {
     }, 0);
   };
 
+  const validateMainForm = (mainForm) => {
+    const title = (mainForm.orderInfo || "").trim();
+    if (!title) {
+      message.error(t("order.required_order_name"));
+      return null;
+    }
+
+    const useTwitter = !!mainForm.useTwitter;
+    const useEmail = !!mainForm.useEmail;
+
+    const contactMethod = useTwitter ? "TWITTER" : "EMAIL";
+
+    return {
+      title,
+      description: (mainForm.orderDetail || "").trim(),
+      contactMethod,
+      contactValue: (mainForm.twitterHandle || "").trim(),
+      useEmail,
+      useTwitter,
+    };
+  };
+
   const buildCommissionPayload = () => {
     const mainForm = forms[0];
     const paintingForm = forms[1];
 
-    if (!paintingForm || paintingForm.characters.length === 0) {
-      throw new Error("No character selected");
+    const validated = validateMainForm(mainForm);
+    if (!validated) throw new Error("VALIDATION_FAILED");
+
+    if (!paintingForm || !paintingForm.style) {
+      message.error(t("order.style_required"));
+      throw new Error("VALIDATION_FAILED");
+    }
+
+    if (!paintingForm.characters || paintingForm.characters.length === 0) {
+      message.error(t("order.need_character"));
+      throw new Error("VALIDATION_FAILED");
     }
 
     return {
-      title: mainForm.orderInfo || "Commission order",
-      description: mainForm.orderInfo || "",
-      contactMethod: mainForm.useTwitter ? "TWITTER" : "EMAIL",
-      contactValue: mainForm.twitterHandle || "",
+      title: validated.title,
+      description: validated.description,
+      contactMethod: validated.contactMethod,
+      contactValue: validated.contactValue,
       items: [
         {
           style: paintingForm.style,
@@ -147,8 +181,8 @@ function OrderContainer() {
           characters: paintingForm.characters.map((c, idx) => ({
             characterIndex: idx + 1,
             poseScope: c.range,
-            extraPrice:
-              (RANGE_PRICE[c.range] || 0) + (BG_PRICE[c.background] || 0),
+            background: c.background,
+            extraPrice: (RANGE_PRICE[c.range] || 0) + (BG_PRICE[c.background] || 0),
           })),
         },
       ],
@@ -159,9 +193,10 @@ function OrderContainer() {
     try {
       const payload = buildCommissionPayload();
       await createCommissionApi(payload);
-      message.success("Đã lưu yêu cầu đặt tranh");
+      message.success(t("commission.draft_saved"));
     } catch (e) {
-      message.error(e.message || "Không thể lưu");
+      if (String(e?.message) === "VALIDATION_FAILED") return;
+      message.error(e?.message || t("commission.draft_save_failed"));
     }
   };
 
@@ -170,26 +205,24 @@ function OrderContainer() {
       const payload = buildCommissionPayload();
 
       const res = await createCommissionApi(payload);
-      console.log("CREATE RESPONSE:", res.data);
-
-      const commissionId = res.data?.id;
+      const commissionId = res?.data?.id;
 
       if (!commissionId) {
-        throw new Error("Commission ID not found");
+        message.error(t("commission.id_not_found"));
+        return;
       }
 
       await submitCommissionApi(commissionId);
-
-      message.success("Đã gửi yêu cầu, chờ seller duyệt");
+      message.success(t("commission.submitted"));
     } catch (e) {
+      if (String(e?.message) === "VALIDATION_FAILED") return;
       console.error(e);
-      message.error("Không thể gửi yêu cầu");
+      message.error(t("commission.submit_failed"));
     }
   };
 
   return (
     <div className="relative min-h-screen flex flex-col items-center bg-[#f4faff] overflow-hidden">
-      {/* Ảnh nền + overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('src/assets/img/Illustration389.png')" }}

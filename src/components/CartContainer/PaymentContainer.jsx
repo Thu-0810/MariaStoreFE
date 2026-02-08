@@ -90,7 +90,7 @@ function PaymentContainer() {
           return;
         }
         localStorage.setItem("pendingPayPalOrderId", String(resolvedOrderId));
-        window.location.href = approveUrl;
+        window.location.href = url;
         return;
       }
 

@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/UserPage/HomePage/HomePage";
 import LoginPage from "./pages/UserPage/LoginPage/LoginPage";
@@ -33,6 +34,9 @@ import PaypalReturnPage from "./components/CartContainer/PaypalReturnPage";
 import PaypalCancelPage from "./components/CartContainer/PaypalCancelPage";
 import ChatPage from "./pages/ChatPage";
 import FloatingChat from "./components/Chat/FloatingChat";
+import ForgotPasswordPage from "./pages/UserPage/LoginPage/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/UserPage/LoginPage/ResetPasswordPage";
+import VerifyEmailPage from "./pages/UserPage/LoginPage/VerifyEmailPage";
 
 function App() {
   return (
@@ -61,6 +65,10 @@ function App() {
         {/* LoginPage */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+
 
         {/* ProfilePage */}
         <Route path="/my-profile" element={<ProfilePage />}>
@@ -85,6 +93,7 @@ function App() {
         <Route path="/payment/paypal/cancel" element={<PaypalCancelPage />} />
         <Route path="/payment/qr" element={<QRPayment />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/paypal/success" element={<PaypalReturnPage />} />
 
         {/* Admin */}
         {/* Dashboard */}

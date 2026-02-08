@@ -7,7 +7,7 @@ import {
   deleteAdminOrdersApi,
   getAdminOrderDetailApi,
   getAdminOrdersPagedApi,
-  printAdminOrderInvoiceApi,
+  openAdminOrderInvoicePdf,
 } from "../../api/adminOrderApi";
 
 import OrderActionBar from "./AdminOrderComponent/OrderActionBar";
@@ -87,7 +87,8 @@ function AdminOrderContainer() {
         render: (status) => (
           <Tag
             color={isCompleted(status) ? "green" : "volcano"}
-            className="font-medium px-3 py-1 rounded-full">
+            className="font-medium px-3 py-1 rounded-full"
+          >
             {getStatusLabel(status)}
           </Tag>
         ),
@@ -122,14 +123,12 @@ function AdminOrderContainer() {
         setData(mapped);
         setTotal(res.data?.totalElements || 0);
       } catch (e) {
-        message.error(
-          t("adminOrder.toast.load_failed") || "Load orders failed"
-        );
+        message.error(t("adminOrder.toast.load_failed"));
       }
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [currentPage, keyword, i18n.language]);
+  }, [currentPage, keyword, i18n.language, t]);
 
   const handleRowClick = async (record) => {
     setSelectedOrderRow(record);
@@ -144,9 +143,7 @@ function AdminOrderContainer() {
       setSelectedOrderDetail(res.data);
       setIsDetailModalOpen(true);
     } catch (e) {
-      message.error(
-        t("adminOrder.toast.load_detail_failed") || "Load detail failed"
-      );
+      message.error(t("adminOrder.toast.load_detail_failed"));
     }
   };
 
@@ -155,6 +152,7 @@ function AdminOrderContainer() {
       message.warning(t("adminOrder.toast.select_one_for_delete"));
       return;
     }
+
     try {
       await deleteAdminOrdersApi(selectedRowKeys);
       message.success(t("adminOrder.toast.delete_success"));
@@ -169,29 +167,29 @@ function AdminOrderContainer() {
         keyword: keyword?.trim() || null,
         status: null,
       });
+
       const content = res.data?.content || [];
       const mapped = content.map((x, idx) => ({
         ...x,
         stt: (currentPage - 1) * pageSize + idx + 1,
         totalAmountText: formatMoneyShort(x.totalAmount),
       }));
+
       setData(mapped);
       setTotal(res.data?.totalElements || 0);
     } catch (e) {
-      message.error(t("adminOrder.toast.delete_failed") || "Delete failed");
+      message.error(t("adminOrder.toast.delete_failed"));
     }
   };
 
   const handlePrintInvoice = async () => {
-    if (!selectedOrderDetail?.id) return;
+    const orderId = selectedOrderDetail?.id;
+    if (!orderId) return;
+
     try {
-      const res = await printAdminOrderInvoiceApi(selectedOrderDetail.id);
-      const url = window.URL.createObjectURL(
-        new Blob([res.data], { type: "application/pdf" })
-      );
-      window.open(url, "_blank");
+      await openAdminOrderInvoicePdf(orderId);
     } catch (e) {
-      message.error("Print invoice failed");
+      message.error(t("adminOrder.toast.print_invoice_failed"));
     }
   };
 
@@ -200,7 +198,8 @@ function AdminOrderContainer() {
       className="min-h-screen relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}>
+      transition={{ duration: 0.6 }}
+    >
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -216,7 +215,8 @@ function AdminOrderContainer() {
           className="px-6 pb-8"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}>
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
               {t("adminOrder.title")}
@@ -246,7 +246,8 @@ function AdminOrderContainer() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}>
+                transition={{ duration: 0.4 }}
+              >
                 <OrdersTable
                   columns={columns}
                   dataSource={data}

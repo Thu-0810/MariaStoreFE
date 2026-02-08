@@ -19,48 +19,8 @@ import {
   deleteAdminUserApi,
   getAdminUserOrdersApi,
 } from "../../api/adminUserApi";
+
 const BASE_BACKEND = "http://localhost:8080";
-
-const toCustomerUI = (u, stt) => {
-  const createdAt = u?.createdAt ? dayjs(u.createdAt).format("DD/MM/YYYY") : "";
-
-  const rawAvatarUrl = u?.avatarUrl || "";
-  const fullAvatar =
-    rawAvatarUrl && !rawAvatarUrl.startsWith("http")
-      ? `${BASE_BACKEND}${rawAvatarUrl}`
-      : rawAvatarUrl;
-
-  return {
-    key: u.id,
-    id: u.id,
-    stt,
-
-    displayName: u.fullName || "",
-    username: "",
-
-    phone: u.phone || "",
-    gender: u.gender || "",
-    birthday: u.dateOfBirth ? dayjs(u.dateOfBirth).format("YYYY-MM-DD") : null,
-    email: u.email || "",
-
-    orders: Number(u.ordersCount || 0),
-    totalAmount:
-      u.totalSpent != null
-        ? Number(u.totalSpent).toLocaleString("vi-VN") + "đ"
-        : "0đ",
-
-    ordersDetail: [],
-
-    createdAt,
-
-    address: u.address || "",
-    isVerified: !!u.isVerified,
-    status: u.status || "ACTIVE",
-    roles: u.roles || [],
-    avatarUrl: rawAvatarUrl || "",
-    avatarFullUrl: fullAvatar || "",
-  };
-};
 
 function AdminCustomerContainer() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -80,11 +40,59 @@ function AdminCustomerContainer() {
   const [searchValue, setSearchValue] = useState("");
   const [statusValue, setStatusValue] = useState(undefined);
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  const money = (n) => (n || 0).toLocaleString(locale);
 
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
+
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersTotal, setOrdersTotal] = useState(0);
+  const ordersPageSize = 10;
+  const [ordersLoading, setOrdersLoading] = useState(false);
+
+  const toCustomerUI = (u, stt) => {
+    const createdAt = u?.createdAt ? dayjs(u.createdAt).format("DD/MM/YYYY") : "";
+
+    const rawAvatarUrl = u?.avatarUrl || "";
+    const fullAvatar =
+      rawAvatarUrl && !rawAvatarUrl.startsWith("http")
+        ? `${BASE_BACKEND}${rawAvatarUrl}`
+        : rawAvatarUrl;
+
+    return {
+      key: u.id,
+      id: u.id,
+      stt,
+
+      displayName: u.fullName || "",
+      username: "",
+
+      phone: u.phone || "",
+      gender: u.gender || "",
+      birthday: u.dateOfBirth ? dayjs(u.dateOfBirth).format("YYYY-MM-DD") : null,
+      email: u.email || "",
+
+      orders: Number(u.ordersCount || 0),
+      totalAmount:
+        u.totalSpent != null
+          ? `${money(Number(u.totalSpent))}${t("order.currency")}`
+          : `0${t("order.currency")}`,
+
+      ordersDetail: [],
+
+      createdAt,
+
+      address: u.address || "",
+      isVerified: !!u.isVerified,
+      status: u.status || "ACTIVE",
+      roles: u.roles || [],
+      avatarUrl: rawAvatarUrl || "",
+      avatarFullUrl: fullAvatar || "",
+    };
+  };
 
   const columns = [
     {
@@ -99,29 +107,17 @@ function AdminCustomerContainer() {
       key: "displayName",
     },
     {
-      title: t("adminCustomer.table.birthday") || "Ngày sinh",
+      title: t("adminCustomer.table.birthday"),
       dataIndex: "birthday",
       key: "birthday",
       width: 140,
       render: (val) => (val ? dayjs(val).format("DD/MM/YYYY") : ""),
     },
     {
-      title: t("adminCustomer.table.orders_count"),
-      dataIndex: "orders",
-      key: "orders",
-      width: 140,
-    },
-    {
       title: t("adminCustomer.table.created_at"),
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
-    },
-    {
-      title: t("adminCustomer.table.total_amount"),
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      width: 160,
     },
   ];
 
@@ -148,9 +144,7 @@ function AdminCustomerContainer() {
       setData(mapped);
       setTotal(page.totalElements || 0);
     } catch (err) {
-      message.error(
-        "Không tải được danh sách user (kiểm tra token/role ADMIN)."
-      );
+      message.error(t("adminCustomer.toast.load_users_failed"));
     }
   };
 
@@ -159,35 +153,53 @@ function AdminCustomerContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchValue, statusValue]);
 
-  const handleRowClick = async (record) => {
+  const fetchOrdersPage = async (userId, page1Based) => {
+    setOrdersLoading(true);
     try {
-      const res = await getAdminUserByIdApi(record.id);
-      const u = res.data;
-      const ordersRes = await getAdminUserOrdersApi(record.id, {
-        page: 0,
-        size: 10,
+      const ordersRes = await getAdminUserOrdersApi(userId, {
+        page: page1Based - 1,
+        size: ordersPageSize,
         sort: "createdAt,desc",
       });
-      const orders = ordersRes.data?.content || [];
+
+      const page = ordersRes.data;
+      const orders = page?.content || [];
+
       const ordersDetail = orders.map((o, idx) => ({
         key: o.orderId,
-        stt: idx + 1,
+        stt: (page1Based - 1) * ordersPageSize + idx + 1,
         orderNumber: o.orderCode,
         date: o.createdAt ? dayjs(o.createdAt).format("DD/MM/YYYY") : "",
         total:
           o.totalAmount != null
-            ? Number(o.totalAmount).toLocaleString("vi-VN") + "đ"
-            : "0đ",
+            ? `${money(Number(o.totalAmount))}${t("adminOrder.currency_suffix")}`
+            : `0${t("adminOrder.currency_suffix")}`,
       }));
+
+      setOrdersTotal(page?.totalElements || 0);
+
+      setSelectedCustomer((prev) => ({
+        ...(prev || {}),
+        ordersDetail,
+      }));
+    } catch (e) {
+      message.error(t("adminCustomer.toast.load_orders_failed"));
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const handleRowClick = async (record) => {
+    try {
+      const res = await getAdminUserByIdApi(record.id);
+      const u = res.data;
       const ui = toCustomerUI(u, record.stt);
 
       setSelectedCustomer((prev) => ({
         ...(prev || record),
         ...ui,
-
-        orders: ui.orders,
         totalAmount: ui.totalAmount,
-        ordersDetail,
+        ordersDetail: [],
       }));
 
       const full =
@@ -196,8 +208,11 @@ function AdminCustomerContainer() {
           : ui.avatarUrl;
       setAvatarUrl(full || null);
 
+      setOrdersPage(1);
       setIsViewModalOpen(true);
       setIsEditing(false);
+
+      await fetchOrdersPage(record.id, 1);
     } catch (err) {
       setSelectedCustomer(record);
       setAvatarUrl(record?.avatarFullUrl || null);
@@ -250,7 +265,7 @@ function AdminCustomerContainer() {
         setAvatarUrl(full || null);
       } catch (_) {}
     } catch (err) {
-      message.error("Cập nhật thất bại.");
+      message.error(t("adminCustomer.toast.update_failed"));
     }
   };
 
@@ -281,7 +296,7 @@ function AdminCustomerContainer() {
       message.success(t("adminCustomer.toast.delete_success"));
       await fetchUsers();
     } catch (err) {
-      message.error("Xóa thất bại.");
+      message.error(t("adminCustomer.toast.delete_failed"));
     }
   };
 
@@ -290,10 +305,10 @@ function AdminCustomerContainer() {
       if (isViewModalOpen && selectedCustomer?.id) {
         if (selectedCustomer.status === "LOCKED") {
           await unlockAdminUserApi(selectedCustomer.id);
-          message.success("Đã mở khóa");
+          message.success(t("adminCustomer.toast.unlock_success"));
         } else {
           await lockAdminUserApi(selectedCustomer.id);
-          message.success("Đã khóa");
+          message.success(t("adminCustomer.toast.lock_success"));
         }
 
         setIsLockModalOpen(false);
@@ -323,7 +338,7 @@ function AdminCustomerContainer() {
       }
 
       if (selectedRowKeys.length === 0) {
-        message.warning("Chọn ít nhất 1 user để khóa");
+        message.warning(t("adminCustomer.toast.select_one_for_lock"));
         return;
       }
 
@@ -331,10 +346,10 @@ function AdminCustomerContainer() {
       setSelectedRowKeys([]);
       setIsLockModalOpen(false);
 
-      message.success("Đã khóa các user đã chọn");
+      message.success(t("adminCustomer.toast.lock_selected_success"));
       await fetchUsers();
     } catch (err) {
-      message.error("Khóa/Mở khóa thất bại.");
+      message.error(t("adminCustomer.toast.lock_failed"));
     }
   };
 
@@ -343,8 +358,8 @@ function AdminCustomerContainer() {
       className="min-h-screen relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}>
-      {/* Background */}
+      transition={{ duration: 0.6 }}
+    >
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -360,7 +375,8 @@ function AdminCustomerContainer() {
           className="px-6 pb-8"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}>
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
           <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8">
             <h1 className="text-[#133e87] text-3xl font-bold text-center mb-6">
               {t("adminCustomer.title_manage", {
@@ -406,7 +422,8 @@ function AdminCustomerContainer() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}>
+                transition={{ duration: 0.4 }}
+              >
                 <CustomersTable
                   columns={columns}
                   dataSource={data}
@@ -434,6 +451,15 @@ function AdminCustomerContainer() {
               onOpenLock={() => setIsLockModalOpen(true)}
               onOpenDelete={() => setIsDeleteModalOpen(true)}
               onChangeField={handleChange}
+              ordersPage={ordersPage}
+              ordersTotal={ordersTotal}
+              ordersPageSize={ordersPageSize}
+              ordersLoading={ordersLoading}
+              onOrdersPageChange={async (nextPage) => {
+                if (!selectedCustomer?.id) return;
+                setOrdersPage(nextPage);
+                await fetchOrdersPage(selectedCustomer.id, nextPage);
+              }}
             />
 
             <div className="flex justify-center mt-8">

@@ -9,6 +9,12 @@ const resources = {
         deleted: "Đã xoá",
         delete: "Xoá",
         cancel: "Hủy",
+        preview: "Xem",
+        remove: "Xóa",
+        reset: "Đặt lại",
+        download: "Tải xuống",
+        download_failed: "Tải file thất bại",
+        na: "N/A",
       },
       header: {
         search_placeholder: "Tìm kiếm",
@@ -31,7 +37,6 @@ const resources = {
         view_all_notifications: "Xem tất cả thông báo →",
         unread_count: "{{count}} thông báo chưa đọc",
       },
-      // footer
       footer: {
         intro: "GIỚI THIỆU",
         info: "THÔNG TIN",
@@ -42,7 +47,6 @@ const resources = {
         contact: "Liên Hệ",
       },
 
-      // nav
       nav: {
         home: "Trang Chủ",
         order_painting: "Đặt Tranh",
@@ -51,7 +55,7 @@ const resources = {
         contact: "Liên Hệ",
 
         manage_product: "Quản Lý Sản Phẩm",
-        manage_customer: "Quản Lý Khách Hàng",
+        manage_customer: "Quản Lý Tài Khoản",
         manage_order: "Quản Lý Đơn Hàng",
         manage_commission: "Quản Lý Đặt Tranh",
         manage_post: "Quản Lý Bài Viết",
@@ -78,14 +82,12 @@ const resources = {
         register_now: "Đăng kí ngay",
         already_have_account: "Đã có tài khoản? Đăng nhập",
 
-        // messages
         login_success: "Đăng nhập thành công!",
         login_success_but_no_profile:
           "Đăng nhập thành công nhưng không lấy được thông tin user",
         login_failed: "Email hoặc mật khẩu không đúng!",
         register_success: "Đăng ký thành công! Vui lòng đăng nhập.",
 
-        // validations
         required_email: "Vui lòng nhập email!",
         invalid_email: "Email không đúng định dạng!",
         required_password: "Vui lòng nhập mật khẩu!",
@@ -94,13 +96,57 @@ const resources = {
         required_last_name: "Vui lòng nhập tên!",
         invalid_phone: "Số điện thoại không hợp lệ!",
 
-        // backend mapping
         email_exists: "Email đã tồn tại trong hệ thống",
+
+        forgot_password_title: "Quên mật khẩu",
+        forgot_password_desc: "Nhập email để nhận liên kết đặt lại mật khẩu.",
+        email_placeholder: "Nhập email của bạn",
+        btn_send_reset_link: "Gửi liên kết đặt lại",
+        back_to_login: "Quay lại đăng nhập",
+
+        reset_link_sent: "Nếu email tồn tại, liên kết đã được gửi.",
+        reset_link_send_failed: "Gửi liên kết thất bại, vui lòng thử lại.",
+
+        reset_password_title: "Đặt lại mật khẩu",
+        reset_password_desc: "Nhập mật khẩu mới để cập nhật tài khoản.",
+        new_password: "Mật khẩu mới",
+        new_password_placeholder: "Nhập mật khẩu mới",
+        confirm_password: "Xác nhận mật khẩu",
+        confirm_password_placeholder: "Nhập lại mật khẩu mới",
+        btn_reset_password: "Đặt lại mật khẩu",
+
+        reset_token_missing: "Thiếu token đặt lại mật khẩu.",
+        reset_token_invalid: "Liên kết đặt lại không hợp lệ hoặc đã hết hạn.",
+        go_to_forgot_password: "Quay lại trang quên mật khẩu",
+
+        reset_password_success:
+          "Đặt lại mật khẩu thành công! Vui lòng đăng nhập.",
+        reset_password_failed: "Đặt lại mật khẩu thất bại, vui lòng thử lại.",
+        required_confirm_password: "Vui lòng xác nhận mật khẩu!",
+        password_not_match: "Mật khẩu xác nhận không khớp!",
+
+        verify_email_title: "Xác minh email",
+        verify_email_desc: "Chúng tôi đang xác minh email của bạn.",
+        verifying: "Đang xác minh...",
+
+        verify_email_success: "Xác minh email thành công!",
+        verify_email_failed: "Xác minh email thất bại!",
+
+        verify_email_success_text: "Email đã được xác minh.",
+        verify_email_success_hint: "Bạn có thể đăng nhập ngay bây giờ.",
+
+        verify_email_failed_text: "Không thể xác minh email.",
+        verify_email_failed_hint:
+          "Liên kết có thể đã hết hạn hoặc không hợp lệ.",
+        verify_email_missing_token: "Thiếu token xác minh email.",
+
+        go_to_register: "Đến trang đăng ký",
       },
 
       order: {
         title: "Biểu Mẫu Đặt Tranh Tại MariaStore",
         subtitle: "Điền thông tin bên dưới để bắt đầu đặt hàng",
+        required_order_name: "Vui lòng nhập tên đơn",
 
         order_name_optional: "Đặt tên cho đơn của bạn (tùy chọn):",
         order_detail: "Thông tin về đơn hàng của bạn:",
@@ -109,7 +155,13 @@ const resources = {
           "Tên người dùng Twitter hoặc Email của bạn? (Tùy chọn)",
         note_check:
           "Vui lòng kiểm tra kỹ đơn đặt tranh trước khi nhấn hoàn thành.",
-
+        title_required: "Vui lòng nhập tiêu đề đơn",
+        style_required: "Vui lòng chọn style",
+        need_character: "Vui lòng thêm ít nhất 1 nhân vật",
+        amount_to_pay: "Số tiền cần thanh toán",
+        order_not_ready: "Đơn hàng chưa sẵn sàng",
+        payment_confirmed: "Đã xác nhận thanh toán",
+        payment_confirm_failed: "Xác nhận thanh toán thất bại",
         twitter: "Twitter",
         email: "Email",
 
@@ -138,10 +190,10 @@ const resources = {
         },
 
         bg: {
-          don_sac: "Đơn sắc",
-          don_gian: "Đơn giản",
-          trung_binh: "Trung bình",
-          chi_tiet: "Chi tiết",
+          "don-sac": "Đơn sắc",
+          "don-gian": "Đơn giản",
+          "trung-binh": "Trung bình",
+          "chi-tiet": "Chi tiết",
         },
 
         total: "Tổng tiền",
@@ -153,6 +205,11 @@ const resources = {
       store: {
         sort_by: "Sắp xếp theo",
         clear_filter: "Bỏ lọc",
+        hero_alt: "Ảnh banner cửa hàng",
+        product_alt: "Sản phẩm",
+        category_alt: "Danh mục",
+        category_filter_title: "Lọc theo: {{category}}",
+        add_to_cart: "Thêm vào giỏ",
 
         sort: {
           newest: "Mới nhất",
@@ -165,10 +222,14 @@ const resources = {
           add_success: "Đã thêm vào giỏ hàng",
           add_failed:
             "Thêm vào giỏ thất bại (có thể bạn chưa đăng nhập hoặc sản phẩm hết hàng)",
+            load_categories_failed: "Không tải được danh mục.",
+    load_products_failed: "Không tải được danh sách sản phẩm.",
         },
 
         misc: {
-          no_image: "No image",
+          no_image: "Không có ảnh",
+          no_products: "Không có sản phẩm nào.",
+
         },
       },
 
@@ -195,7 +256,7 @@ const resources = {
 
         misc: {
           view_detail: "Xem chi tiết",
-          no_image: "No image",
+          no_image: "Không có ảnh",
         },
       },
 
@@ -222,7 +283,14 @@ const resources = {
         choose_title: "Chọn phương thức thanh toán",
         missing_order: "Thiếu thông tin đơn hàng, vui lòng checkout lại",
         not_integrated: "Chưa tích hợp phương thức này",
-
+        paypal_return: {
+          verifying: "Đang xác nhận thanh toán PayPal...",
+          capturing: "Đang capture PayPal...",
+          missing_order_id: "Không tìm thấy orderId để capture.",
+          success_toast: "Thanh toán PayPal thành công!",
+          success_redirecting: "Thanh toán thành công! Đang chuyển trang...",
+          capture_failed: "Capture PayPal thất bại. Vui lòng kiểm tra lại.",
+        },
         methods: {
           paypal: "Paypal",
           vnpay: "VNPay",
@@ -251,6 +319,7 @@ const resources = {
         back_btn: "Quay lại",
 
         currency: "đ",
+        qr_value: "Nội dung QR",
       },
 
       productDetail: {
@@ -299,77 +368,111 @@ const resources = {
         msg_review_success: "Đã gửi đánh giá",
         msg_review_failed: "Gửi đánh giá thất bại",
 
+        chat_with_seller: "Chat với seller",
         delete_review: "Xóa đánh giá",
         msg_review_deleted: "Đã xóa đánh giá",
+
+        log_fetch_failed: "Fetch product detail failed",
+        msg_load_failed: "Không tải được chi tiết sản phẩm",
+        msg_chat_failed: "Không tạo được cuộc trò chuyện",
+
+        deleting: "Đang xóa...",
+        msg_review_delete_failed: "Xóa đánh giá thất bại",
+        review_login_required: "Vui lòng đăng nhập để đánh giá.",
+
+        sample: {
+          title: "Tranh do {{handle}} đặt hàng",
+          alt: "Mẫu đặt tranh {{index}}",
+        },
       },
 
       profile: {
         edit_info_btn: "Sửa Thông Tin",
         modal_title: "Chỉnh sửa thông tin hồ sơ",
-
+      
         username: "Username",
         username_ph: "Username",
-
+      
         account_name: "Tên tài khoản",
         account_name_ph: "Tên Tài Khoản",
-
+      
         detail_info: "Thông tin chi tiết",
         detail_info_ph: "Thông Tin Chi Tiết",
-
+      
         save: "Lưu",
-
+      
         tab_request: "Yêu cầu",
         tab_orders: "Đơn hàng",
         tab_favorites: "Sản phẩm đã thích",
         tab_posts: "Bài viết",
-
+      
         empty_request: "Tạm Thời Đặt Yêu Cầu Nào",
         empty_orders: "Danh sách đơn hàng của bạn",
         empty_favorites: "Các sản phẩm bạn đã yêu thích",
         empty_posts: "Bài viết của bạn sẽ xuất hiện ở đây",
+      
         request: "Yêu cầu",
         request_default_title: "Yêu cầu đặt tranh",
+      
         full_name: "Họ và tên",
         full_name_ph: "Nhập họ và tên",
-
+      
         phone: "Số điện thoại",
         phone_ph: "Nhập số điện thoại",
-
+      
         gender: "Giới tính",
         gender_ph: "Chọn giới tính",
         gender_male: "Nam",
         gender_female: "Nữ",
         gender_other: "Khác",
-
+      
         dob: "Ngày sinh",
         dob_ph: "Chọn ngày sinh",
-
+      
         address: "Địa chỉ",
         address_ph: "Nhập địa chỉ",
-
+      
         saving: "Đang lưu...",
         saved_success: "Lưu thông tin thành công",
         saved_failed: "Lưu thất bại, thử lại sau",
-
+      
         avatar_updated: "Cập nhật avatar thành công",
         avatar_update_failed: "Upload avatar thất bại",
+      
         posts_search_ph: "Tìm bài viết...",
         create_post: "Tạo bài viết",
         by: "Bởi",
+      
+        load_failed: "Không lấy được thông tin user. Vui lòng đăng nhập lại.",
+      
+        avatar_change_btn: "Đổi avatar",
+        avatar_hint: "Nhấn biểu tượng ✎ để chọn ảnh mới",
+      
+        info_title: "Thông tin cá nhân",
+        change_password_title: "Đổi mật khẩu",
+      
+        current_password: "Mật khẩu hiện tại",
+        current_password_ph: "Nhập mật khẩu hiện tại",
+        new_password: "Mật khẩu mới",
+        new_password_ph: "Nhập mật khẩu mới",
+        confirm_new_password: "Xác nhận mật khẩu mới",
+        confirm_new_password_ph: "Nhập lại mật khẩu mới",
+      
+        change_password_btn: "Đổi mật khẩu",
+      
+        avatar_alt: "Avatar",
+        background_alt: "Ảnh nền hồ sơ",
+      
         order: {
           sort_newest: "Gần nhất",
           sort_oldest: "Cũ nhất",
-
           orders_load_failed: "Tải danh sách đơn hàng thất bại",
           download_failed: "Tải file thất bại",
-
           empty_orders: "Danh sách đơn hàng của bạn",
-
           order: "Đơn hàng",
           order_completed: "Đơn hàng đã hoàn thành",
           order_code: "Đơn Hàng",
           order_total: "Tổng tiền",
-
           download: "Tải Xuống File",
         },
       },
@@ -400,6 +503,7 @@ const resources = {
       commission: {
         approve_title: "Duyệt yêu cầu đặt tranh",
         review_before_approve: "Vui lòng kiểm tra kỹ yêu cầu trước khi duyệt",
+        id_not_found: "Không tìm thấy commissionId",
 
         approve: "Duyệt",
         reject: "Từ chối",
@@ -409,11 +513,11 @@ const resources = {
         approve_fail: "Duyệt yêu cầu thất bại",
         reject_success: "Đã từ chối yêu cầu",
         reject_fail: "Từ chối yêu cầu thất bại",
-        deliverables_title:"Ảnh từ người bán",
+        deliverables_title: "Ảnh từ người bán",
         upload_image: "Thêm ảnh",
-        upload_now:"Xác nhận thêm ảnh",
-        upload_success:"Thêm ảnh thành công", 
-        upload_failed:"Thêm ảnh thất bại",
+        upload_now: "Xác nhận thêm ảnh",
+        upload_success: "Thêm ảnh thành công",
+        upload_failed: "Thêm ảnh thất bại",
         delete_success: "Xóa ảnh thành công",
         delete_failed: "Xóa ảnh thất bại",
         no_deliverables_yet: "Chưa có dữ liệu",
@@ -421,14 +525,43 @@ const resources = {
           draft: "Bản nháp",
           submitted: "Đã gửi",
           approved: "Đã duyệt",
-          confirmed: "Đã thanh toán",
+          paid: "Đã thanh toán",
           rejected: "Từ chối",
           cancelled: "Đã hủy",
         },
+        locked_no_upload: "Yêu cầu đã khóa, không thể upload thêm.",
+        deliverables_locked: "Đã khóa",
+        deliverable_alt: "Ảnh",
+
+        final_price: "Giá chốt",
+        final_price_hint: "Giá seller chốt với khách. Có thể khác giá gợi ý.",
+        suggested_price: "Giá gợi ý",
+        higher_than_suggested: "Cao hơn",
+        lower_than_suggested: "Thấp hơn",
+        same_as_suggested: "Bằng giá gợi ý",
+        use_suggested: "Dùng giá gợi ý",
+        plus_50k: "+50k",
+        minus_50k: "-50k",
+        final_price_note: "Giá chốt phải > 0 để duyệt.",
+        final_price_label: "Giá chốt (seller)",
+        final_price_pending:
+          "Chưa có giá chốt. Seller sẽ chốt giá sau khi duyệt.",
+
+        draft_saved: "Đã lưu draft",
+        draft_save_failed: "Lưu draft thất bại",
+        submitted: "Đã gửi yêu cầu, chờ seller duyệt",
+        submit_failed: "Gửi yêu cầu thất bại",
+        save_draft: "Lưu draft",
+        submit: "Gửi yêu cầu",
+
+        deliverables_locked_until_paid: "Chỉ xem ảnh sau khi đã thanh toán.",
       },
 
       sellerCommission: {
         title: "Quản Lý Đặt Tranh",
+        only_submitted_can_approve:
+          "Chỉ commission ở trạng thái SUBMITTED mới có thể duyệt.",
+        code_fallback: "CM-{{id}}",
 
         table: {
           code: "Mã đặt tranh",
@@ -478,6 +611,11 @@ const resources = {
           orders_today: "Số Đơn Đã Bán Hôm Nay",
           total_customers: "Tổng Số Khách Hàng",
           new_customers_today: "Khách Mới Trong Hôm Nay",
+          total_products: "Số sản phẩm",
+          total_users: "Số tài khoản",
+          total_posts: "Số bài viết",
+          total_orders: "Số đơn hàng",
+          total_revenue: "Tổng doanh thu",
         },
 
         charts: {
@@ -503,6 +641,14 @@ const resources = {
           quantity: "Số lượng",
           turns_suffix: "lượt",
           paintings_suffix: "tranh",
+          products_suffix: "sản phẩm",
+        },
+
+        payment: {
+          bank: "Ngân hàng",
+          paypal: "Paypal",
+          vnpay: "VNPay",
+          unknown: "Khác",
         },
 
         month: {
@@ -515,6 +661,9 @@ const resources = {
           m7: "Tháng 7",
           m8: "Tháng 8",
           m9: "Tháng 9",
+          m10: "Tháng 10",
+          m11: "Tháng 11",
+          m12: "Tháng 12",
         },
       },
 
@@ -636,6 +785,23 @@ const resources = {
           delete_success: "Xóa tài khoản thành công!",
           lock_success: "Khóa tài khoản thành công!",
           select_one_for_delete: "Vui lòng chọn ít nhất một tài khoản để xóa!",
+          update_failed: "Cập nhật thất bại",
+          delete_failed: "Xóa thất bại",
+
+          load_users_failed:
+            "Không tải được danh sách user (kiểm tra token/role ADMIN).",
+          load_orders_failed: "Không tải được danh sách đơn hàng.",
+
+          unlock_success: "Mở khóa tài khoản thành công!",
+          select_one_for_lock: "Vui lòng chọn ít nhất một tài khoản để khóa!",
+          lock_selected_success: "Đã khóa các tài khoản đã chọn",
+          lock_failed: "Khóa/Mở khóa thất bại.",
+          missing_user_id: "Không tìm thấy userId để upload avatar.",
+          avatar_upload_success: "Cập nhật avatar thành công!",
+          avatar_upload_no_url:
+            "Upload thành công nhưng không nhận được avatarUrl.",
+          avatar_upload_failed:
+            "Upload avatar thất bại. Kiểm tra quyền ADMIN hoặc API.",
         },
 
         table: {
@@ -663,6 +829,11 @@ const resources = {
           gender_female: "Nữ",
           gender_other: "Khác",
 
+          gender_ph: "Chọn giới tính",
+          birthday_ph: "Chọn ngày sinh",
+          avatar_alt: "Avatar",
+          upload_avatar: "Tải lên avatar",
+
           no_orders: "Chưa có đơn hàng",
           orders_stats: "Thống kê đơn hàng:",
           order_table: {
@@ -682,7 +853,12 @@ const resources = {
 
         btn_delete: "Xóa Đơn Hàng",
         btn_edit: "Sửa đơn hàng",
-
+        toast: {
+          load_failed: "Không tải được danh sách đơn hàng",
+          load_detail_failed: "Không tải được chi tiết đơn hàng",
+          delete_failed: "Xóa đơn hàng thất bại",
+          print_invoice_failed: "In hóa đơn thất bại",
+        },
         modal: {
           delete_confirm: "Xác nhận muốn xóa đơn hàng chứ?",
           detail_title_done: "Chi tiết đơn hàng (đã hoàn thành)",
@@ -692,6 +868,8 @@ const resources = {
           invoice_code: "Mã Hóa Đơn",
           payment_method: "Phương Thức Thanh Toán",
           paid_time: "Thời Gian Thanh Toán",
+          file_format: "{{format}} File",
+          qty_prefix: "x{{count}}",
         },
 
         btn: {
@@ -815,6 +993,12 @@ const resources = {
         deleted: "Deleted",
         delete: "Delete",
         cancel: "Cancel",
+        preview: "Preview",
+        remove: "Remove",
+        reset: "Reset",
+        download: "Download",
+        download_failed: "Download failed",
+        na: "N/A",
       },
       header: {
         search_placeholder: "Search",
@@ -838,7 +1022,6 @@ const resources = {
         unread_count: "{{count}} unread notifications",
       },
 
-      // footer
       footer: {
         intro: "ABOUT",
         info: "INFORMATION",
@@ -849,7 +1032,6 @@ const resources = {
         contact: "Contact",
       },
 
-      // nav
       nav: {
         home: "Home",
         order_painting: "Order",
@@ -858,7 +1040,7 @@ const resources = {
         contact: "Contact",
 
         manage_product: "Manage Products",
-        manage_customer: "Manage Customers",
+        manage_customer: "Manage Account",
         manage_order: "Manage Orders",
         manage_commission: "Manage Commissions",
         manage_post: "Manage Posts",
@@ -885,14 +1067,12 @@ const resources = {
         register_now: "Sign up now",
         already_have_account: "Already have an account? Sign in",
 
-        // messages
         login_success: "Signed in successfully!",
         login_success_but_no_profile:
           "Signed in but failed to fetch user profile",
         login_failed: "Incorrect email or password!",
         register_success: "Registered successfully! Please sign in.",
 
-        // validations
         required_email: "Please enter your email!",
         invalid_email: "Invalid email format!",
         required_password: "Please enter your password!",
@@ -901,19 +1081,69 @@ const resources = {
         required_last_name: "Please enter your last name!",
         invalid_phone: "Invalid phone number!",
 
-        // backend mapping
         email_exists: "This email already exists",
+
+        forgot_password_title: "Forgot password",
+        forgot_password_desc:
+          "Enter your email to receive a password reset link.",
+        email_placeholder: "Enter your email",
+        btn_send_reset_link: "Send reset link",
+        back_to_login: "Back to sign in",
+
+        reset_link_sent: "If the email exists, the reset link has been sent.",
+        reset_link_send_failed: "Failed to send reset link. Please try again.",
+
+        reset_password_title: "Reset password",
+        reset_password_desc: "Enter a new password to update your account.",
+        new_password: "New password",
+        new_password_placeholder: "Enter new password",
+        confirm_password: "Confirm password",
+        confirm_password_placeholder: "Re-enter new password",
+        btn_reset_password: "Reset password",
+
+        reset_token_missing: "Missing reset token.",
+        reset_token_invalid: "Reset link is invalid or expired.",
+        go_to_forgot_password: "Go to forgot password",
+
+        reset_password_success: "Password reset successful! Please sign in.",
+        reset_password_failed: "Password reset failed. Please try again.",
+        required_confirm_password: "Please confirm your password!",
+        password_not_match: "Passwords do not match!",
+
+        verify_email_title: "Verify email",
+        verify_email_desc: "We are verifying your email address.",
+        verifying: "Verifying...",
+
+        verify_email_success: "Email verified successfully!",
+        verify_email_failed: "Email verification failed!",
+
+        verify_email_success_text: "Your email has been verified.",
+        verify_email_success_hint: "You can sign in now.",
+
+        verify_email_failed_text: "Unable to verify email.",
+        verify_email_failed_hint: "The link may be invalid or expired.",
+        verify_email_missing_token: "Missing email verification token.",
+
+        go_to_register: "Go to sign up",
       },
 
       order: {
         title: "Order Form - MariaStore",
         subtitle: "Fill in the information below to start your order",
+        required_order_name: "Please enter the order name",
 
         order_name_optional: "Name your order (optional):",
         order_detail: "Your order details:",
         contact_optional: "Other contact methods (optional):",
         contact_value_optional: "Your Twitter handle or Email (optional)",
         note_check: "Please double-check your order before finishing.",
+        title_required: "Please enter a title",
+        style_required: "Please choose a style",
+        need_character: "Please add at least one character",
+        amount_to_pay: "Amount to pay",
+        order_not_ready: "Order is not ready",
+        payment_confirmed: "Payment confirmed",
+        payment_confirm_failed: "Payment confirmation failed",
 
         twitter: "Twitter",
         email: "Email",
@@ -943,10 +1173,10 @@ const resources = {
         },
 
         bg: {
-          don_sac: "Solid",
-          don_gian: "Simple",
-          trung_binh: "Medium",
-          chi_tiet: "Detailed",
+          "don-sac": "Solid",
+          "don-gian": "Simple",
+          "trung-binh": "Medium",
+          "chi-tiet": "Detailed",
         },
 
         total: "Total",
@@ -1005,7 +1235,14 @@ const resources = {
         choose_title: "Choose a payment method",
         missing_order: "Missing order information, please checkout again",
         not_integrated: "This payment method is not integrated yet",
-
+        paypal_return: {
+          verifying: "Verifying PayPal payment...",
+          capturing: "Capturing PayPal...",
+          missing_order_id: "OrderId not found for capture.",
+          success_toast: "PayPal payment successful!",
+          success_redirecting: "Payment successful! Redirecting...",
+          capture_failed: "PayPal capture failed. Please try again.",
+        },
         methods: {
           paypal: "Paypal",
           vnpay: "VNPay",
@@ -1034,11 +1271,16 @@ const resources = {
         back_btn: "Back",
 
         currency: "₫",
+        qr_value: "QR value",
       },
 
       store: {
         sort_by: "Sort by:",
         clear_filter: "Clear filter",
+        hero_alt: "Store banner",
+        product_alt: "Product",
+        category_alt: "Category",
+        category_filter_title: "Filter by: {{category}}",
 
         sort: {
           newest: "Newest",
@@ -1051,10 +1293,13 @@ const resources = {
           add_success: "Added to cart",
           add_failed:
             "Failed to add to cart (you may not be logged in or the item is out of stock)",
+            load_categories_failed: "Failed to load categories.",
+            load_products_failed: "Failed to load products.",
         },
 
         misc: {
           no_image: "No image",
+          no_products: "No products found.",
         },
       },
 
@@ -1104,8 +1349,22 @@ const resources = {
         msg_review_success: "Review submitted",
         msg_review_failed: "Failed to submit review",
 
+        chat_with_seller: "Chat with seller",
         delete_review: "Delete review",
         msg_review_deleted: "Review deleted",
+
+        log_fetch_failed: "Fetch product detail failed",
+        msg_load_failed: "Failed to load product details",
+        msg_chat_failed: "Failed to create conversation",
+
+        deleting: "Deleting...",
+        msg_review_delete_failed: "Failed to delete review",
+        review_login_required: "Please sign in to write a review.",
+
+        sample: {
+          title: "Artwork commissioned by {{handle}}",
+          alt: "Commission sample {{index}}",
+        },
       },
 
       profile: {
@@ -1161,6 +1420,25 @@ const resources = {
         posts_search_ph: "Search posts...",
         create_post: "Create post",
         by: "By",
+        load_failed: "Failed to load user info. Please sign in again.",
+
+avatar_change_btn: "Change avatar",
+avatar_hint: "Click ✎ to choose a new image",
+
+info_title: "Personal information",
+change_password_title: "Change password",
+
+current_password: "Current password",
+current_password_ph: "Enter current password",
+new_password: "New password",
+new_password_ph: "Enter new password",
+confirm_new_password: "Confirm new password",
+confirm_new_password_ph: "Re-enter new password",
+
+change_password_btn: "Change password",
+
+avatar_alt: "Avatar",
+background_alt: "Profile background",
         order: {
           sort_newest: "Newest",
           sort_oldest: "Oldest",
@@ -1214,6 +1492,7 @@ const resources = {
         load_post_failed: "Failed to load post",
         load_comments_failed: "Failed to load comments",
         add_comment_failed: "Failed to add comment",
+        toast_comment_added: "Comment added!",
 
         show_comments: "Show comments",
         hide_comments: "Hide comments",
@@ -1231,6 +1510,7 @@ const resources = {
         approve_title: "Approve commission request",
         review_before_approve:
           "Please review the request carefully before approving",
+        id_not_found: "Commission ID not found",
 
         approve: "Approve",
         reject: "Reject",
@@ -1240,11 +1520,11 @@ const resources = {
         approve_fail: "Failed to approve commission",
         reject_success: "Commission rejected",
         reject_fail: "Failed to reject commission",
-        deliverables_title:"Deliverables",
+        deliverables_title: "Deliverables",
         upload_image: "Upload",
-        upload_now:"Confirm",
-        upload_success:"Upload Success", 
-        upload_failed:"Upload Failed",
+        upload_now: "Confirm",
+        upload_success: "Upload Success",
+        upload_failed: "Upload Failed",
         delete_success: "Delete Success",
         delete_failed: "Delete Failed",
         no_deliverables_yet: "No Data",
@@ -1252,14 +1532,46 @@ const resources = {
           draft: "DRAFT",
           submitted: "SUBMITTED",
           approved: "APPROVED",
-          confirmed: "CONFIRMED",
+          paid: "PAID",
           rejected: "REJECTED",
           cancelled: "CANCELLED",
         },
+        locked_no_upload:
+          "This request is locked. You cannot upload more files.",
+        deliverables_locked: "Locked",
+        deliverable_alt: "Deliverable",
+
+        final_price: "Final price",
+        final_price_hint:
+          "Seller final price. It may differ from the suggested price.",
+        suggested_price: "Suggested price",
+        higher_than_suggested: "Higher",
+        lower_than_suggested: "Lower",
+        same_as_suggested: "Same as suggested",
+        use_suggested: "Use suggested price",
+        plus_50k: "+50k",
+        minus_50k: "-50k",
+        final_price_note: "Final price must be > 0 to approve.",
+        final_price_label: "Final price (seller)",
+        final_price_pending:
+          "Final price is not available yet. The seller will set it after approval.",
+
+        draft_saved: "Draft saved",
+        draft_save_failed: "Failed to save draft",
+        submitted: "Request submitted. Waiting for seller approval.",
+        submit_failed: "Failed to submit request",
+        save_draft: "Save draft",
+        submit: "Submit",
+
+        deliverables_locked_until_paid:
+          "Deliverables are available after payment.",
       },
 
       sellerCommission: {
         title: "Commission Management",
+        only_submitted_can_approve:
+          "Only commissions in SUBMITTED status can be approved.",
+        code_fallback: "CM-{{id}}",
 
         table: {
           code: "Commission code",
@@ -1286,6 +1598,12 @@ const resources = {
           orders_today: "Orders sold today",
           total_customers: "Total customers",
           new_customers_today: "New customers today",
+
+          total_products: "Total products",
+          total_users: "Total users",
+          total_posts: "Total posts",
+          total_orders: "Total orders",
+          total_revenue: "Total revenue",
         },
 
         charts: {
@@ -1295,21 +1613,22 @@ const resources = {
           category_title: "Paintings sold by category (hundreds)",
         },
 
-        period: {
-          this_year: "This year",
-          last_year: "Last year",
-        },
-
-        legend: {
-          this_year: "This year",
-          last_year: "Last year",
-        },
+        period: { this_year: "This year", last_year: "Last year" },
+        legend: { this_year: "This year", last_year: "Last year" },
 
         tooltip: {
           value: "Value",
           quantity: "Quantity",
           turns_suffix: "times",
           paintings_suffix: "paintings",
+          products_suffix: "products",
+        },
+
+        payment: {
+          bank: "Bank",
+          paypal: "Paypal",
+          vnpay: "VNPay",
+          unknown: "Other",
         },
 
         month: {
@@ -1322,6 +1641,9 @@ const resources = {
           m7: "Jul",
           m8: "Aug",
           m9: "Sep",
+          m10: "Oct",
+          m11: "Nov",
+          m12: "Dec",
         },
       },
 
@@ -1445,6 +1767,21 @@ const resources = {
           lock_success: "Locked successfully!",
           select_one_for_delete:
             "Please select at least one account to delete!",
+          update_failed: "Update failed",
+          delete_failed: "Delete failed",
+
+          load_users_failed: "Failed to load users (check ADMIN token/role).",
+          load_orders_failed: "Failed to load orders.",
+
+          unlock_success: "Account unlocked successfully!",
+          select_one_for_lock: "Please select at least one account to lock!",
+          lock_selected_success: "Locked selected accounts",
+          lock_failed: "Lock/Unlock failed.",
+          missing_user_id: "Missing userId for avatar upload.",
+          avatar_upload_success: "Avatar updated successfully!",
+          avatar_upload_no_url: "Uploaded but no avatarUrl returned.",
+          avatar_upload_failed:
+            "Avatar upload failed. Check ADMIN permission or API.",
         },
 
         table: {
@@ -1472,6 +1809,11 @@ const resources = {
           gender_female: "Female",
           gender_other: "Other",
 
+          gender_ph: "Select gender",
+          birthday_ph: "Select date of birth",
+          avatar_alt: "Avatar",
+          upload_avatar: "Upload avatar",
+
           no_orders: "No orders yet",
 
           orders_stats: "Order summary:",
@@ -1492,7 +1834,12 @@ const resources = {
 
         btn_delete: "Delete Orders",
         btn_edit: "Edit order",
-
+        toast: {
+          load_failed: "Failed to load orders",
+          load_detail_failed: "Failed to load order details",
+          delete_failed: "Failed to delete orders",
+          print_invoice_failed: "Failed to print invoice",
+        },
         modal: {
           delete_confirm: "Are you sure you want to delete selected orders?",
           detail_title_done: "Order details (completed)",
@@ -1502,6 +1849,8 @@ const resources = {
           invoice_code: "Invoice code",
           payment_method: "Payment method",
           paid_time: "Payment time",
+          file_format: "{{format}} File",
+          qty_prefix: "x{{count}}",
         },
 
         btn: {

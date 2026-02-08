@@ -11,3 +11,6 @@ export const uploadMyAvatarApi = (file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const changeMyPasswordApi = (data) =>
+  axiosClient.put("/users/me/change-password", data);

@@ -46,8 +46,9 @@ function LoginPage() {
       <main className="relative min-h-screen">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('src/assets/img/Illustration122.jpg')` }}
-        >
+          style={{
+            backgroundImage: `url('src/assets/img/Illustration122.jpg')`,
+          }}>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#d9eafd]/20"></div>
         </div>
 
@@ -64,8 +65,7 @@ function LoginPage() {
                 rules={[
                   { required: true, message: t("auth.required_email") },
                   { type: "email", message: t("auth.invalid_email") },
-                ]}
-              >
+                ]}>
                 <Input />
               </Form.Item>
 
@@ -75,8 +75,7 @@ function LoginPage() {
                 rules={[
                   { required: true, message: t("auth.required_password") },
                   { min: 6, message: t("auth.password_min_6") },
-                ]}
-              >
+                ]}>
                 <Input.Password />
               </Form.Item>
 
@@ -84,21 +83,24 @@ function LoginPage() {
                 type="primary"
                 htmlType="submit"
                 className="w-full font-medium py-2.5 mt-4 h-10"
-                style={{ backgroundColor: "#608bc1", borderColor: "#608bc1" }}
-              >
+                style={{ backgroundColor: "#608bc1", borderColor: "#608bc1" }}>
                 {t("auth.btn_login")}
               </Button>
             </Form>
 
             <div className="text-center mt-4">
-              <a href="#" className="text-[#d61f6f] text-sm hover:underline">
+              <a
+                href="/forgot-password"
+                className="text-[#d61f6f] text-sm hover:underline">
                 {t("auth.forgot_password")}
               </a>
             </div>
 
             <div className="text-center mt-4 text-sm text-[#608bc1]">
               {t("auth.no_account")}{" "}
-              <a href="/register" className="text-[#133e87] font-medium hover:underline">
+              <a
+                href="/register"
+                className="text-[#133e87] font-medium hover:underline">
                 {t("auth.register_now")}
               </a>
             </div>

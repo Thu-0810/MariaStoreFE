@@ -1,28 +1,23 @@
 import axiosClient from "./axiosClient";
 
-/**
- * Seller lấy danh sách commission đang chờ duyệt
- */
-export const getPendingCommissionsApi = () => {
+
+export const getSellerCommissionsApi = () => {
   return axiosClient.get("/seller/commissions");
 };
 
-/**
- * Seller duyệt commission + chỉnh giá
- */
+export const getPendingCommissionsApi = () => {
+  return axiosClient.get("/seller/commissions/pending");
+};
+
 export const approveCommissionApi = (id, finalPrice) => {
   return axiosClient.post(`/seller/commissions/${id}/approve`, {
     finalPrice,
   });
 };
 
-/**
- * Seller từ chối commission
- */
 export const rejectCommissionApi = (id) => {
   return axiosClient.post(`/seller/commissions/${id}/reject`);
 };
-
 
 export const uploadCommissionDeliverableApi = (id, file) => {
   const formData = new FormData();
@@ -38,5 +33,7 @@ export const getSellerCommissionDeliverablesApi = (id) => {
 };
 
 export const deleteCommissionDeliverableApi = (id, deliverableId) => {
-  return axiosClient.delete(`/seller/commissions/${id}/deliverables/${deliverableId}`);
+  return axiosClient.delete(
+    `/seller/commissions/${id}/deliverables/${deliverableId}`
+  );
 };

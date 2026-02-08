@@ -65,7 +65,8 @@ function DetailContainer() {
           imageUrls: (data.images || []).map((x) => toServerUrl(x.imageUrl)),
         });
       } catch (err) {
-        console.error("Fetch product detail failed", err);
+        console.error(t("productDetail.log_fetch_failed"), err);
+        message.error(t("productDetail.msg_load_failed"));
       } finally {
         setLoading(false);
       }
@@ -73,7 +74,7 @@ function DetailContainer() {
 
     if (!Number.isFinite(productId)) return;
     fetchDetail();
-  }, [productId]);
+  }, [productId, t]);
 
   useEffect(() => {
     if (!Number.isFinite(productId)) return;
@@ -146,15 +147,15 @@ function DetailContainer() {
       if (isFavorited) {
         await favoriteApi.unlike(productId);
         setIsFavorited(false);
-        message.success(t("productDetail.msg_unliked") || "Đã bỏ thích");
+        message.success(t("productDetail.msg_unliked"));
       } else {
         await favoriteApi.like(productId);
         setIsFavorited(true);
-        message.success(t("productDetail.msg_liked") || "Đã thích");
+        message.success(t("productDetail.msg_liked"));
       }
     } catch (err) {
       const serverMsg = err?.response?.data?.message;
-      message.error(serverMsg || "Thao tác thất bại");
+      message.error(serverMsg || t("common.action_failed"));
     } finally {
       setFavLoading(false);
     }
@@ -169,9 +170,7 @@ function DetailContainer() {
     }
 
     if (!myRating || myRating < 1 || myRating > 5) {
-      message.warning(
-        t("productDetail.msg_choose_star") || "Vui lòng chọn số sao"
-      );
+      message.warning(t("productDetail.msg_choose_star"));
       return;
     }
 
@@ -183,19 +182,13 @@ function DetailContainer() {
         comment: myComment,
       });
 
-      message.success(
-        t("productDetail.msg_review_success") || "Đã gửi đánh giá"
-      );
+      message.success(t("productDetail.msg_review_success"));
 
       const sumRes = await reviewApi.getSummary(productId);
       setRatingSummary(sumRes.data);
     } catch (err) {
       const serverMsg = err?.response?.data?.message;
-      message.error(
-        serverMsg ||
-          t("productDetail.msg_review_failed") ||
-          "Gửi đánh giá thất bại"
-      );
+      message.error(serverMsg || t("productDetail.msg_review_failed"));
     } finally {
       setSubmittingReview(false);
     }
@@ -214,9 +207,7 @@ function DetailContainer() {
 
       await reviewApi.remove(productId);
 
-      message.success(
-        t("productDetail.msg_review_deleted") || "Đã xóa đánh giá"
-      );
+      message.success(t("productDetail.msg_review_deleted"));
 
       setMyRating(0);
       setMyComment("");
@@ -225,7 +216,7 @@ function DetailContainer() {
       setRatingSummary(sumRes.data);
     } catch (err) {
       const serverMsg = err?.response?.data?.message;
-      message.error(serverMsg || "Xóa đánh giá thất bại");
+      message.error(serverMsg || t("productDetail.msg_review_delete_failed"));
     } finally {
       setDeletingReview(false);
     }
@@ -240,12 +231,11 @@ function DetailContainer() {
     }
 
     try {
-      const conv = await chatApi.getOrCreateDirect(2);
-
+      const conv = await chatApi.getOrCreateDirect(4);
       openChatWithConversation(conv.id);
     } catch (err) {
       console.error(err);
-      message.error("Không tạo được cuộc trò chuyện");
+      message.error(t("productDetail.msg_chat_failed"));
     }
   };
 
@@ -310,7 +300,7 @@ function DetailContainer() {
 
   const statusKey = (product?.status || "").toUpperCase();
   const statusUi = STATUS_UI[statusKey] || {
-    label: product?.status || t("productDetail.updating") || "Đang cập nhật",
+    label: product?.status || t("productDetail.updating"),
     className: "bg-gray-100 text-gray-700",
   };
 
@@ -346,6 +336,15 @@ function DetailContainer() {
 
   const isLoggedIn = !!localStorage.getItem("accessToken");
 
+  const suggestedCategoryText =
+    product.categories?.join(", ") || t("productDetail.updating");
+
+  const sampleItems = [
+    { src: "src/assets/img/Illustration248.0.jpg", handle: "@_itsmeangge", date: "24.08.2023" },
+    { src: "src/assets/img/Illustration251.1.jpg", handle: "@niklasjann", date: "04.10.2023" },
+    { src: "src/assets/img/Illustration330.12.png", handle: "@MariaMari0nette", date: "29.08.2024" },
+  ];
+
   return (
     <div className="min-h-screen pb-20 relative">
       <div
@@ -354,25 +353,27 @@ function DetailContainer() {
       />
 
       <div className="relative z-10 flex justify-center px-4 pt-16 pb-16">
-        <div className="max-w-5xl w-full bg-white/80 rounded-2xl shadow-xl p-8 md:flex gap-8">
-          <div className="md:w-1/2 mb-6 md:mb-0">
+        <div className="max-w-6xl w-full bg-white/80 rounded-2xl shadow-xl p-8 md:flex gap-8 items-start">
+          {/* LEFT: IMAGE */}
+          <div className="md:w-1/2 w-full mb-6 md:mb-0">
             <img
               src={product.primaryImage || fallbackImage}
               alt={product.name}
-              className="w-full h-[800px] object-cover rounded-xl"
+              className="w-full h-auto rounded-xl block"
+              style={{ maxHeight: "80vh", objectFit: "contain" }}
+              loading="lazy"
             />
           </div>
 
-          <div className="md:w-1/2">
+          {/* RIGHT: INFO */}
+          <div className="md:w-1/2 w-full">
             <h2 className="text-4xl font-bold text-[#133e87] mb-2">
               {product.name}
             </h2>
 
             <p className="text-[#133e87]">
               <b>{t("productDetail.type")}: </b>
-              {product.categories?.join(", ") ||
-                t("productDetail.updating") ||
-                "Đang cập nhật"}
+              {suggestedCategoryText}
             </p>
 
             <p className="text-[#133e87] mt-4">
@@ -395,37 +396,29 @@ function DetailContainer() {
               />
             </div>
 
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-wrap items-center gap-3 mb-8">
               <button
                 type="button"
                 disabled={adding}
                 onClick={handleAddToCart}
-                className="flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60">
+                className="shrink-0 whitespace-nowrap flex items-center gap-2 border border-[#cbdeed] bg-[#eaf7ff] text-[#133e87] hover:text-white px-4 py-2 rounded-md font-medium hover:bg-[#133e87] transition disabled:opacity-60">
                 <ShoppingCartOutlined className="text-lg" />
                 {t("productDetail.add_to_cart")}
               </button>
-              {/* 
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={adding}
-                className="px-5 py-2 bg-[#133e87] text-white font-medium rounded-md hover:bg-[#173f5f] transition disabled:opacity-60">
-                {t("productDetail.buy_now")}
-              </button> */}
 
               <button
                 type="button"
                 onClick={handleChatSeller}
-                className="flex items-center gap-2 border border-[#cbdeed] bg-white text-[#133e87] px-4 py-2 rounded-md font-medium hover:bg-[#eaf7ff] transition">
+                className="shrink-0 whitespace-nowrap flex items-center gap-2 border border-[#cbdeed] bg-white text-[#133e87] px-4 py-2 rounded-md font-medium hover:bg-[#eaf7ff] transition">
                 <MessageOutlined className="text-lg" />
-                Chat với seller
+                {t("productDetail.chat_with_seller")}
               </button>
 
               <button
                 type="button"
                 disabled={favLoading}
                 onClick={handleToggleFavorite}
-                className={`w-10 h-10 flex items-center justify-center rounded-full transition border
+                className={`w-10 h-10 flex items-center justify-center rounded-full transition border shrink-0
                   ${
                     isFavorited
                       ? "border-[#133e87] bg-[#133e87] text-white"
@@ -448,10 +441,7 @@ function DetailContainer() {
                 {t("productDetail.file_format")}: {product.meta?.fileFormat}
               </div>
               <div>
-                {t("productDetail.category")}:{" "}
-                {product.categories?.join(", ") ||
-                  t("productDetail.updating") ||
-                  "Đang cập nhật"}
+                {t("productDetail.category")}: {suggestedCategoryText}
               </div>
               <div className="flex items-center gap-2">
                 <span>{t("productDetail.status")}:</span>
@@ -474,15 +464,12 @@ function DetailContainer() {
               <Rate disabled allowHalf value={avg} />
 
               <span className="text-sm text-[#133e87] ml-2">
-                {positivePercent}% {t("productDetail.rating_suffix")} (
-                {safeTotal})
+                {positivePercent}% {t("productDetail.rating_suffix")} ({safeTotal})
               </span>
             </div>
 
             {[5, 4, 3, 2, 1].map((star, i) => (
-              <div
-                key={star}
-                className="flex items-center space-x-2 text-xs mb-1">
+              <div key={star} className="flex items-center space-x-2 text-xs mb-1">
                 <span className="w-2">{star}</span>
 
                 <Progress
@@ -501,19 +488,18 @@ function DetailContainer() {
 
             <div className="mt-6 p-4 rounded-xl bg-white/70 border border-[#cbdeed]">
               <h4 className="text-base font-semibold text-[#133e87] mb-3">
-                {t("productDetail.write_review") || "Đánh giá của bạn"}
+                {t("productDetail.write_review")}
               </h4>
 
               {!isLoggedIn ? (
                 <div className="text-sm text-[#133e87]">
-                  {t("productDetail.msg_need_login") ||
-                    "Vui lòng đăng nhập để đánh giá."}
+                  {t("productDetail.review_login_required")}
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-sm text-[#133e87] font-medium">
-                      {t("productDetail.your_rating") || "Số sao"}:
+                      {t("productDetail.your_rating")}:
                     </span>
 
                     <Rate
@@ -532,22 +518,19 @@ function DetailContainer() {
                   <Input.TextArea
                     value={myComment}
                     onChange={(e) => setMyComment(e.target.value)}
-                    placeholder={
-                      t("productDetail.review_placeholder") ||
-                      "Viết cảm nhận của bạn..."
-                    }
+                    placeholder={t("productDetail.review_placeholder")}
                     rows={4}
                   />
 
-                  <div className="flex gap-3 mt-3">
+                  <div className="flex flex-wrap gap-3 mt-3">
                     <button
                       type="button"
                       disabled={submittingReview || deletingReview}
                       onClick={handleSubmitReview}
-                      className="px-4 py-2 rounded-md bg-[#133e87] text-white font-medium hover:bg-[#173f5f] transition disabled:opacity-60">
+                      className="shrink-0 whitespace-nowrap px-4 py-2 rounded-md bg-[#133e87] text-white font-medium hover:bg-[#173f5f] transition disabled:opacity-60">
                       {submittingReview
-                        ? t("productDetail.submitting") || "Đang gửi..."
-                        : t("productDetail.submit_review") || "Gửi đánh giá"}
+                        ? t("productDetail.submitting")
+                        : t("productDetail.submit_review")}
                     </button>
 
                     <button
@@ -557,18 +540,18 @@ function DetailContainer() {
                         setMyRating(0);
                         setMyComment("");
                       }}
-                      className="px-4 py-2 rounded-md border border-[#133e87] text-[#133e87] font-medium hover:bg-[#eaf7ff] transition disabled:opacity-60">
-                      {t("productDetail.clear") || "Xóa"}
+                      className="shrink-0 whitespace-nowrap px-4 py-2 rounded-md border border-[#133e87] text-[#133e87] font-medium hover:bg-[#eaf7ff] transition disabled:opacity-60">
+                      {t("productDetail.clear")}
                     </button>
 
                     <button
                       type="button"
                       disabled={submittingReview || deletingReview}
                       onClick={handleDeleteReview}
-                      className="px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-60">
+                      className="shrink-0 whitespace-nowrap px-4 py-2 rounded-md border border-red-500 text-red-600 font-medium hover:bg-red-50 transition disabled:opacity-60">
                       {deletingReview
-                        ? "Đang xóa..."
-                        : t("productDetail.delete_review") || "Xóa đánh giá"}
+                        ? t("productDetail.deleting")
+                        : t("productDetail.delete_review")}
                     </button>
                   </div>
                 </>
@@ -595,37 +578,16 @@ function DetailContainer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={staggerContainer}>
-            {[
-              {
-                src: "src/assets/img/Illustration248.0.jpg",
-                title: "Tranh do @_itsmeangge đặt hàng",
-                description: "24.08.2023",
-              },
-              {
-                src: "src/assets/img/Illustration251.1.jpg",
-                title: "Tranh do @niklasjann đặt hàng",
-                description: "04.10.2023",
-              },
-              {
-                src: "src/assets/img/Illustration330.12.png",
-                title: "Tranh do @MariaMari0nette đặt hàng",
-                description: "29.08.2024",
-              },
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                className="text-center"
-                variants={staggerItem}>
+            {sampleItems.map((item, idx) => (
+              <motion.div key={idx} className="text-center" variants={staggerItem}>
                 <img
                   src={item.src}
-                  alt={item.title}
+                  alt={t("productDetail.sample.alt", { index: idx + 1 })}
                   className="w-full h-48 sm:h-72 lg:h-80 object-cover rounded-lg mb-3"
                 />
-                <p className="text-[#7a7a7a] text-xs sm:text-sm">
-                  {item.description}
-                </p>
+                <p className="text-[#7a7a7a] text-xs sm:text-sm">{item.date}</p>
                 <h3 className="text-[#133e87] font-medium text-sm sm:text-base">
-                  {item.title}
+                  {t("productDetail.sample.title", { handle: item.handle })}
                 </h3>
               </motion.div>
             ))}

@@ -1,3 +1,4 @@
+
 "use client";
 import { Input, Checkbox, Radio, Button } from "antd";
 import { CloseOutlined, PlusOutlined } from "@ant-design/icons";
@@ -240,7 +241,7 @@ function PaintingForm({
 
                             <div className=" pt-2 bg-white/60">
                               <p className="text-sm font-medium text-[#133e87] mb-3">
-                                {t(".background")}
+                                {t("order.background")}{" "}
                               </p>
 
                               <div className="flex gap-4">

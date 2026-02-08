@@ -1,4 +1,13 @@
-import { Modal, Divider, message, Upload, Tooltip, Image } from "antd";
+import {
+  Modal,
+  Divider,
+  message,
+  Upload,
+  Tooltip,
+  Image,
+  InputNumber,
+  Tag,
+} from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import PaintingForm from "./common/PaintingForm";
@@ -28,6 +37,8 @@ export default function ApproveCommissionModal({
   const [fileList, setFileList] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState("");
+
+  const [finalPrice, setFinalPrice] = useState(null);
 
   const requestId = request?.id ?? null;
   const isLocked =
@@ -101,6 +112,10 @@ export default function ApproveCommissionModal({
 
     fetchDeliverables();
     setFileList([]);
+
+    setFinalPrice(
+      request?.totalPrice != null ? Number(request.totalPrice) : null
+    );
   }, [open, requestId]);
 
   const onChangeUpload = ({ fileList: next }) => {
@@ -138,7 +153,7 @@ export default function ApproveCommissionModal({
       message.success(t("commission.upload_success"));
       await fetchDeliverables();
     } catch {
-      message.error(t("commission.upload_fail"));
+      message.error(t("commission.upload_failed"));
     } finally {
       setLoading(false);
     }
@@ -163,9 +178,15 @@ export default function ApproveCommissionModal({
   const approve = async () => {
     if (!requestId) return;
 
+    const price = finalPrice == null ? null : Number(finalPrice);
+    if (price == null || Number.isNaN(price) || price <= 0) {
+      message.error(t("commission.enter_final_price"));
+      return;
+    }
+
     try {
       setLoading(true);
-      await approveCommissionApi(requestId);
+      await approveCommissionApi(requestId, price);
       message.success(t("commission.approve_success"));
       onSuccess?.();
       onClose();
@@ -194,6 +215,27 @@ export default function ApproveCommissionModal({
 
   if (!request) return null;
 
+  const suggestedPrice = calculateTotalPrice(forms?.[1] || { characters: [] });
+
+  const finalPriceNumber =
+    finalPrice == null ? null : Number(finalPrice || 0);
+
+  const diff =
+    finalPriceNumber == null || Number.isNaN(finalPriceNumber)
+      ? null
+      : finalPriceNumber - Number(suggestedPrice || 0);
+
+  const diffLabel =
+    diff == null
+      ? null
+      : diff > 0
+      ? t("commission.higher_than_suggested")
+      : diff < 0
+      ? t("commission.lower_than_suggested")
+      : t("commission.same_as_suggested");
+
+  const diffAbs = diff == null ? null : Math.abs(diff);
+
   return (
     <Modal
       open={open}
@@ -202,8 +244,7 @@ export default function ApproveCommissionModal({
       width={1100}
       centered
       destroyOnClose
-      className="!rounded-2xl"
-    >
+      className="!rounded-2xl">
       <h2 className="text-2xl font-bold text-[#133e87] mb-2">
         {t("commission.approve_title")}
       </h2>
@@ -215,8 +256,7 @@ export default function ApproveCommissionModal({
       {forms.map((form, index) => (
         <div
           key={index}
-          className="rounded-xl border border-[#cbdceb] bg-white/60 backdrop-blur-md p-6 mb-6"
-        >
+          className="rounded-xl border border-[#cbdceb] bg-white/60 backdrop-blur-md p-6 mb-6">
           <PaintingForm
             index={index}
             form={form}
@@ -229,6 +269,125 @@ export default function ApproveCommissionModal({
         </div>
       ))}
 
+      {/* FINAL PRICE */}
+      <div className="rounded-2xl border border-[#cbdceb] bg-white/60 backdrop-blur-md p-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-[#133e87]">
+                {t("commission.final_price")}
+              </h3>
+
+              <Tooltip title={t("commission.final_price_hint")}>
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-[#cbdceb] text-xs text-gray-600 bg-white/70">
+                  ?
+                </span>
+              </Tooltip>
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-gray-500">
+                {t("commission.suggested_price")}:
+              </span>
+              <span className="font-semibold text-gray-800">
+                {money(suggestedPrice)} {t("order.currency")}
+              </span>
+
+              {diffLabel && diffAbs != null ? (
+                <>
+                  <span className="text-gray-300">•</span>
+                  <Tag
+                    color={diff > 0 ? "volcano" : diff < 0 ? "blue" : "green"}
+                    className="!m-0">
+                    {diffLabel}: {money(diffAbs)} {t("order.currency")}
+                  </Tag>
+                </>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={loading || isLocked}
+                onClick={() => setFinalPrice(Number(suggestedPrice || 0))}
+                className={`h-9 px-4 rounded-full text-sm font-medium
+                  bg-white/40 backdrop-blur-md border border-[#cbdceb]
+                  hover:bg-white/70 transition
+                  ${loading || isLocked ? "opacity-50 cursor-not-allowed" : ""}`}>
+                {t("commission.use_suggested")}
+              </button>
+
+              <button
+                type="button"
+                disabled={loading || isLocked}
+                onClick={() =>
+                  setFinalPrice((prev) =>
+                    Math.max(0, Number(prev || 0) + 50000)
+                  )
+                }
+                className={`h-9 px-4 rounded-full text-sm font-medium
+                  bg-white/40 backdrop-blur-md border border-[#cbdceb]
+                  hover:bg-white/70 transition
+                  ${loading || isLocked ? "opacity-50 cursor-not-allowed" : ""}`}>
+                {t("commission.plus_50k")}
+              </button>
+
+              <button
+                type="button"
+                disabled={loading || isLocked}
+                onClick={() =>
+                  setFinalPrice((prev) =>
+                    Math.max(0, Number(prev || 0) - 50000)
+                  )
+                }
+                className={`h-9 px-4 rounded-full text-sm font-medium
+                  bg-white/40 backdrop-blur-md border border-[#cbdceb]
+                  hover:bg-white/70 transition
+                  ${loading || isLocked ? "opacity-50 cursor-not-allowed" : ""}`}>
+                {t("commission.minus_50k")}
+              </button>
+
+              <button
+                type="button"
+                disabled={loading || isLocked}
+                onClick={() => setFinalPrice(null)}
+                className={`h-9 px-4 rounded-full text-sm font-medium
+                  bg-white/40 backdrop-blur-md border border-[#cbdceb]
+                  hover:bg-white/70 transition
+                  ${loading || isLocked ? "opacity-50 cursor-not-allowed" : ""}`}>
+                {t("common.reset")}
+              </button>
+            </div>
+          </div>
+
+          <div className="w-full md:w-[360px]">
+            <div className="rounded-2xl border border-[#cbdceb] bg-white/70 p-4">
+              <div className="text-xs text-gray-500 mb-2">
+                {t("commission.enter_final_price")}
+              </div>
+
+              <InputNumber
+                className="w-full"
+                min={0}
+                value={finalPrice}
+                onChange={(v) => setFinalPrice(v)}
+                disabled={loading || isLocked}
+                size="large"
+                controls
+                formatter={(v) => (v ? money(Number(v)) : "")}
+                parser={(v) => (v ? Number(String(v).replace(/[^\d]/g, "")) : 0)}
+                placeholder={t("commission.enter_final_price")}
+              />
+
+              <div className="mt-2 text-xs text-gray-500">
+                {t("commission.final_price_note")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* deliverables */}
       <div className="rounded-xl border border-[#cbdceb] bg-white/60 backdrop-blur-md p-6 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-[#133e87]">
@@ -248,11 +407,10 @@ export default function ApproveCommissionModal({
               return (
                 <div
                   key={d.id}
-                  className="relative rounded-xl overflow-hidden border bg-white"
-                >
+                  className="relative rounded-xl overflow-hidden border bg-white">
                   <img
                     src={src}
-                    alt={d.originalName || "deliverable"}
+                    alt={d.originalName || t("commission.deliverable_alt")}
                     className="w-full h-40 object-cover"
                   />
 
@@ -261,8 +419,7 @@ export default function ApproveCommissionModal({
                       type="button"
                       className="w-9 h-9 rounded-full bg-white/80 backdrop-blur border flex items-center justify-center"
                       onClick={() => handlePreviewServer(d.fileUrl)}
-                      title={t("common.preview")}
-                    >
+                      title={t("common.preview")}>
                       <EyeOutlined />
                     </button>
 
@@ -271,8 +428,7 @@ export default function ApproveCommissionModal({
                         type="button"
                         className="w-9 h-9 rounded-full bg-white/80 backdrop-blur border flex items-center justify-center"
                         onClick={() => deleteServerDeliverable(d.id)}
-                        title={t("common.remove")}
-                      >
+                        title={t("common.remove")}>
                         <CloseOutlined />
                       </button>
                     )}
@@ -312,8 +468,7 @@ export default function ApproveCommissionModal({
                     <CloseOutlined />
                   </Tooltip>
                 ),
-              }}
-            >
+              }}>
               <div className="flex flex-col items-center justify-center">
                 <UploadOutlined />
                 <div className="mt-2 text-xs">{t("commission.upload_image")}</div>
@@ -331,8 +486,7 @@ export default function ApproveCommissionModal({
                     loading || fileList.length === 0
                       ? "opacity-50 cursor-not-allowed"
                       : ""
-                  }`}
-              >
+                  }`}>
                 {t("commission.upload_now")}
               </button>
             </div>
@@ -361,8 +515,7 @@ export default function ApproveCommissionModal({
             border border-red-600 text-red-600
             hover:bg-red-600 hover:text-white transition
             ${loading ? "opacity-50 cursor-not-allowed" : ""}
-          `}
-        >
+          `}>
           {t("commission.reject")}
         </button>
 
@@ -375,8 +528,7 @@ export default function ApproveCommissionModal({
             border border-blue-900 text-blue-900
             hover:bg-blue-900 hover:text-white transition
             ${loading ? "opacity-50 cursor-not-allowed" : ""}
-          `}
-        >
+          `}>
           {t("commission.approve")}
         </button>
       </div>

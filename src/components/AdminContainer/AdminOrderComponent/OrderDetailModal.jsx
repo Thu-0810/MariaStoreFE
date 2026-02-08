@@ -40,7 +40,8 @@ export default function OrderDetailModal({
       maskStyle={{
         backdropFilter: "blur(3px)",
         backgroundColor: "rgba(255,255,255,0.4)",
-      }}>
+      }}
+    >
       <AnimatePresence>
         {open && (
           <motion.div
@@ -54,7 +55,8 @@ export default function OrderDetailModal({
               background:
                 "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(243,248,255,0.96) 100%)",
               backdropFilter: "blur(12px)",
-            }}>
+            }}
+          >
             <div className="p-8">
               <div className="mb-6">
                 <h2 className="text-[#133e87] text-lg font-semibold mb-1">
@@ -78,17 +80,18 @@ export default function OrderDetailModal({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: idx * 0.05 }}
-                      className="flex items-center justify-between pb-3 border-b border-[#e6effa]">
+                      className="flex items-center justify-between pb-3 border-b border-[#e6effa]"
+                    >
                       <div className="flex items-center gap-4">
                         {it.thumbnailUrl ? (
                           <img
                             src={toServerUrl(it.thumbnailUrl)}
-                            alt={it.productName}
+                            alt={it.productName || ""}
                             className="w-16 h-16 rounded-lg object-cover shadow-sm"
                           />
                         ) : (
                           <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500">
-                            No image
+                            {t("store.misc.no_image")}
                           </div>
                         )}
 
@@ -97,19 +100,21 @@ export default function OrderDetailModal({
                             {it.productName}
                           </p>
                           <p className="text-xs text-[#608bc1]">
-                            {it.fileFormat ? `${it.fileFormat} File` : ""}
+                            {it.fileFormat
+                              ? t("adminOrder.modal.file_format", {
+                                  format: it.fileFormat,
+                                })
+                              : ""}
                           </p>
                         </div>
                       </div>
 
                       <div className="text-right">
                         <p className="text-xs text-[#608bc1] mb-1">
-                          x{it.quantity}
+                          {t("adminOrder.modal.qty_prefix", { count: it.quantity ?? 0 })}
                         </p>
                         <p className="font-semibold text-[#133e87]">
-                          {formatMoney(
-                            (it.unitPrice || 0) * (it.quantity || 0)
-                          )}
+                          {formatMoney((it.unitPrice || 0) * (it.quantity || 0))}
                         </p>
                       </div>
                     </motion.div>
@@ -161,7 +166,8 @@ export default function OrderDetailModal({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="flex justify-center gap-6 mt-10">
+                className="flex justify-center gap-6 mt-10"
+              >
                 <Button
                   type="primary"
                   shape="round"
@@ -171,10 +177,10 @@ export default function OrderDetailModal({
                     borderColor: "#ff7383",
                     width: 160,
                   }}
-                  onClick={onDeleteInvoice}>
+                  onClick={onDeleteInvoice}
+                >
                   {t("adminOrder.btn.delete_invoice")}
                 </Button>
-
                 <Button
                   type="primary"
                   shape="round"
@@ -184,7 +190,9 @@ export default function OrderDetailModal({
                     borderColor: "#133e87",
                     width: 160,
                   }}
-                  onClick={onPrintInvoice}>
+                  onClick={onPrintInvoice}
+                  disabled={!orderDetail?.id}
+                >
                   {t("adminOrder.btn.print_invoice")}
                 </Button>
               </motion.div>
